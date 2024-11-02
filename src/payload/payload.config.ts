@@ -15,7 +15,9 @@ import Categories from './collections/Categories'
 import Comments from './collections/Comments'
 import Companies from './collections/Companies'
 import Jobs from './collections/Jobs'
+import Locations from './collections/Locations'
 import { Media } from './collections/Media'
+import MediaTags from './collections/MediaTags'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
@@ -82,6 +84,8 @@ export default buildConfig({
     Skills,
     Companies,
     Assets,
+    Locations,
+    MediaTags,
   ],
   globals: [Settings, Header, Footer],
   typescript: {
@@ -106,7 +110,7 @@ export default buildConfig({
       collections: ['pages', 'posts'],
     }),
     nestedDocs({
-      collections: ['categories'],
+      collections: ['categories', 'media-tags', 'locations'],
     }),
     seo({
       collections: ['pages', 'posts', 'projects'],

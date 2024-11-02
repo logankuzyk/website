@@ -25,5 +25,22 @@ export const Media: CollectionConfig = {
         },
       }),
     },
+    {
+      name: 'tags',
+      type: 'relationship',
+      relationTo: 'media-tags',
+      hasMany: true,
+    },
+    {
+      name: 'date',
+      type: 'date',
+      required: false,
+    },
+    {
+      name: 'location',
+      type: 'relationship',
+      relationTo: 'locations',
+      required: false,
+    },
   ],
 }
