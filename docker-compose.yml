@@ -9,7 +9,7 @@ services:
     working_dir: /home/node/app/
     command: sh -c "yarn install && yarn dev"
     depends_on:
-      - logankuzyk-website-postgres
+      - postgres
     env_file:
       - .env
 
