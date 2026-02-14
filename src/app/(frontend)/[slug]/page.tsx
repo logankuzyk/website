@@ -1,6 +1,9 @@
+import type { Media } from '@/payload-types'
 import type { Metadata } from 'next'
 
+import { CareerTimeline } from '@/components/CareerTimeline/CareerTimeline'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { PhotosMasonry } from '@/components/PhotosMasonry/PhotosMasonry'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
@@ -56,7 +59,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     return <PayloadRedirects url={url} />
   }
 
-  const { hero, layout } = page
+  const { hero, layout, template } = page
 
   return (
     <article className="pt-16 pb-24">
@@ -67,7 +70,27 @@ export default async function Page({ params: paramsPromise }: Args) {
       {draft && <LivePreviewListener />}
 
       <RenderHero {...hero} />
-      <RenderBlocks blocks={layout} />
+      {template === 'career' && <CareerPageContent />}
+      {template === 'photos' && (
+        <PhotosPageContent
+          photosFolder={
+            typeof page.photosFolder === 'object' && page.photosFolder
+              ? page.photosFolder.id
+              : page.photosFolder
+          }
+          photosTags={
+            Array.isArray(page.photosTags)
+              ? page.photosTags
+                  .map((t) => (typeof t === 'object' && t ? t.id : t))
+                  .filter(Boolean)
+              : []
+          }
+          title={page.title}
+        />
+      )}
+      {(template === 'default' || !template) && (
+        <RenderBlocks blocks={layout ?? []} />
+      )}
     </article>
   )
 }
@@ -103,3 +126,70 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
 
   return result.docs?.[0] || null
 })
+
+async function CareerPageContent() {
+  const payload = await getPayload({ config: configPromise })
+  const { docs } = await payload.find({
+    collection: 'career',
+    depth: 2,
+    limit: 100,
+    overrideAccess: false,
+    sort: '-startDate',
+    where: { _status: { equals: 'published' } },
+  })
+  return (
+    <div className="container pt-8">
+      <header className="mb-16">
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Career</h1>
+        <div className="mt-4 h-px w-16 bg-foreground/20" aria-hidden />
+      </header>
+      <CareerTimeline entries={docs} />
+    </div>
+  )
+}
+
+async function PhotosPageContent({
+  photosFolder,
+  photosTags,
+  title,
+}: {
+  photosFolder: string | number | null | undefined
+  photosTags?: (string | number)[]
+  title?: string | null
+}) {
+  const payload = await getPayload({ config: configPromise })
+  let photos: Media[] = []
+
+  const hasFolder = Boolean(photosFolder)
+  const hasTags = Array.isArray(photosTags) && photosTags.length > 0
+
+  if (hasFolder || hasTags) {
+    const where = {
+      mimeType: { contains: 'image' as const },
+      ...(hasFolder && { folder: { equals: photosFolder } }),
+      ...(hasTags && { tags: { in: photosTags } }),
+    }
+
+    const result = await payload.find({
+      collection: 'media',
+      depth: 1,
+      limit: 200,
+      overrideAccess: false,
+      sort: 'displayOrder',
+      where,
+    })
+    photos = (result.docs ?? []) as Media[]
+  }
+
+  return (
+    <div className="container pt-8">
+      <header className="mb-16">
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+          {title || 'Photos'}
+        </h1>
+        <div className="mt-4 h-px w-16 bg-foreground/20" aria-hidden />
+      </header>
+      <PhotosMasonry photos={photos} />
+    </div>
+  )
+}
