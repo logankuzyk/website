@@ -29,6 +29,22 @@ export const Media: CollectionConfig = {
   },
   fields: [
     {
+      name: 'tags',
+      type: 'relationship',
+      relationTo: 'tags',
+      hasMany: true,
+      admin: {
+        description: 'Tags for filtering in photo galleries',
+      },
+    },
+    {
+      name: 'displayOrder',
+      type: 'number',
+      admin: {
+        description: 'Controls order in photos gallery (lower = earlier)',
+      },
+    },
+    {
       name: 'alt',
       type: 'text',
       //required: true,
