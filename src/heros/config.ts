@@ -7,6 +7,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
+import { link } from '@/fields/link'
 import { linkGroup } from '@/fields/linkGroup'
 
 export const hero: Field = {
@@ -22,6 +23,10 @@ export const hero: Field = {
         {
           label: 'None',
           value: 'none',
+        },
+        {
+          label: 'Landing',
+          value: 'landing',
         },
         {
           label: 'High Impact',
@@ -41,6 +46,9 @@ export const hero: Field = {
     {
       name: 'richText',
       type: 'richText',
+      admin: {
+        condition: (_, { type } = {}) => type !== 'landing',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [
@@ -53,16 +61,55 @@ export const hero: Field = {
       }),
       label: false,
     },
+    {
+      name: 'name',
+      type: 'text',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      label: 'Name',
+    },
+    {
+      name: 'role',
+      type: 'text',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      label: 'Role / Title',
+    },
+    {
+      name: 'bio',
+      type: 'textarea',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      label: 'Short bio',
+    },
+    {
+      name: 'profileImage',
+      type: 'upload',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      relationTo: 'media',
+      label: 'Profile image',
+    },
+    link({
+      overrides: {
+        name: 'scrollLink',
+        admin: {
+          condition: (_, { type } = {}) => type === 'landing',
+          description: 'Link shown below the hero (e.g. to Career page)',
+        },
+        label: 'Scroll link',
+      },
+    }),
     linkGroup({
       overrides: {
         maxRows: 2,
+        admin: {
+          condition: (_, { type } = {}) => type !== 'landing',
+        },
       },
     }),
     {
       name: 'media',
       type: 'upload',
       admin: {
-        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        condition: (_, { type } = {}) =>
+          ['highImpact', 'mediumImpact'].includes(type ?? ''),
       },
       relationTo: 'media',
       required: true,
