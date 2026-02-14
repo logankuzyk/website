@@ -11,6 +11,7 @@ export const contact: (args: ContactArgs) => RequiredDataFromCollectionSlug<'pag
   return {
     slug: 'contact',
     _status: 'published',
+    template: 'default',
     hero: {
       type: 'none',
     },
@@ -32,7 +33,7 @@ export const contact: (args: ContactArgs) => RequiredDataFromCollectionSlug<'pag
                     format: 0,
                     mode: 'normal',
                     style: '',
-                    text: 'Example contact form:',
+                    text: 'Get in touch',
                     version: 1,
                   },
                 ],

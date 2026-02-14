@@ -15,9 +15,12 @@ const collections: CollectionSlug[] = [
   'media',
   'pages',
   'posts',
+  'projects',
+  'career',
   'forms',
   'form-submissions',
   'search',
+  'tags',
 ]
 
 const globals: GlobalSlug[] = ['header', 'footer']
@@ -60,8 +63,11 @@ export const seed = async ({
   )
 
   await Promise.all(
-    collections.map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
+    collections
+      .filter((c) => payload.collections[c])
+      .map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
   )
+
 
   await Promise.all(
     collections
@@ -69,14 +75,14 @@ export const seed = async ({
       .map((collection) => payload.db.deleteVersions({ collection, req, where: {} })),
   )
 
-  payload.logger.info(`— Seeding demo author and user...`)
+  payload.logger.info(`— Seeding author...`)
 
   await payload.delete({
     collection: 'users',
     depth: 0,
     where: {
       email: {
-        equals: 'demo-author@example.com',
+        equals: 'author@example.com',
       },
     },
   })
@@ -102,8 +108,8 @@ export const seed = async ({
     payload.create({
       collection: 'users',
       data: {
-        name: 'Demo Author',
-        email: 'demo-author@example.com',
+        name: 'Author',
+        email: 'author@example.com',
         password: 'password',
       },
     }),
@@ -200,6 +206,146 @@ export const seed = async ({
     data: contactFormData,
   })
 
+  payload.logger.info(`— Creating tags...`)
+
+  const [tagLandscape, tagNature, tagPortrait] = await Promise.all([
+    payload.create({
+      collection: 'tags',
+      data: { name: 'Landscape', slug: 'landscape' },
+      depth: 0,
+      draft: false,
+    }),
+    payload.create({
+      collection: 'tags',
+      data: { name: 'Nature', slug: 'nature' },
+      depth: 0,
+      draft: false,
+    }),
+    payload.create({
+      collection: 'tags',
+      data: { name: 'Portrait', slug: 'portrait' },
+      depth: 0,
+      draft: false,
+    }),
+  ])
+
+  payload.logger.info(`— Creating photos folder...`)
+
+  const photosFolder = await payload.create({
+    collection: 'payload-folders',
+    depth: 0,
+    data: {
+      name: 'photos',
+      folderType: ['media'],
+    },
+  })
+
+  await payload.update({
+    collection: 'media',
+    id: image1Doc.id,
+    data: { folder: photosFolder.id, displayOrder: 0, tags: [tagLandscape.id, tagNature.id] },
+  })
+  await payload.update({
+    collection: 'media',
+    id: image2Doc.id,
+    data: { folder: photosFolder.id, displayOrder: 1, tags: [tagNature.id] },
+  })
+  await payload.update({
+    collection: 'media',
+    id: image3Doc.id,
+    data: { folder: photosFolder.id, displayOrder: 2, tags: [tagLandscape.id, tagPortrait.id] },
+  })
+
+  payload.logger.info(`— Seeding projects and career...`)
+
+  await payload.create({
+    collection: 'projects',
+    depth: 0,
+    context: { disableRevalidate: true },
+    data: {
+      _status: 'published',
+      title: 'Sample Project',
+      slug: 'sample-project',
+      description: 'A sample project. Add your own projects in the admin.',
+      featuredImage: image1Doc.id,
+      content: {
+        root: {
+          type: 'root',
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'text',
+                  detail: 0,
+                  format: 0,
+                  mode: 'normal',
+                  style: '',
+                  text: 'Replace this with your project content.',
+                  version: 1,
+                },
+              ],
+              direction: 'ltr',
+              format: '',
+              indent: 0,
+              textFormat: 0,
+              version: 1,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          version: 1,
+        },
+      },
+      displayOrder: 0,
+    },
+  })
+
+  await payload.create({
+    collection: 'career',
+    depth: 0,
+    context: { disableRevalidate: true },
+    data: {
+      _status: 'published',
+      jobTitle: 'Job Title',
+      company: 'Company Name',
+      startDate: '2024-01-01',
+      endDate: null,
+      description: {
+        root: {
+          type: 'root',
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'text',
+                  detail: 0,
+                  format: 0,
+                  mode: 'normal',
+                  style: '',
+                  text: 'Add your role description here.',
+                  version: 1,
+                },
+              ],
+              direction: 'ltr',
+              format: '',
+              indent: 0,
+              textFormat: 0,
+              version: 1,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          version: 1,
+        },
+      },
+      displayOrder: 0,
+    },
+  })
+
   payload.logger.info(`— Seeding pages...`)
 
   const [_, contactPage] = await Promise.all([
@@ -213,6 +359,40 @@ export const seed = async ({
       depth: 0,
       data: contactPageData({ contactForm: contactForm }),
     }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: {
+        slug: 'career',
+        title: 'Career',
+        template: 'career',
+        hero: { type: 'none' },
+        _status: 'published',
+        layout: [],
+        meta: {
+          title: 'Career',
+          description: 'Professional experience and work history',
+        },
+      },
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: {
+        slug: 'photos',
+        title: 'Photos',
+        template: 'photos',
+        photosFolder: photosFolder.id,
+        photosTags: [tagLandscape.id, tagNature.id],
+        hero: { type: 'none' },
+        _status: 'published',
+        layout: [],
+        meta: {
+          title: 'Photos',
+          description: 'Photo gallery',
+        },
+      },
+    }),
   ])
 
   payload.logger.info(`— Seeding globals...`)
@@ -222,6 +402,34 @@ export const seed = async ({
       slug: 'header',
       data: {
         navItems: [
+          {
+            link: {
+              type: 'custom',
+              label: 'Home',
+              url: '/',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
+              label: 'Career',
+              url: '/career',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
+              label: 'Projects',
+              url: '/projects',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
+              label: 'Photos',
+              url: '/photos',
+            },
+          },
           {
             link: {
               type: 'custom',
@@ -249,24 +457,36 @@ export const seed = async ({
           {
             link: {
               type: 'custom',
+              label: 'Home',
+              url: '/',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
+              label: 'Career',
+              url: '/career',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
+              label: 'Projects',
+              url: '/projects',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
+              label: 'Photos',
+              url: '/photos',
+            },
+          },
+          {
+            link: {
+              type: 'custom',
               label: 'Admin',
               url: '/admin',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Source Code',
-              newTab: true,
-              url: 'https://github.com/payloadcms/payload/tree/main/templates/website',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Payload',
-              newTab: true,
-              url: 'https://payloadcms.com/',
             },
           },
         ],
