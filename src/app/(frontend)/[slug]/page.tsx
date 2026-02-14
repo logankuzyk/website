@@ -80,17 +80,13 @@ export default async function Page({ params: paramsPromise }: Args) {
           }
           photosTags={
             Array.isArray(page.photosTags)
-              ? page.photosTags
-                  .map((t) => (typeof t === 'object' && t ? t.id : t))
-                  .filter(Boolean)
+              ? page.photosTags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
               : []
           }
           title={page.title}
         />
       )}
-      {(template === 'default' || !template) && (
-        <RenderBlocks blocks={layout ?? []} />
-      )}
+      {(template === 'default' || !template) && <RenderBlocks blocks={layout ?? []} />}
     </article>
   )
 }
@@ -184,9 +180,7 @@ async function PhotosPageContent({
   return (
     <div className="container pt-8">
       <header className="mb-16">
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-          {title || 'Photos'}
-        </h1>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{title || 'Photos'}</h1>
         <div className="mt-4 h-px w-16 bg-foreground/20" aria-hidden />
       </header>
       <PhotosMasonry photos={photos} />
