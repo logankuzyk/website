@@ -7,6 +7,10 @@ node_modules
 .vercel
 tsconfig.tsbuildinfo
 
+# SSL certificates (Cloudflare Origin certs)
+certs/*.pem
+certs/*.key
+
 # Payload default media upload directory
 public/media/
 

@@ -5,8 +5,10 @@ services:
       - '27017:27017'
     volumes:
       - data:/data/db
+    networks:
+      - app
 
-  payload:
+  website:
     build: .
     ports:
       - '3000:3000'
@@ -16,8 +18,43 @@ services:
       - .env
     environment:
       DATABASE_URL: mongodb://mongo:27017/logankuzyk
+    networks:
+      - web
+      - app
+    profiles:
+      - prod
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - website
+    networks:
+      - web
+      - app
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs/logankuzyk.com.pem:/etc/ssl/cloudflare/logankuzyk.com.pem:ro
+      - ./certs/logankuzyk.com.key:/etc/ssl/cloudflare/logankuzyk.com.key:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    healthcheck:
+      test: ['CMD-SHELL', "wget -q --spider --server-response https://localhost 2>&1 | awk 'NR==1{print $2}' | grep -qE '200|301|302'"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
     profiles:
       - prod
 
 volumes:
   data:
+
+networks:
+  web: {}
+  app: {}
