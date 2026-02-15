@@ -1,15 +1,36 @@
 import type { RequiredDataFromCollectionSlug } from 'payload'
 import type { Media } from '@/payload-types'
 
+type PhotosPreviewItem = {
+  photoId: string
+  tagId: string
+}
+
 type HomeArgs = {
   heroImage: Media
   metaImage: Media
+  photosPageId?: string
+  photosPreviewItems?: PhotosPreviewItem[]
 }
 
 export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> = ({
   heroImage,
   metaImage,
+  photosPageId,
+  photosPreviewItems = [],
 }) => {
+  const layout = [
+    {
+      blockType: 'photosPreview' as const,
+      items: photosPreviewItems.slice(0, 3).map(({ photoId, tagId }) => ({
+        photo: photoId,
+        tag: tagId,
+      })),
+      photosPage: photosPageId ?? undefined,
+      linkLabel: 'View more',
+    },
+  ]
+
   return {
     slug: 'home',
     _status: 'published',
@@ -20,14 +41,8 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
       role: 'Your Title',
       bio: 'Your bio goes here.',
       profileImage: heroImage.id,
-      scrollLink: {
-        type: 'custom',
-        url: '/career',
-        label: 'Career',
-        newTab: false,
-      },
     },
-    layout: [],
+    layout,
     meta: {
       description: 'Your Name - Your Title',
       image: metaImage.id,

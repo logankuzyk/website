@@ -182,28 +182,6 @@ export interface Page {
     role?: string | null;
     bio?: string | null;
     profileImage?: (string | null) | Media;
-    /**
-     * Link shown below the hero (e.g. to Career page)
-     */
-    scrollLink?: {
-      type?: ('reference' | 'custom') | null;
-      newTab?: boolean | null;
-      reference?:
-        | ({
-            relationTo: 'pages';
-            value: string | Page;
-          } | null)
-        | ({
-            relationTo: 'posts';
-            value: string | Post;
-          } | null);
-      url?: string | null;
-      label: string;
-      /**
-       * Choose how the link should be rendered.
-       */
-      appearance?: ('default' | 'outline') | null;
-    };
     links?:
       | {
           link: {
@@ -245,7 +223,7 @@ export interface Page {
   /**
    * Add content blocks. Only shown when using Default template.
    */
-  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[] | null;
+  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | PhotosPreviewBlock)[] | null;
   meta?: {
     title?: string | null;
     /**
@@ -850,6 +828,36 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PhotosPreviewBlock".
+ */
+export interface PhotosPreviewBlock {
+  /**
+   * Three photos displayed in a row. Each links to the Photos page filtered by its tag.
+   */
+  items?:
+    | {
+        photo: string | Media;
+        /**
+         * Tag shown on hover and used for the link destination
+         */
+        tag: string | Tag;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Photos page for "View more" link. When empty, uses the page with slug "photos".
+   */
+  photosPage?: (string | null) | Page;
+  /**
+   * Label for the link to the full Photos page
+   */
+  linkLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'photosPreview';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "projects".
  */
 export interface Project {
@@ -1249,16 +1257,6 @@ export interface PagesSelect<T extends boolean = true> {
         role?: T;
         bio?: T;
         profileImage?: T;
-        scrollLink?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
         links?:
           | T
           | {
@@ -1287,6 +1285,7 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        photosPreview?: T | PhotosPreviewBlockSelect<T>;
       };
   meta?:
     | T
@@ -1383,6 +1382,23 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PhotosPreviewBlock_select".
+ */
+export interface PhotosPreviewBlockSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        photo?: T;
+        tag?: T;
+        id?: T;
+      };
+  photosPage?: T;
+  linkLabel?: T;
   id?: T;
   blockName?: T;
 }

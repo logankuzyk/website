@@ -348,12 +348,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [_, contactPage] = await Promise.all([
-    payload.create({
-      collection: 'pages',
-      depth: 0,
-      data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
-    }),
+  const [contactPage, , photosPage] = await Promise.all([
     payload.create({
       collection: 'pages',
       depth: 0,
@@ -394,6 +389,21 @@ export const seed = async ({
       },
     }),
   ])
+
+  await payload.create({
+    collection: 'pages',
+    depth: 0,
+    data: home({
+      heroImage: imageHomeDoc,
+      metaImage: image2Doc,
+      photosPageId: photosPage.id,
+      photosPreviewItems: [
+        { photoId: image1Doc.id, tagId: tagLandscape.id },
+        { photoId: image2Doc.id, tagId: tagNature.id },
+        { photoId: image3Doc.id, tagId: tagPortrait.id },
+      ],
+    }),
+  })
 
   payload.logger.info(`— Seeding globals...`)
 

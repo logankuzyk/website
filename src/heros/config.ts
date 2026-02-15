@@ -7,7 +7,6 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
-import { link } from '@/fields/link'
 import { linkGroup } from '@/fields/linkGroup'
 
 export const hero: Field = {
@@ -86,16 +85,6 @@ export const hero: Field = {
       relationTo: 'media',
       label: 'Profile image',
     },
-    link({
-      overrides: {
-        name: 'scrollLink',
-        admin: {
-          condition: (_, { type } = {}) => type === 'landing',
-          description: 'Link shown below the hero (e.g. to Career page)',
-        },
-        label: 'Scroll link',
-      },
-    }),
     linkGroup({
       overrides: {
         maxRows: 2,
