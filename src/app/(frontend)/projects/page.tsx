@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { ProjectsGrid } from '@/components/ProjectsGrid/ProjectsGrid'
+import { Separator } from '@/components/Separator/Separator'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -27,7 +28,7 @@ export default async function ProjectsPage() {
       <div className="container">
         <header className="mb-16">
           <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Projects</h1>
-          <div className="mt-4 h-px w-16 bg-foreground/20" aria-hidden />
+          <Separator />
           <p className="mt-6 max-w-2xl text-muted-foreground">
             A selection of projects I&apos;ve worked on. Click any card to view details.
           </p>

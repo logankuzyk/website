@@ -2,6 +2,7 @@ import type { Media } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { CareerTimeline } from '@/components/CareerTimeline/CareerTimeline'
+import { Separator } from '@/components/Separator/Separator'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { PhotosMasonry } from '@/components/PhotosMasonry/PhotosMasonry'
 import configPromise from '@payload-config'
@@ -62,7 +63,7 @@ export default async function Page({ params: paramsPromise }: Args) {
   const { hero, layout, template } = page
 
   return (
-    <article className="pt-16 pb-24">
+    <article className="pb-24">
       <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
@@ -137,7 +138,7 @@ async function CareerPageContent() {
     <div className="container pt-8">
       <header className="mb-16">
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Career</h1>
-        <div className="mt-4 h-px w-16 bg-foreground/20" aria-hidden />
+        <Separator />
       </header>
       <CareerTimeline entries={docs} />
     </div>
@@ -181,7 +182,7 @@ async function PhotosPageContent({
     <div className="container pt-8">
       <header className="mb-16">
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{title || 'Photos'}</h1>
-        <div className="mt-4 h-px w-16 bg-foreground/20" aria-hidden />
+        <Separator />
       </header>
       <PhotosMasonry photos={photos} />
     </div>
