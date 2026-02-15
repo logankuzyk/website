@@ -849,6 +849,10 @@ export interface PhotosPreviewBlock {
    */
   photosPage?: (string | null) | Page;
   /**
+   * Show the "View more" button linking to the Photos page
+   */
+  showViewMore?: boolean | null;
+  /**
    * Label for the link to the full Photos page
    */
   linkLabel?: string | null;
@@ -1398,6 +1402,7 @@ export interface PhotosPreviewBlockSelect<T extends boolean = true> {
         id?: T;
       };
   photosPage?: T;
+  showViewMore?: T;
   linkLabel?: T;
   id?: T;
   blockName?: T;

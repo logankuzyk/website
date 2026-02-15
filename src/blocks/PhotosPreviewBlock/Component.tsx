@@ -17,6 +17,7 @@ type PhotosPreviewItem = {
 type PhotosPreviewBlockProps = {
   items?: PhotosPreviewItem[] | null
   photosPage?: string | null | Page
+  showViewMore?: boolean | null
   linkLabel?: string | null
   id?: string
 }
@@ -39,7 +40,13 @@ async function resolveItem(
 }
 
 export const PhotosPreviewBlock: React.FC<PhotosPreviewBlockProps> = async (props) => {
-  const { items = [], photosPage: photosPageFromProps, linkLabel = 'View more', id } = props
+  const {
+    items = [],
+    photosPage: photosPageFromProps,
+    showViewMore = true,
+    linkLabel = 'View more',
+    id,
+  } = props
 
   const payload = await getPayload({ config: configPromise })
 
@@ -96,7 +103,7 @@ export const PhotosPreviewBlock: React.FC<PhotosPreviewBlockProps> = async (prop
           />
         ))}
       </div>
-      {photosPage && (
+      {photosPage && showViewMore && (
         <div className="mt-8">
           <Button asChild variant="outline">
             <Link href={`/${pageSlug}`}>{linkLabel}</Link>

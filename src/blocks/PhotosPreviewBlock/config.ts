@@ -53,10 +53,20 @@ export const PhotosPreview: Block = {
       label: 'Photos page',
     },
     {
+      name: 'showViewMore',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Show the "View more" button linking to the Photos page',
+      },
+      label: 'Show View more button',
+    },
+    {
       name: 'linkLabel',
       type: 'text',
       defaultValue: 'View more',
       admin: {
+        condition: (_, siblingData) => siblingData?.showViewMore !== false,
         description: 'Label for the link to the full Photos page',
       },
       label: 'Link label',
