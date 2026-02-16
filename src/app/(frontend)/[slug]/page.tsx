@@ -168,23 +168,21 @@ async function PhotosPageContent({
   const hasFolder = Boolean(photosFolder)
   const hasTags = Array.isArray(photosTags) && photosTags.length > 0
 
-  if (hasFolder || hasTags) {
-    const where = {
-      mimeType: { contains: 'image' as const },
-      ...(hasFolder && { folder: { equals: photosFolder } }),
-      ...(hasTags && { tags: { in: photosTags } }),
-    }
-
-    const result = await payload.find({
-      collection: 'media',
-      depth: 1,
-      limit: 200,
-      overrideAccess: false,
-      sort: 'displayOrder',
-      where,
-    })
-    photos = (result.docs ?? []) as Media[]
+  const where = {
+    mimeType: { contains: 'image' as const },
+    ...(hasFolder && { folder: { equals: photosFolder } }),
+    ...(hasTags && { tags: { in: photosTags } }),
   }
+
+  const result = await payload.find({
+    collection: 'media',
+    depth: 1,
+    limit: 200,
+    overrideAccess: false,
+    sort: 'displayOrder',
+    where,
+  })
+  photos = (result.docs ?? []) as Media[]
 
   return (
     <div className="container pt-8">
