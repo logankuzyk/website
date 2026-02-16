@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build output
+.next
+out
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# IDE and misc
+.cursor
+.vscode
+.idea
+*.log
+npm-debug.log*
+.DS_Store
+
+# Media - use R2 in production; exclude large local uploads from build
+media
+
+# Test and dev
+coverage
+.nyc_output
+*.test.*
+*.spec.*

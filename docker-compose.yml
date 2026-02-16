@@ -17,6 +17,7 @@ services:
     env_file:
       - .env
     environment:
+      # For MongoDB with auth, add: mongodb://user:pass@mongo:27017/logankuzyk?authSource=admin
       DATABASE_URL: mongodb://mongo:27017/logankuzyk
     networks:
       - web
