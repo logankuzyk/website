@@ -2,9 +2,14 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 import redirects from './redirects.js'
 
-const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : undefined || process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
+// Base URL for the app. Must match NEXT_PUBLIC_SERVER_URL in production so Image remotePatterns allow the same host.
+const serverUrl =
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : undefined) ||
+  process.env.__NEXT_PRIVATE_ORIGIN ||
+  'http://localhost:3000'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -15,7 +20,7 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
-      ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */].map((item) => {
+      ...[serverUrl].filter(Boolean).map((item) => {
         const url = new URL(item)
 
         return {

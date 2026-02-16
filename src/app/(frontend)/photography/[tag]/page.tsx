@@ -36,7 +36,7 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function PhotosTagPage({ params: paramsPromise }: Args) {
+export default async function PhotographyTagPage({ params: paramsPromise }: Args) {
   const { tag: tagSlug } = await paramsPromise
 
   if (!tagSlug) {
@@ -51,10 +51,7 @@ export default async function PhotosTagPage({ params: paramsPromise }: Args) {
       depth: 0,
       limit: 1,
       overrideAccess: false,
-      where: {
-        slug: { equals: 'photos' },
-        template: { equals: 'photos' },
-      },
+      where: { template: { equals: 'photos' } },
     }),
     payload.find({
       collection: 'tags',
@@ -98,7 +95,7 @@ export default async function PhotosTagPage({ params: paramsPromise }: Args) {
 
   return (
     <article className="pb-24">
-      <PayloadRedirects disableNotFound url={`/photos/${tagSlug}`} />
+      <PayloadRedirects disableNotFound url={`/photography/${tagSlug}`} />
       <div className="container pt-8">
         <header className="mb-16">
           <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
@@ -135,7 +132,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     title,
     openGraph: mergeOpenGraph({
       title,
-      url: `${getServerSideURL()}/photos/${tagSlug}`,
+      url: `${getServerSideURL()}/photography/${tagSlug}`,
     }),
   }
 }

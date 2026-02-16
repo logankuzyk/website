@@ -374,7 +374,7 @@ export const seed = async ({
       collection: 'pages',
       depth: 0,
       data: {
-        slug: 'photos',
+        slug: 'photography',
         title: 'Photos',
         template: 'photos',
         photosFolder: photosFolder.id,
@@ -437,7 +437,7 @@ export const seed = async ({
             link: {
               type: 'custom',
               label: 'Photos',
-              url: '/photos',
+              url: '/photography',
             },
           },
           {
@@ -489,7 +489,7 @@ export const seed = async ({
             link: {
               type: 'custom',
               label: 'Photos',
-              url: '/photos',
+              url: '/photography',
             },
           },
           {

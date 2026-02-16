@@ -70,14 +70,14 @@ export const PhotosPreviewBlock: React.FC<PhotosPreviewBlockProps> = async (prop
       limit: 1,
       overrideAccess: false,
       where: {
-        slug: { equals: 'photos' },
+        slug: { in: ['photography', 'photos'] },
         template: { equals: 'photos' },
       },
     })
     photosPage = (result.docs?.[0] as Page) ?? null
   }
 
-  const pageSlug = photosPage?.slug ?? 'photos'
+  const pageSlug = photosPage?.slug ?? 'photography'
   const pageTitle = photosPage?.title ?? 'Photos'
 
   const resolvedItems = await Promise.all(

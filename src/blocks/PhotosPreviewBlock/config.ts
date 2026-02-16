@@ -48,7 +48,7 @@ export const PhotosPreview: Block = {
         template: { equals: 'photos' },
       },
       admin: {
-        description: 'Photos page for "View more" link. When empty, uses the page with slug "photos".',
+        description: 'Photos page for "View more" link. When empty, uses the page with slug "photography".',
       },
       label: 'Photos page',
     },
