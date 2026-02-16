@@ -10,19 +10,27 @@ type Args = {
   params: Promise<{ slug?: string }>
 }
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const projects = await payload.find({
-    collection: 'projects',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: { slug: true },
-    where: { _status: { equals: 'published' } },
-  })
+// force-dynamic: build runs without MongoDB; pages render at request time
+export const dynamic = 'force-dynamic'
 
-  return projects.docs.map(({ slug }) => ({ slug }))
+export async function generateStaticParams() {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const projects = await payload.find({
+      collection: 'projects',
+      draft: false,
+      limit: 1000,
+      overrideAccess: false,
+      pagination: false,
+      select: { slug: true },
+      where: { _status: { equals: 'published' } },
+    })
+
+    return projects.docs.map(({ slug }) => ({ slug }))
+  } catch {
+    // MongoDB not available during build (e.g. Docker build). Pages will be generated on-demand at runtime.
+    return []
+  }
 }
 
 export default async function ProjectDetailPage({ params: paramsPromise }: Args) {

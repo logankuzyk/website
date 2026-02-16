@@ -16,16 +16,24 @@ type Args = {
   params: Promise<{ tag?: string }>
 }
 
+// force-dynamic: build runs without MongoDB; pages render at request time
+export const dynamic = 'force-dynamic'
+
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'tags',
-    limit: 100,
-    overrideAccess: false,
-    pagination: false,
-    select: { slug: true },
-  })
-  return (result.docs ?? []).map((tag) => ({ tag: tag.slug }))
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'tags',
+      limit: 100,
+      overrideAccess: false,
+      pagination: false,
+      select: { slug: true },
+    })
+    return (result.docs ?? []).map((tag) => ({ tag: tag.slug }))
+  } catch {
+    // MongoDB not available during build (e.g. Docker build). Pages will be generated on-demand at runtime.
+    return []
+  }
 }
 
 export default async function PhotosTagPage({ params: paramsPromise }: Args) {
