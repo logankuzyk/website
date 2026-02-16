@@ -2,19 +2,17 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 import crypto from 'crypto'
 
-export const appendPrefixToCollectionBeforeChangeHook: CollectionBeforeChangeHook = async ({
-  data,
-  operation,
-  req,
-}) => {
-  if (operation !== 'create') return data
+export const appendPrefixToCollectionBeforeChangeHook =
+  (prefix: string): CollectionBeforeChangeHook =>
+  async ({ data, operation, req }) => {
+    if (operation !== 'create') return data
 
-  const objectID = crypto.randomBytes(12).toString('hex')
-  data.prefix = `uploads.prefix/${objectID}`
+    const objectID = crypto.randomBytes(12).toString('hex')
+    data.prefix = `${prefix}/${objectID}`
 
-  if (req?.file?.name) {
-    data.originalName = req.file.name
+    if (req?.file?.name) {
+      data.originalName = req.file.name
+    }
+
+    return data
   }
-
-  return data
-}

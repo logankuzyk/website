@@ -19,7 +19,7 @@ export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
   hooks: {
-    beforeChange: [appendPrefixToCollectionBeforeChangeHook],
+    beforeChange: [appendPrefixToCollectionBeforeChangeHook('media')],
   },
   access: {
     create: authenticated,
