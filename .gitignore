@@ -5,6 +5,11 @@ node_modules
 .env
 .next
 .vercel
+tsconfig.tsbuildinfo
+
+# SSL certificates (Cloudflare Origin certs)
+certs/*.pem
+certs/*.key
 
 # Payload default media upload directory
 public/media/

@@ -24,6 +24,10 @@ export const hero: Field = {
           value: 'none',
         },
         {
+          label: 'Landing',
+          value: 'landing',
+        },
+        {
           label: 'High Impact',
           value: 'highImpact',
         },
@@ -41,6 +45,9 @@ export const hero: Field = {
     {
       name: 'richText',
       type: 'richText',
+      admin: {
+        condition: (_, { type } = {}) => type !== 'landing',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [
@@ -53,16 +60,45 @@ export const hero: Field = {
       }),
       label: false,
     },
+    {
+      name: 'name',
+      type: 'text',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      label: 'Name',
+    },
+    {
+      name: 'role',
+      type: 'text',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      label: 'Role / Title',
+    },
+    {
+      name: 'bio',
+      type: 'textarea',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      label: 'Short bio',
+    },
+    {
+      name: 'profileImage',
+      type: 'upload',
+      admin: { condition: (_, { type } = {}) => type === 'landing' },
+      relationTo: 'media',
+      label: 'Profile image',
+    },
     linkGroup({
       overrides: {
         maxRows: 2,
+        admin: {
+          condition: (_, { type } = {}) => type !== 'landing',
+        },
       },
     }),
     {
       name: 'media',
       type: 'upload',
       admin: {
-        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        condition: (_, { type } = {}) =>
+          ['highImpact', 'mediumImpact'].includes(type ?? ''),
       },
       relationTo: 'media',
       required: true,

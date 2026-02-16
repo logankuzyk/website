@@ -7,6 +7,7 @@ import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { PhotosPreview } from '../../blocks/PhotosPreviewBlock/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -70,11 +71,52 @@ export const Pages: CollectionConfig<'pages'> = {
         {
           fields: [
             {
-              name: 'layout',
-              type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
+              name: 'template',
+              type: 'select',
+              defaultValue: 'default',
               required: true,
               admin: {
+                description: 'Choose the page layout. Career and Photos use predefined templates.',
+              },
+              options: [
+                { label: 'Default (Blocks)', value: 'default' },
+                { label: 'Career', value: 'career' },
+                { label: 'Photos', value: 'photos' },
+              ],
+            },
+            {
+              name: 'photosFolder',
+              type: 'relationship',
+              relationTo: 'payload-folders',
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description:
+                  'Select which Media folder to display. Create folders in Media to organize photo subcollections (e.g. landscapes, portraits).',
+              },
+              filterOptions: {
+                folderType: { contains: 'media' },
+              },
+              label: 'Photos folder',
+            },
+            {
+              name: 'photosTags',
+              type: 'relationship',
+              relationTo: 'tags',
+              hasMany: true,
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description:
+                  'Filter to media with any of these tags. Combine with folder for more specific filtering.',
+              },
+              label: 'Photos tags',
+            },
+            {
+              name: 'layout',
+              type: 'blocks',
+              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock, PhotosPreview],
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'default',
+                description: 'Add content blocks. Only shown when using Default template.',
                 initCollapsed: true,
               },
             },
