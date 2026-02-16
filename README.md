@@ -32,11 +32,10 @@ Personal website built with [Payload CMS](https://payloadcms.com) and [Next.js](
 
    Edit `.env` with your `DATABASE_URL`, `PAYLOAD_SECRET`, and `NEXT_PUBLIC_SERVER_URL`.
 
-3. Start MongoDB (if using Docker):
+3. Start MongoDB (local install or Docker):
 
-   ```bash
-   docker compose up mongo -d
-   ```
+   - **Local MongoDB**: Install and run MongoDB, use `DATABASE_URL=mongodb://127.0.0.1:27017/your-database-name` in `.env`.
+   - **Docker**: MongoDB in this project has no host port (Docker-network only). For local dev, either install MongoDB locally or run the full stack: `docker compose --profile prod up -d` and use the website container.
 
 4. Run the dev server:
 
@@ -96,8 +95,20 @@ For production, ensure `DATABASE_URL` points to your MongoDB instance. Optionall
 
 Run the full stack (MongoDB + app) with Docker:
 
+1. Add `MONGO_USERNAME` and `MONGO_PASSWORD` to `.env` (see `.env.example`). MongoDB is secured with auth and not exposed to the host.
+
+2. Start the stack:
+
+   ```bash
+   docker compose --profile prod up -d
+   ```
+
+**Upgrading from an existing deployment without auth?** Remove the volume and recreate so MongoDB initializes with authentication:
+
 ```bash
-docker compose --profile prod up
+docker compose --profile prod down -v
+# Add MONGO_USERNAME and MONGO_PASSWORD to .env, then:
+docker compose --profile prod up -d
 ```
 
 The compose file uses `.env` for configuration. See `docker-compose.yml` for service details.
