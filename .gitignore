@@ -11,6 +11,9 @@ tsconfig.tsbuildinfo
 certs/*.pem
 certs/*.key
 
+# Payload auto-generated import map
+src/app/(payload)/admin/importMap.js
+
 # Payload default media upload directory
 public/media/
 
