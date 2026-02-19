@@ -272,7 +272,6 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
-  prefix?: string | null;
   exif?: {
     Make?: string | null;
     Model?: string | null;
@@ -883,7 +882,7 @@ export interface PhotosPreviewBlock {
       }[]
     | null;
   /**
-   * Photos page for "View more" link. When empty, uses the page with slug "photos".
+   * Photos page for "View more" link. When empty, uses the page with slug "photography".
    */
   photosPage?: (string | null) | Page;
   /**
@@ -1485,7 +1484,6 @@ export interface MediaSelect<T extends boolean = true> {
   displayOrder?: T;
   alt?: T;
   caption?: T;
-  prefix?: T;
   exif?:
     | T
     | {

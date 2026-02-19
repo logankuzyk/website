@@ -85,6 +85,7 @@ export const seed = async ({
         equals: 'author@example.com',
       },
     },
+    req,
   })
 
   payload.logger.info(`— Seeding media...`)
@@ -104,45 +105,52 @@ export const seed = async ({
     ),
   ])
 
-  const [demoAuthor, image1Doc, image2Doc, image3Doc, imageHomeDoc] = await Promise.all([
-    payload.create({
-      collection: 'users',
-      data: {
-        name: 'Author',
-        email: 'author@example.com',
-        password: 'password',
-      },
-    }),
-    payload.create({
-      collection: 'media',
-      data: image1,
-      file: image1Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: image2,
-      file: image2Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: image2,
-      file: image3Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: imageHero1,
-      file: hero1Buffer,
-    }),
+  // Media creates must run sequentially - they share req.file which gets overwritten when parallel
+  const demoAuthor = await payload.create({
+    collection: 'users',
+    data: {
+      name: 'Author',
+      email: 'author@example.com',
+      password: 'password',
+    },
+    req,
+  })
+
+  const image1Doc = await payload.create({
+    collection: 'media',
+    data: image1,
+    file: image1Buffer,
+    req,
+  })
+  const image2Doc = await payload.create({
+    collection: 'media',
+    data: image2,
+    file: image2Buffer,
+    req,
+  })
+  const image3Doc = await payload.create({
+    collection: 'media',
+    data: image2,
+    file: image3Buffer,
+    req,
+  })
+  const imageHomeDoc = await payload.create({
+    collection: 'media',
+    data: imageHero1,
+    file: hero1Buffer,
+    req,
+  })
+
+  // Categories can run in parallel (no file upload)
+  await Promise.all(
     categories.map((category) =>
       payload.create({
         collection: 'categories',
-        data: {
-          title: category,
-          slug: category,
-        },
+        data: { title: category, slug: category },
+        req,
       }),
     ),
-  ])
+  )
 
   payload.logger.info(`— Seeding posts...`)
 
@@ -151,51 +159,44 @@ export const seed = async ({
   const post1Doc = await payload.create({
     collection: 'posts',
     depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
+    context: { disableRevalidate: true },
     data: post1({ heroImage: image1Doc, blockImage: image2Doc, author: demoAuthor }),
+    req,
   })
 
   const post2Doc = await payload.create({
     collection: 'posts',
     depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
+    context: { disableRevalidate: true },
     data: post2({ heroImage: image2Doc, blockImage: image3Doc, author: demoAuthor }),
+    req,
   })
 
   const post3Doc = await payload.create({
     collection: 'posts',
     depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
+    context: { disableRevalidate: true },
     data: post3({ heroImage: image3Doc, blockImage: image1Doc, author: demoAuthor }),
+    req,
   })
 
-  // update each post with related posts
   await payload.update({
     id: post1Doc.id,
     collection: 'posts',
-    data: {
-      relatedPosts: [post2Doc.id, post3Doc.id],
-    },
+    data: { relatedPosts: [post2Doc.id, post3Doc.id] },
+    req,
   })
   await payload.update({
     id: post2Doc.id,
     collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post3Doc.id],
-    },
+    data: { relatedPosts: [post1Doc.id, post3Doc.id] },
+    req,
   })
   await payload.update({
     id: post3Doc.id,
     collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post2Doc.id],
-    },
+    data: { relatedPosts: [post1Doc.id, post2Doc.id] },
+    req,
   })
 
   payload.logger.info(`— Seeding contact form...`)
@@ -204,6 +205,7 @@ export const seed = async ({
     collection: 'forms',
     depth: 0,
     data: contactFormData,
+    req,
   })
 
   payload.logger.info(`— Creating tags...`)
@@ -214,18 +216,21 @@ export const seed = async ({
       data: { name: 'Landscape', slug: 'landscape' },
       depth: 0,
       draft: false,
+      req,
     }),
     payload.create({
       collection: 'tags',
       data: { name: 'Nature', slug: 'nature' },
       depth: 0,
       draft: false,
+      req,
     }),
     payload.create({
       collection: 'tags',
       data: { name: 'Portrait', slug: 'portrait' },
       depth: 0,
       draft: false,
+      req,
     }),
   ])
 
@@ -234,26 +239,27 @@ export const seed = async ({
   const photosFolder = await payload.create({
     collection: 'payload-folders',
     depth: 0,
-    data: {
-      name: 'photos',
-      folderType: ['media'],
-    },
+    data: { name: 'photos', folderType: ['media'] },
+    req,
   })
 
   await payload.update({
     collection: 'media',
     id: image1Doc.id,
     data: { folder: photosFolder.id, displayOrder: 0, tags: [tagLandscape.id, tagNature.id] },
+    req,
   })
   await payload.update({
     collection: 'media',
     id: image2Doc.id,
     data: { folder: photosFolder.id, displayOrder: 1, tags: [tagNature.id] },
+    req,
   })
   await payload.update({
     collection: 'media',
     id: image3Doc.id,
     data: { folder: photosFolder.id, displayOrder: 2, tags: [tagLandscape.id, tagPortrait.id] },
+    req,
   })
 
   payload.logger.info(`— Seeding projects and career...`)
@@ -262,6 +268,7 @@ export const seed = async ({
     collection: 'projects',
     depth: 0,
     context: { disableRevalidate: true },
+    req,
     data: {
       _status: 'published',
       title: 'Sample Project',
@@ -306,6 +313,7 @@ export const seed = async ({
     collection: 'career',
     depth: 0,
     context: { disableRevalidate: true },
+    req,
     data: {
       _status: 'published',
       jobTitle: 'Job Title',
@@ -353,6 +361,7 @@ export const seed = async ({
       collection: 'pages',
       depth: 0,
       data: contactPageData({ contactForm: contactForm }),
+      req,
     }),
     payload.create({
       collection: 'pages',
@@ -364,11 +373,9 @@ export const seed = async ({
         hero: { type: 'none' },
         _status: 'published',
         layout: [],
-        meta: {
-          title: 'Career',
-          description: 'Professional experience and work history',
-        },
+        meta: { title: 'Career', description: 'Professional experience and work history' },
       },
+      req,
     }),
     payload.create({
       collection: 'pages',
@@ -382,11 +389,9 @@ export const seed = async ({
         hero: { type: 'none' },
         _status: 'published',
         layout: [],
-        meta: {
-          title: 'Photos',
-          description: 'Photo gallery',
-        },
+        meta: { title: 'Photos', description: 'Photo gallery' },
       },
+      req,
     }),
   ])
 
@@ -403,6 +408,7 @@ export const seed = async ({
         { photoId: image3Doc.id, tagId: tagPortrait.id },
       ],
     }),
+    req,
   })
 
   payload.logger.info(`— Seeding globals...`)
@@ -410,6 +416,7 @@ export const seed = async ({
   await Promise.all([
     payload.updateGlobal({
       slug: 'header',
+      context: { disableRevalidate: true },
       data: {
         navItems: [
           {
@@ -462,6 +469,7 @@ export const seed = async ({
     }),
     payload.updateGlobal({
       slug: 'footer',
+      context: { disableRevalidate: true },
       data: {
         navItems: [
           {
@@ -507,7 +515,7 @@ export const seed = async ({
   payload.logger.info('Seeded database successfully!')
 }
 
-async function fetchFileByURL(url: string): Promise<File> {
+async function fetchFileByURL(url: string): Promise<{ name: string; data: Buffer; mimetype: string; size: number }> {
   const res = await fetch(url, {
     credentials: 'include',
     method: 'GET',
@@ -518,11 +526,13 @@ async function fetchFileByURL(url: string): Promise<File> {
   }
 
   const data = await res.arrayBuffer()
+  const ext = url.split('.').pop() || 'webp'
+  const mimetype = ext === 'webp' ? 'image/webp' : `image/${ext}`
 
   return {
     name: url.split('/').pop() || `file-${Date.now()}`,
     data: Buffer.from(data),
-    mimetype: `image/${url.split('.').pop()}`,
+    mimetype,
     size: data.byteLength,
   }
 }
