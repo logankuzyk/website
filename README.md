@@ -34,8 +34,13 @@ Personal website built with [Payload CMS](https://payloadcms.com) and [Next.js](
 
 3. Start MongoDB (local install or Docker):
 
+   - **Docker (recommended for dev)**: Start only the DB with port exposed, then run the app locally:
+     ```bash
+     npm run dev:db
+     ```
+     Ensure `.env` has `DATABASE_URL=mongodb://MONGO_USERNAME:MONGO_PASSWORD@127.0.0.1:27017/logankuzyk?authSource=admin` (same credentials as `MONGO_USERNAME` / `MONGO_PASSWORD` in `.env`).
    - **Local MongoDB**: Install and run MongoDB, use `DATABASE_URL=mongodb://127.0.0.1:27017/your-database-name` in `.env`.
-   - **Docker**: MongoDB in this project has no host port (Docker-network only). For local dev, either install MongoDB locally or run the full stack: `docker compose --profile prod up -d` and use the website container.
+   - **Full stack in Docker**: `docker compose --profile prod up -d` (app runs in container; no need for `npm run dev`).
 
 4. Run the dev server:
 
