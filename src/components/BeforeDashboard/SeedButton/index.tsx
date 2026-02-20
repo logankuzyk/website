@@ -3,6 +3,8 @@
 import React, { Fragment, useCallback, useState } from 'react'
 import { toast } from '@payloadcms/ui'
 
+import { Button } from '@/components/ui/button'
+
 import './index.scss'
 
 const SuccessMessage: React.FC = () => (
@@ -79,9 +81,9 @@ export const SeedButton: React.FC = () => {
 
   return (
     <Fragment>
-      <button className="seedButton" onClick={handleClick}>
+      <Button className="seedButton" onClick={handleClick}>
         Seed your database
-      </button>
+      </Button>
       {message}
     </Fragment>
   )

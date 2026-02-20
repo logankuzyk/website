@@ -51,6 +51,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
     fill,
     pictureClassName,
     imgClassName,
+    imgStyle,
     priority,
     resource,
     size: sizeFromProps,
@@ -85,10 +86,11 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         .join(', ')
 
   return (
-    <picture className={cn(pictureClassName)}>
+    <picture className={cn('relative block size-full', pictureClassName)}>
       <NextImage
         alt={alt || ''}
         className={cn(imgClassName)}
+        style={imgStyle}
         fill={fill}
         height={!fill ? height : undefined}
         placeholder="blur"

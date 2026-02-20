@@ -10,6 +10,7 @@ export interface Props {
   htmlElement?: ElementType | null
   pictureClassName?: string
   imgClassName?: string
+  imgStyle?: React.CSSProperties
   onClick?: () => void
   onLoad?: () => void
   loading?: 'lazy' | 'eager' // for NextImage only

@@ -13,7 +13,7 @@ export const Logo = (props: Props) => {
   return (
     <div
       className={clsx(
-        'flex h-10 w-10 shrink-0 items-center justify-center rounded border border-border bg-background text-foreground text-sm font-medium',
+        'flex h-10 w-10 shrink-0 items-center justify-center border border-border bg-background text-foreground text-sm font-medium',
         className,
       )}
       aria-label="Home"

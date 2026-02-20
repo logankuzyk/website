@@ -1,6 +1,6 @@
 import type { ButtonProps } from '@/components/ui/button'
 
-import { buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/utilities/ui'
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react'
 import * as React from 'react'
@@ -30,15 +30,11 @@ type PaginationLinkProps = {
   React.ComponentProps<'button'>
 
 const PaginationLink = ({ className, isActive, size = 'icon', ...props }: PaginationLinkProps) => (
-  <button
+  <Button
+    variant={isActive ? 'outline' : 'ghost'}
+    size={size}
     aria-current={isActive ? 'page' : undefined}
-    className={cn(
-      buttonVariants({
-        size,
-        variant: isActive ? 'outline' : 'ghost',
-      }),
-      className,
-    )}
+    className={cn(className)}
     {...props}
   />
 )

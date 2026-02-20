@@ -1,4 +1,5 @@
 'use client'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import React, { useState, useEffect } from 'react'
@@ -32,9 +33,9 @@ export const Search: React.FC = () => {
           }}
           placeholder="Search"
         />
-        <button type="submit" className="sr-only">
+        <Button type="submit" variant="ghost" size="clear" className="sr-only">
           submit
-        </button>
+        </Button>
       </form>
     </div>
   )

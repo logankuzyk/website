@@ -2,7 +2,7 @@
 
 import type { Media, Tag } from '@/payload-types'
 
-import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { Media as MediaComponent } from '@/components/Media'
 import Link from 'next/link'
 import React from 'react'
 
@@ -18,10 +18,6 @@ export const PhotosPreviewCard: React.FC<PhotosPreviewCardProps> = ({
   photosPageSlug,
 }) => {
   const href = `/${photosPageSlug}/${tag.slug}`
-  const src =
-    typeof photo === 'object' && photo?.url
-      ? getMediaUrl(photo.url, photo.updatedAt)
-      : ''
 
   return (
     <Link
@@ -29,11 +25,12 @@ export const PhotosPreviewCard: React.FC<PhotosPreviewCardProps> = ({
       className="group relative block w-full overflow-hidden transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
     >
       <div className="relative aspect-3/4 w-full overflow-hidden">
-        <img
-          src={src}
-          alt={typeof photo === 'object' ? photo.alt ?? '' : ''}
+        <MediaComponent
+          resource={photo}
+          fill
+          className="relative block size-full transition-transform duration-300 group-hover:scale-105"
+          imgClassName="object-cover object-center"
           loading="lazy"
-          className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />
       </div>
       <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/50">

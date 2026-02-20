@@ -4,6 +4,8 @@ import type { Media } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
 import { PhotoCarousel } from '@/components/PhotoCarousel/PhotoCarousel'
+import { useSafeQueryReplace } from '@/utilities/useSafeQueryReplace'
+import { useSearchParams } from 'next/navigation'
 import Masonry from 'react-layout-masonry'
 import React, { useCallback, useEffect, useState } from 'react'
 
@@ -24,18 +26,58 @@ const PhotoCard = ({ photo, onClick }: { photo: Media; onClick: () => void }) =>
 export const PhotosMasonry: React.FC<PhotosMasonryProps> = ({ photos }) => {
   const [mounted, setMounted] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
+  const safeQueryReplace = useSafeQueryReplace()
+  const searchParams = useSearchParams()
+
+  const setPhotoParam = useCallback(
+    (photoId: string | null) => {
+      safeQueryReplace((sp) => {
+        if (photoId) {
+          sp.set('photo', photoId)
+        } else {
+          sp.delete('photo')
+        }
+      }, false)
+    },
+    [safeQueryReplace],
+  )
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const openCarousel = useCallback((index: number) => {
-    setCarouselIndex(index)
-  }, [])
+  // Open carousel from URL param ?photo=<id>
+  useEffect(() => {
+    if (!mounted || !photos?.length) return
+    const photoId = searchParams.get('photo')
+    if (!photoId) return
+    const index = photos.findIndex((p) => p.id === photoId)
+    if (index >= 0) {
+      setCarouselIndex(index)
+    }
+  }, [mounted, photos, searchParams])
+
+  const openCarousel = useCallback(
+    (index: number) => {
+      setCarouselIndex(index)
+      const photoId = photos[index]?.id
+      if (photoId) setPhotoParam(photoId)
+    },
+    [photos, setPhotoParam],
+  )
 
   const closeCarousel = useCallback(() => {
     setCarouselIndex(null)
-  }, [])
+    setPhotoParam(null)
+  }, [setPhotoParam])
+
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      const photoId = photos[index]?.id
+      if (photoId) setPhotoParam(photoId)
+    },
+    [photos, setPhotoParam],
+  )
 
   if (!photos?.length) {
     return (
@@ -49,7 +91,7 @@ export const PhotosMasonry: React.FC<PhotosMasonryProps> = ({ photos }) => {
   // different layouts on server vs client, causing hydration mismatch
   if (!mounted) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {photos.map((photo, index) => (
           <PhotoCard key={photo.id} photo={photo} onClick={() => openCarousel(index)} />
         ))}
@@ -59,13 +101,18 @@ export const PhotosMasonry: React.FC<PhotosMasonryProps> = ({ photos }) => {
 
   return (
     <>
-      <Masonry columns={{ 640: 1, 768: 2, 1024: 3, 1280: 4 }} gap={16}>
+      <Masonry columns={{ 640: 1, 768: 2, 1024: 3 }} gap={16} className="w-full">
         {photos.map((photo, index) => (
           <PhotoCard key={photo.id} photo={photo} onClick={() => openCarousel(index)} />
         ))}
       </Masonry>
       {carouselIndex !== null && (
-        <PhotoCarousel photos={photos} initialIndex={carouselIndex} onClose={closeCarousel} />
+        <PhotoCarousel
+          photos={photos}
+          initialIndex={carouselIndex}
+          onClose={closeCarousel}
+          onIndexChange={handleIndexChange}
+        />
       )}
     </>
   )
