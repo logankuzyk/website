@@ -1,6 +1,6 @@
 'use client'
 
-import type { Media } from '@/payload-types'
+import type { Photo } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
 import { PhotoInfoDrawer } from '@/components/PhotoCarousel/PhotoInfoDrawer'
@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight, ChevronUp, X } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 type PhotoCarouselProps = {
-  photos: Media[]
+  photos: Photo[]
   initialIndex: number
   onClose: () => void
   onIndexChange?: (index: number) => void

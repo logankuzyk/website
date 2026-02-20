@@ -1,5 +1,5 @@
-import type { Media } from '@/payload-types'
+import type { Photo } from '@/payload-types'
 
-export const image1: Omit<Media, 'createdAt' | 'id' | 'updatedAt'> = {
+export const image1: Omit<Photo, 'createdAt' | 'id' | 'updatedAt'> = {
   alt: 'Sample image one',
 }

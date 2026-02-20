@@ -10,54 +10,32 @@ export const PhotosPreview: Block = {
       minRows: 3,
       maxRows: 3,
       labels: {
-        singular: 'Photo',
-        plural: 'Photos',
+        singular: 'Collection',
+        plural: 'Collections',
       },
       fields: [
         {
-          name: 'photo',
+          name: 'photoCollection',
           type: 'relationship',
-          relationTo: 'media',
+          relationTo: 'photo-collections',
           required: true,
-          filterOptions: {
-            mimeType: { contains: 'image' },
-          },
-          label: 'Photo',
-        },
-        {
-          name: 'tag',
-          type: 'relationship',
-          relationTo: 'tags',
-          required: true,
-          label: 'Tag',
+          label: 'Photo Collection',
           admin: {
-            description: 'Tag shown on hover and used for the link destination',
+            description: 'Collection to display. Uses cover image or first photo in collection.',
           },
         },
       ],
       admin: {
-        description: 'Three photos displayed in a row. Each links to the Photos page filtered by its tag.',
+        description: 'Three photo collections displayed in a row. Each links to its collection page.',
       },
-      label: 'Photos',
-    },
-    {
-      name: 'photosPage',
-      type: 'relationship',
-      relationTo: 'pages',
-      filterOptions: {
-        template: { equals: 'photos' },
-      },
-      admin: {
-        description: 'Photos page for "View more" link. When empty, uses the page with slug "photography".',
-      },
-      label: 'Photos page',
+      label: 'Collections',
     },
     {
       name: 'showViewMore',
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Show the "View more" button linking to the Photos page',
+        description: 'Show the "View more" button linking to /photography',
       },
       label: 'Show View more button',
     },
@@ -67,7 +45,7 @@ export const PhotosPreview: Block = {
       defaultValue: 'View more',
       admin: {
         condition: (_, siblingData) => siblingData?.showViewMore !== false,
-        description: 'Label for the link to the full Photos page',
+        description: 'Label for the link to the photography collections index',
       },
       label: 'Link label',
     },

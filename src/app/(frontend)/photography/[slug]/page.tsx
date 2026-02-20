@@ -1,4 +1,4 @@
-import type { Media } from '@/payload-types'
+import type { Photo, PhotoCollection } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { PhotosMasonry } from '@/components/PhotosMasonry/PhotosMasonry'
@@ -13,7 +13,7 @@ import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type Args = {
-  params: Promise<{ tag?: string }>
+  params: Promise<{ slug?: string }>
 }
 
 // force-dynamic: build runs without MongoDB; pages render at request time
@@ -23,67 +23,53 @@ export async function generateStaticParams() {
   try {
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
-      collection: 'tags',
+      collection: 'photo-collections',
       limit: 100,
       overrideAccess: false,
       pagination: false,
       select: { slug: true },
     })
-    return (result.docs ?? []).map((tag) => ({ tag: tag.slug }))
+    return (result.docs ?? []).map((doc) => ({ slug: doc.slug }))
   } catch {
     // MongoDB not available during build (e.g. Docker build). Pages will be generated on-demand at runtime.
     return []
   }
 }
 
-export default async function PhotographyTagPage({ params: paramsPromise }: Args) {
-  const { tag: tagSlug } = await paramsPromise
+export default async function PhotographyCollectionPage({ params: paramsPromise }: Args) {
+  const { slug } = await paramsPromise
 
-  if (!tagSlug) {
+  if (!slug) {
     notFound()
   }
 
   const payload = await getPayload({ config: configPromise })
 
-  const [photosPageResult, tagResult] = await Promise.all([
-    payload.find({
-      collection: 'pages',
-      depth: 0,
-      limit: 1,
-      overrideAccess: false,
-      where: { template: { equals: 'photos' } },
-    }),
-    payload.find({
-      collection: 'tags',
-      depth: 0,
-      limit: 1,
-      overrideAccess: false,
-      where: { slug: { equals: tagSlug } },
-    }),
-  ])
+  const collectionResult = await payload.find({
+    collection: 'photo-collections',
+    depth: 1,
+    limit: 1,
+    overrideAccess: false,
+    where: { slug: { equals: slug } },
+  })
 
-  const photosPage = photosPageResult.docs?.[0]
-  const tag = tagResult.docs?.[0]
+  const collection = collectionResult.docs?.[0] as PhotoCollection | undefined
 
-  if (!tag) {
+  if (!collection) {
     notFound()
   }
 
-  const photosFolder =
-    photosPage &&
-    typeof photosPage.photosFolder === 'object' &&
-    photosPage.photosFolder
-      ? photosPage.photosFolder.id
-      : photosPage?.photosFolder
+  const tagIds = Array.isArray(collection.tags)
+    ? collection.tags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
+    : []
 
   const where = {
     mimeType: { contains: 'image' as const },
-    tags: { in: [tag.id] },
-    ...(photosFolder && { folder: { equals: photosFolder } }),
+    ...(tagIds.length > 0 && { tags: { in: tagIds } }),
   }
 
-  const mediaResult = await payload.find({
-    collection: 'media',
+  const photosResult = await payload.find({
+    collection: 'photos',
     depth: 1,
     limit: 200,
     overrideAccess: false,
@@ -91,15 +77,15 @@ export default async function PhotographyTagPage({ params: paramsPromise }: Args
     where,
   })
 
-  const photos = (mediaResult.docs ?? []) as Media[]
+  const photos = (photosResult.docs ?? []) as Photo[]
 
   return (
     <article className="pb-24">
-      <PayloadRedirects disableNotFound url={`/photography/${tagSlug}`} />
+      <PayloadRedirects disableNotFound url={`/photography/${slug}`} />
       <div className="container pt-8">
         <header className="mb-16">
           <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-            Photography / {tag.name}
+            Photography / {collection.name}
           </h1>
           <Separator />
         </header>
@@ -110,29 +96,31 @@ export default async function PhotographyTagPage({ params: paramsPromise }: Args
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { tag: tagSlug } = await paramsPromise
+  const { slug } = await paramsPromise
 
-  if (!tagSlug) {
+  if (!slug) {
     return { title: 'Photos | Logan Kuzyk' }
   }
 
   const payload = await getPayload({ config: configPromise })
-  const tagResult = await payload.find({
-    collection: 'tags',
+  const collectionResult = await payload.find({
+    collection: 'photo-collections',
     depth: 0,
     limit: 1,
     overrideAccess: false,
-    where: { slug: { equals: tagSlug } },
+    where: { slug: { equals: slug } },
   })
 
-  const tag = tagResult.docs?.[0]
-  const title = tag ? `Photography / ${tag.name} | Logan Kuzyk` : 'Photos | Logan Kuzyk'
+  const collection = collectionResult.docs?.[0]
+  const title = collection
+    ? `Photography / ${collection.name} | Logan Kuzyk`
+    : 'Photos | Logan Kuzyk'
 
   return {
     title,
     openGraph: mergeOpenGraph({
       title,
-      url: `${getServerSideURL()}/photography/${tagSlug}`,
+      url: `${getServerSideURL()}/photography/${slug}`,
     }),
   }
 }

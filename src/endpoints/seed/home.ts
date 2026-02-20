@@ -1,32 +1,24 @@
 import type { RequiredDataFromCollectionSlug } from 'payload'
-import type { Media } from '@/payload-types'
-
-type PhotosPreviewItem = {
-  photoId: string
-  tagId: string
-}
+import type { Photo } from '@/payload-types'
 
 type HomeArgs = {
-  heroImage: Media
-  metaImage: Media
-  photosPageId?: string
-  photosPreviewItems?: PhotosPreviewItem[]
+  heroImage: Photo
+  metaImage: Photo
+  photosPreviewCollections?: string[]
 }
 
 export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> = ({
   heroImage,
   metaImage,
-  photosPageId,
-  photosPreviewItems = [],
+  photosPreviewCollections = [],
 }) => {
   const layout = [
     {
       blockType: 'photosPreview' as const,
-      items: photosPreviewItems.slice(0, 3).map(({ photoId, tagId }) => ({
-        photo: photoId,
-        tag: tagId,
+      items: photosPreviewCollections.slice(0, 3).map((collectionId) => ({
+        photoCollection: collectionId,
       })),
-      photosPage: photosPageId ?? undefined,
+      showViewMore: true,
       linkLabel: 'View more',
     },
   ]

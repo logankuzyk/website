@@ -5,7 +5,7 @@ import { authenticated } from '../../access/authenticated'
 import { slugField } from 'payload'
 
 export const Tags: CollectionConfig = {
-  slug: 'tags',
+  slug: 'photo-tags',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -14,6 +14,11 @@ export const Tags: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
+    description: 'Tags for filtering in photo galleries',
+  },
+  labels: {
+    singular: 'Photo Tag',
+    plural: 'Photo Tags',
   },
   fields: [
     {

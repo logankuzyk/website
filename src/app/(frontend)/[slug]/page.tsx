@@ -1,4 +1,4 @@
-import type { Media } from '@/payload-types'
+import type { Photo } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { CareerTimeline } from '@/components/CareerTimeline/CareerTimeline'
@@ -163,7 +163,7 @@ async function PhotosPageContent({
   title?: string | null
 }) {
   const payload = await getPayload({ config: configPromise })
-  let photos: Media[] = []
+  let photos: Photo[] = []
 
   const hasFolder = Boolean(photosFolder)
   const hasTags = Array.isArray(photosTags) && photosTags.length > 0
@@ -175,14 +175,14 @@ async function PhotosPageContent({
   }
 
   const result = await payload.find({
-    collection: 'media',
+    collection: 'photos',
     depth: 1,
     limit: 200,
     overrideAccess: false,
     sort: 'displayOrder',
     where,
   })
-  photos = (result.docs ?? []) as Media[]
+  photos = (result.docs ?? []) as Photo[]
 
   return (
     <div className="container pt-8">

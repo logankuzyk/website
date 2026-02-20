@@ -1,6 +1,6 @@
 'use client'
 
-import type { Media } from '@/payload-types'
+import type { Photo } from '@/payload-types'
 
 import RichText from '@/components/RichText'
 import { IconButton } from '@/components/ui/icon-button'
@@ -9,7 +9,7 @@ import { ChevronDown, Download } from 'lucide-react'
 import React from 'react'
 
 type PhotoInfoDrawerProps = {
-  photo: Media
+  photo: Photo
   open: boolean
   onToggle: () => void
   uiVisible: boolean
@@ -90,7 +90,7 @@ export const PhotoInfoDrawer: React.FC<PhotoInfoDrawerProps> = ({
 }
 
 type PhotoInfoContentProps = {
-  photo: Media
+  photo: Photo
   downloadUrl: string
   filename: string
   tags: (string | null)[]

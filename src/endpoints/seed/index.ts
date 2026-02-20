@@ -12,7 +12,7 @@ import { post3 } from './post-3'
 
 const collections: CollectionSlug[] = [
   'categories',
-  'media',
+  'photos',
   'pages',
   'posts',
   'projects',
@@ -20,7 +20,8 @@ const collections: CollectionSlug[] = [
   'forms',
   'form-submissions',
   'search',
-  'tags',
+  'photo-tags',
+  'photo-collections',
 ]
 
 const globals: GlobalSlug[] = ['header', 'footer']
@@ -117,25 +118,25 @@ export const seed = async ({
   })
 
   const image1Doc = await payload.create({
-    collection: 'media',
+    collection: 'photos',
     data: image1,
     file: image1Buffer,
     req,
   })
   const image2Doc = await payload.create({
-    collection: 'media',
+    collection: 'photos',
     data: image2,
     file: image2Buffer,
     req,
   })
   const image3Doc = await payload.create({
-    collection: 'media',
+    collection: 'photos',
     data: image2,
     file: image3Buffer,
     req,
   })
   const imageHomeDoc = await payload.create({
-    collection: 'media',
+    collection: 'photos',
     data: imageHero1,
     file: hero1Buffer,
     req,
@@ -212,21 +213,21 @@ export const seed = async ({
 
   const [tagLandscape, tagNature, tagPortrait] = await Promise.all([
     payload.create({
-      collection: 'tags',
+      collection: 'photo-tags',
       data: { name: 'Landscape', slug: 'landscape' },
       depth: 0,
       draft: false,
       req,
     }),
     payload.create({
-      collection: 'tags',
+      collection: 'photo-tags',
       data: { name: 'Nature', slug: 'nature' },
       depth: 0,
       draft: false,
       req,
     }),
     payload.create({
-      collection: 'tags',
+      collection: 'photo-tags',
       data: { name: 'Portrait', slug: 'portrait' },
       depth: 0,
       draft: false,
@@ -239,28 +240,66 @@ export const seed = async ({
   const photosFolder = await payload.create({
     collection: 'payload-folders',
     depth: 0,
-    data: { name: 'photos', folderType: ['media'] },
+    data: { name: 'photos', folderType: ['photos'] },
     req,
   })
 
   await payload.update({
-    collection: 'media',
+    collection: 'photos',
     id: image1Doc.id,
     data: { folder: photosFolder.id, displayOrder: 0, tags: [tagLandscape.id, tagNature.id] },
     req,
   })
   await payload.update({
-    collection: 'media',
+    collection: 'photos',
     id: image2Doc.id,
     data: { folder: photosFolder.id, displayOrder: 1, tags: [tagNature.id] },
     req,
   })
   await payload.update({
-    collection: 'media',
+    collection: 'photos',
     id: image3Doc.id,
     data: { folder: photosFolder.id, displayOrder: 2, tags: [tagLandscape.id, tagPortrait.id] },
     req,
   })
+
+  payload.logger.info(`— Creating photo collections...`)
+
+  const [collectionLandscapes, collectionNature, collectionPortraits] = await Promise.all([
+    payload.create({
+      collection: 'photo-collections',
+      data: {
+        name: 'Landscapes',
+        slug: 'landscapes',
+        tags: [tagLandscape.id],
+        displayOrder: 0,
+      },
+      depth: 0,
+      req,
+    }),
+    payload.create({
+      collection: 'photo-collections',
+      data: {
+        name: 'Nature',
+        slug: 'nature',
+        tags: [tagNature.id],
+        displayOrder: 1,
+      },
+      depth: 0,
+      req,
+    }),
+    payload.create({
+      collection: 'photo-collections',
+      data: {
+        name: 'Portraits',
+        slug: 'portraits',
+        tags: [tagPortrait.id],
+        displayOrder: 2,
+      },
+      depth: 0,
+      req,
+    }),
+  ])
 
   payload.logger.info(`— Seeding projects and career...`)
 
@@ -401,11 +440,10 @@ export const seed = async ({
     data: home({
       heroImage: imageHomeDoc,
       metaImage: image2Doc,
-      photosPageId: photosPage.id,
-      photosPreviewItems: [
-        { photoId: image1Doc.id, tagId: tagLandscape.id },
-        { photoId: image2Doc.id, tagId: tagNature.id },
-        { photoId: image3Doc.id, tagId: tagPortrait.id },
+      photosPreviewCollections: [
+        collectionLandscapes.id,
+        collectionNature.id,
+        collectionPortraits.id,
       ],
     }),
     req,

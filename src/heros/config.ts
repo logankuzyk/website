@@ -82,7 +82,7 @@ export const hero: Field = {
       name: 'profileImage',
       type: 'upload',
       admin: { condition: (_, { type } = {}) => type === 'landing' },
-      relationTo: 'media',
+      relationTo: 'photos',
       label: 'Profile image',
     },
     linkGroup({
@@ -100,7 +100,7 @@ export const hero: Field = {
         condition: (_, { type } = {}) =>
           ['highImpact', 'mediumImpact'].includes(type ?? ''),
       },
-      relationTo: 'media',
+      relationTo: 'photos',
       required: true,
     },
   ],

@@ -63,7 +63,7 @@ export const Career: CollectionConfig<'career'> = {
     {
       name: 'logo',
       type: 'upload',
-      relationTo: 'media',
+      relationTo: 'photos',
       admin: {
         description: 'Company logo or square image',
       },

@@ -30,8 +30,8 @@ export const plugins: Plugin[] = [
     ? [
         s3Storage({
           collections: {
-            media: {
-              prefix: 'media',
+            photos: {
+              prefix: 'photos',
             },
           },
           bucket: process.env.R2_BUCKET,
@@ -48,7 +48,7 @@ export const plugins: Plugin[] = [
       ]
     : []),
   payloadExif({
-    collections: ['media'],
+    collections: ['photos'],
   }),
   redirectsPlugin({
     collections: ['pages', 'posts'],

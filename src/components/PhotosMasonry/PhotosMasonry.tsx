@@ -1,6 +1,6 @@
 'use client'
 
-import type { Media } from '@/payload-types'
+import type { Photo } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
 import { PhotoCarousel } from '@/components/PhotoCarousel/PhotoCarousel'
@@ -10,10 +10,10 @@ import Masonry from 'react-layout-masonry'
 import React, { useCallback, useEffect, useState } from 'react'
 
 type PhotosMasonryProps = {
-  photos: Media[]
+  photos: Photo[]
 }
 
-const PhotoCard = ({ photo, onClick }: { photo: Media; onClick: () => void }) => (
+const PhotoCard = ({ photo, onClick }: { photo: Photo; onClick: () => void }) => (
   <button
     type="button"
     onClick={onClick}
@@ -82,7 +82,7 @@ export const PhotosMasonry: React.FC<PhotosMasonryProps> = ({ photos }) => {
   if (!photos?.length) {
     return (
       <p className="text-muted-foreground">
-        No photos yet. Select a folder in the page settings and upload images to it in Media.
+        No photos yet. Select a folder in the page settings and upload images to it in Photos.
       </p>
     )
   }

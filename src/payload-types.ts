@@ -69,12 +69,13 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
-    media: Media;
+    photos: Photo;
     categories: Category;
     users: User;
     projects: Project;
     career: Career;
-    tags: Tag;
+    'photo-tags': PhotoTag;
+    'photo-collections': PhotoCollection;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -88,18 +89,19 @@ export interface Config {
   };
   collectionsJoins: {
     'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'media';
+      documentsAndFolders: 'payload-folders' | 'photos';
     };
   };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    photos: PhotosSelect<false> | PhotosSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     career: CareerSelect<false> | CareerSelect<true>;
-    tags: TagsSelect<false> | TagsSelect<true>;
+    'photo-tags': PhotoTagsSelect<false> | PhotoTagsSelect<true>;
+    'photo-collections': PhotoCollectionsSelect<false> | PhotoCollectionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -181,7 +183,7 @@ export interface Page {
     name?: string | null;
     role?: string | null;
     bio?: string | null;
-    profileImage?: (string | null) | Media;
+    profileImage?: (string | null) | Photo;
     links?:
       | {
           link: {
@@ -206,7 +208,7 @@ export interface Page {
           id?: string | null;
         }[]
       | null;
-    media?: (string | null) | Media;
+    media?: (string | null) | Photo;
   };
   /**
    * Choose the page layout. Career and Photos use predefined templates.
@@ -219,7 +221,7 @@ export interface Page {
   /**
    * Filter to media with any of these tags. Combine with folder for more specific filtering.
    */
-  photosTags?: (string | Tag)[] | null;
+  photosTags?: (string | PhotoTag)[] | null;
   /**
    * Add content blocks. Only shown when using Default template.
    */
@@ -229,7 +231,7 @@ export interface Page {
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (string | null) | Photo;
     description?: string | null;
   };
   publishedAt?: string | null;
@@ -244,14 +246,14 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "photos".
  */
-export interface Media {
+export interface Photo {
   id: string;
   /**
    * Tags for filtering in photo galleries
    */
-  tags?: (string | Tag)[] | null;
+  tags?: (string | PhotoTag)[] | null;
   /**
    * Controls order in photos gallery (lower = earlier)
    */
@@ -381,10 +383,12 @@ export interface Media {
   };
 }
 /**
+ * Tags for filtering in photo galleries
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
+ * via the `definition` "photo-tags".
  */
-export interface Tag {
+export interface PhotoTag {
   id: string;
   name: string;
   /**
@@ -410,14 +414,14 @@ export interface FolderInterface {
           value: string | FolderInterface;
         }
       | {
-          relationTo?: 'media';
-          value: string | Media;
+          relationTo?: 'photos';
+          value: string | Photo;
         }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: 'media'[] | null;
+  folderType?: 'photos'[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -428,7 +432,7 @@ export interface FolderInterface {
 export interface Post {
   id: string;
   title: string;
-  heroImage?: (string | null) | Media;
+  heroImage?: (string | null) | Photo;
   content: {
     root: {
       type: string;
@@ -451,7 +455,7 @@ export interface Post {
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (string | null) | Photo;
     description?: string | null;
   };
   publishedAt?: string | null;
@@ -624,7 +628,7 @@ export interface ContentBlock {
  * via the `definition` "MediaBlock".
  */
 export interface MediaBlock {
-  media: string | Media;
+  media: string | Photo;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -869,33 +873,77 @@ export interface Form {
  */
 export interface PhotosPreviewBlock {
   /**
-   * Three photos displayed in a row. Each links to the Photos page filtered by its tag.
+   * Three photo collections displayed in a row. Each links to its collection page.
    */
   items?:
     | {
-        photo: string | Media;
         /**
-         * Tag shown on hover and used for the link destination
+         * Collection to display. Uses cover image or first photo in collection.
          */
-        tag: string | Tag;
+        photoCollection: string | PhotoCollection;
         id?: string | null;
       }[]
     | null;
   /**
-   * Photos page for "View more" link. When empty, uses the page with slug "photography".
-   */
-  photosPage?: (string | null) | Page;
-  /**
-   * Show the "View more" button linking to the Photos page
+   * Show the "View more" button linking to /photography
    */
   showViewMore?: boolean | null;
   /**
-   * Label for the link to the full Photos page
+   * Label for the link to the photography collections index
    */
   linkLabel?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'photosPreview';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photo-collections".
+ */
+export interface PhotoCollection {
+  id: string;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional description for the collection
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional cover image. If not set, the first photo in the collection is used.
+   */
+  coverImage?: (string | null) | Photo;
+  /**
+   * Photos with any of these tags appear in this collection
+   */
+  tags: (string | PhotoTag)[];
+  /**
+   * Controls order on the collections index (lower = earlier)
+   */
+  displayOrder?: number | null;
+  /**
+   * When checked, this collection is hidden from the main /photography page but remains accessible via direct link
+   */
+  hiddenFromIndex?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -911,7 +959,7 @@ export interface Project {
   /**
    * Card thumbnail
    */
-  featuredImage: string | Media;
+  featuredImage: string | Photo;
   /**
    * Full project details for detail page
    */
@@ -990,7 +1038,7 @@ export interface Career {
   /**
    * Company logo or square image
    */
-  logo?: (string | null) | Media;
+  logo?: (string | null) | Photo;
   /**
    * Timeline order (lower = higher on page)
    */
@@ -1060,7 +1108,7 @@ export interface Search {
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?: (string | null) | Photo;
   };
   categories?:
     | {
@@ -1198,8 +1246,8 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
+        relationTo: 'photos';
+        value: string | Photo;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1218,8 +1266,12 @@ export interface PayloadLockedDocument {
         value: string | Career;
       } | null)
     | ({
-        relationTo: 'tags';
-        value: string | Tag;
+        relationTo: 'photo-tags';
+        value: string | PhotoTag;
+      } | null)
+    | ({
+        relationTo: 'photo-collections';
+        value: string | PhotoCollection;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1434,11 +1486,9 @@ export interface PhotosPreviewBlockSelect<T extends boolean = true> {
   items?:
     | T
     | {
-        photo?: T;
-        tag?: T;
+        photoCollection?: T;
         id?: T;
       };
-  photosPage?: T;
   showViewMore?: T;
   linkLabel?: T;
   id?: T;
@@ -1477,9 +1527,9 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
+ * via the `definition` "photos_select".
  */
-export interface MediaSelect<T extends boolean = true> {
+export interface PhotosSelect<T extends boolean = true> {
   tags?: T;
   displayOrder?: T;
   alt?: T;
@@ -1697,12 +1747,28 @@ export interface CareerSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags_select".
+ * via the `definition` "photo-tags_select".
  */
-export interface TagsSelect<T extends boolean = true> {
+export interface PhotoTagsSelect<T extends boolean = true> {
   name?: T;
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photo-collections_select".
+ */
+export interface PhotoCollectionsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  coverImage?: T;
+  tags?: T;
+  displayOrder?: T;
+  hiddenFromIndex?: T;
   updatedAt?: T;
   createdAt?: T;
 }

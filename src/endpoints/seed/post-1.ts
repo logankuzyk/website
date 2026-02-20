@@ -1,9 +1,9 @@
-import type { Media, User } from '@/payload-types'
+import type { Photo, User } from '@/payload-types'
 import { RequiredDataFromCollectionSlug } from 'payload'
 
 export type PostArgs = {
-  heroImage: Media
-  blockImage: Media
+  heroImage: Photo
+  blockImage: Photo
   author: User
 }
 

@@ -15,11 +15,15 @@ import { appendPrefixToCollectionBeforeChangeHook } from '../hooks/uploadPrefixe
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-export const Media: CollectionConfig = {
-  slug: 'media',
+export const Photos: CollectionConfig = {
+  slug: 'photos',
+  admin: {
+    useAsTitle: 'filename',
+    defaultColumns: ['filename', 'alt', 'tags', 'displayOrder', 'updatedAt'],
+  },
   folders: true,
   hooks: {
-    beforeChange: [appendPrefixToCollectionBeforeChangeHook('media')],
+    beforeChange: [appendPrefixToCollectionBeforeChangeHook('photos')],
   },
   access: {
     create: authenticated,
@@ -31,7 +35,7 @@ export const Media: CollectionConfig = {
     {
       name: 'tags',
       type: 'relationship',
-      relationTo: 'tags',
+      relationTo: 'photo-tags',
       hasMany: true,
       admin: {
         description: 'Tags for filtering in photo galleries',
@@ -60,8 +64,8 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, '../../public/media'),
+    // Upload to the public/photos directory in Next.js making them publicly accessible even outside of Payload
+    staticDir: path.resolve(dirname, '../../public/photos'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [

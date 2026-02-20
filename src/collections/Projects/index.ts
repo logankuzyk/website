@@ -40,7 +40,7 @@ export const Projects: CollectionConfig<'projects'> = {
     {
       name: 'featuredImage',
       type: 'upload',
-      relationTo: 'media',
+      relationTo: 'photos',
       required: true,
       admin: {
         description: 'Card thumbnail',

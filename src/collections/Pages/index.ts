@@ -94,14 +94,14 @@ export const Pages: CollectionConfig<'pages'> = {
                   'Select which Media folder to display. Create folders in Media to organize photo subcollections (e.g. landscapes, portraits).',
               },
               filterOptions: {
-                folderType: { contains: 'media' },
+                folderType: { contains: 'photos' },
               },
               label: 'Photos folder',
             },
             {
               name: 'photosTags',
               type: 'relationship',
-              relationTo: 'tags',
+              relationTo: 'photo-tags',
               hasMany: true,
               admin: {
                 condition: (_, siblingData) => siblingData?.template === 'photos',
@@ -136,7 +136,7 @@ export const Pages: CollectionConfig<'pages'> = {
               hasGenerateFn: true,
             }),
             MetaImageField({
-              relationTo: 'media',
+              relationTo: 'photos',
             }),
 
             MetaDescriptionField({}),
