@@ -257,7 +257,7 @@ export interface Page {
   /**
    * Add content blocks. Only shown when using Default template.
    */
-  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | PhotosPreviewBlock)[] | null;
+  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | PhotoGridBlock)[] | null;
   meta?: {
     title?: string | null;
     /**
@@ -1012,21 +1012,25 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "PhotosPreviewBlock".
+ * via the `definition` "PhotoGridBlock".
  */
-export interface PhotosPreviewBlock {
+export interface PhotoGridBlock {
   /**
-   * Up to three photo collections displayed in a row. Each links to its collection page.
+   * Display photo collections or individual photos from a folder.
    */
-  items?:
-    | {
-        /**
-         * Collection to display. Uses cover image or first photo in collection.
-         */
-        photoCollection: string | PhotoCollection;
-        id?: string | null;
-      }[]
-    | null;
+  source?: ('collections' | 'photos') | null;
+  /**
+   * Select photo collections to display. Each shows its cover or first photo.
+   */
+  photoCollections?: (string | PhotoCollection)[] | null;
+  /**
+   * Select which Media folder to display.
+   */
+  photosFolder?: (string | null) | FolderInterface;
+  /**
+   * Filter to media with any of these tags. Combine with folder for more specific filtering.
+   */
+  photosTags?: (string | PhotoTag)[] | null;
   /**
    * Optional section title. When provided, a separator is shown below it.
    */
@@ -1039,9 +1043,33 @@ export interface PhotosPreviewBlock {
    * Label for the link to the photography collections index
    */
   linkLabel?: string | null;
+  /**
+   * Use masonry layout. When off, uses a regular grid.
+   */
+  masonry?: boolean | null;
+  /**
+   * Crop all photos to square aspect ratio.
+   */
+  cropToSquare?: boolean | null;
+  /**
+   * Show collection name below each collection preview.
+   */
+  showCollectionNames?: boolean | null;
+  /**
+   * Allow clicking photos to open full screen view.
+   */
+  enableFullScreen?: boolean | null;
+  /**
+   * Allow navigating between photos in full screen (only when full screen is enabled).
+   */
+  enableCarousel?: boolean | null;
+  /**
+   * Maximum number of entries to display. Leave empty for no limit.
+   */
+  limit?: number | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'photosPreview';
+  blockType: 'photoGrid';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1484,7 +1512,7 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
-        photosPreview?: T | PhotosPreviewBlockSelect<T>;
+        photoGrid?: T | PhotoGridBlockSelect<T>;
       };
   meta?:
     | T
@@ -1586,18 +1614,22 @@ export interface FormBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "PhotosPreviewBlock_select".
+ * via the `definition` "PhotoGridBlock_select".
  */
-export interface PhotosPreviewBlockSelect<T extends boolean = true> {
-  items?:
-    | T
-    | {
-        photoCollection?: T;
-        id?: T;
-      };
+export interface PhotoGridBlockSelect<T extends boolean = true> {
+  source?: T;
+  photoCollections?: T;
+  photosFolder?: T;
+  photosTags?: T;
   title?: T;
   showViewMore?: T;
   linkLabel?: T;
+  masonry?: T;
+  cropToSquare?: T;
+  showCollectionNames?: T;
+  enableFullScreen?: T;
+  enableCarousel?: T;
+  limit?: T;
   id?: T;
   blockName?: T;
 }

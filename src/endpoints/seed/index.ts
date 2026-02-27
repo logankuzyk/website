@@ -440,7 +440,7 @@ export const seed = async ({
     data: home({
       heroImage: imageHomeDoc,
       metaImage: image2Doc,
-      photosPreviewCollections: [
+      photoGridCollections: [
         collectionLandscapes.id,
         collectionNature.id,
         collectionPortraits.id,

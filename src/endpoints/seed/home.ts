@@ -4,20 +4,19 @@ import type { Photo } from '@/payload-types'
 type HomeArgs = {
   heroImage: Photo
   metaImage: Photo
-  photosPreviewCollections?: string[]
+  photoGridCollections?: string[]
 }
 
 export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> = ({
   heroImage,
   metaImage,
-  photosPreviewCollections = [],
+  photoGridCollections = [],
 }) => {
   const layout = [
     {
-      blockType: 'photosPreview' as const,
-      items: photosPreviewCollections.slice(0, 3).map((collectionId) => ({
-        photoCollection: collectionId,
-      })),
+      blockType: 'photoGrid' as const,
+      source: 'collections' as const,
+      photoCollections: photoGridCollections,
       showViewMore: true,
       linkLabel: 'View more',
     },
