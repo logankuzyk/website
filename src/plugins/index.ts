@@ -32,6 +32,13 @@ export const plugins: Plugin[] = [
           collections: {
             photos: {
               prefix: 'photos',
+              disablePayloadAccessControl: true,
+              ...(process.env.STORAGE_URL && {
+                generateFileURL: ({ filename, prefix }) => {
+                  const baseUrl = process.env.STORAGE_URL!.replace(/\/$/, '')
+                  return [baseUrl, prefix, encodeURIComponent(filename)].filter(Boolean).join('/')
+                },
+              }),
             },
           },
           bucket: process.env.R2_BUCKET,
