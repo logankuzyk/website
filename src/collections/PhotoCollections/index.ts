@@ -54,13 +54,21 @@ export const PhotoCollections: CollectionConfig = {
     {
       name: 'filter',
       type: 'array',
+      defaultValue: [
+        {
+          field: 'tags',
+          operator: 'in',
+        },
+      ],
       admin: {
         description: 'Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.',
+        initCollapsed: false,
       },
       labels: {
         singular: 'Condition',
-        plural: 'Conditions',
+        plural: 'Filter conditions',
       },
+      label: 'Filter',
       fields: [
         {
           name: 'field',
