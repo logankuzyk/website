@@ -2,6 +2,7 @@ import type { Photo, PhotoCollection } from '@/payload-types'
 
 import { PhotosPreviewCard } from '@/components/PhotosPreviewCard/PhotosPreviewCard'
 import { Separator } from '@/components/Separator/Separator'
+import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
 import { Button } from '@/components/ui/button'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -28,20 +29,14 @@ async function getRepresentativePhoto(
   if (collection.coverImage && typeof collection.coverImage === 'object' && collection.coverImage) {
     return collection.coverImage as Photo
   }
-  const tagIds = Array.isArray(collection.tags)
-    ? collection.tags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
-    : []
-  if (tagIds.length === 0) return null
+  const where = getPhotoCollectionWhere(collection)
   const result = await payload.find({
     collection: 'photos',
     depth: 1,
     limit: 1,
     overrideAccess: false,
     sort: 'displayOrder',
-    where: {
-      mimeType: { contains: 'image' },
-      tags: { in: tagIds },
-    },
+    where,
   })
   return (result.docs?.[0] as Photo) ?? null
 }

@@ -271,7 +271,7 @@ export const seed = async ({
       data: {
         name: 'Landscapes',
         slug: 'landscapes',
-        tags: [tagLandscape.id],
+        filter: [{ field: 'tags', operator: 'in', valueTags: [tagLandscape.id] }],
         displayOrder: 0,
       },
       depth: 0,
@@ -282,7 +282,7 @@ export const seed = async ({
       data: {
         name: 'Nature',
         slug: 'nature',
-        tags: [tagNature.id],
+        filter: [{ field: 'tags', operator: 'in', valueTags: [tagNature.id] }],
         displayOrder: 1,
       },
       depth: 0,
@@ -293,7 +293,7 @@ export const seed = async ({
       data: {
         name: 'Portraits',
         slug: 'portraits',
-        tags: [tagPortrait.id],
+        filter: [{ field: 'tags', operator: 'in', valueTags: [tagPortrait.id] }],
         displayOrder: 2,
       },
       depth: 0,

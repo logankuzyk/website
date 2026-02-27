@@ -873,7 +873,7 @@ export interface Form {
  */
 export interface PhotosPreviewBlock {
   /**
-   * Three photo collections displayed in a row. Each links to its collection page.
+   * Up to three photo collections displayed in a row. Each links to its collection page.
    */
   items?:
     | {
@@ -935,9 +935,51 @@ export interface PhotoCollection {
    */
   coverImage?: (string | null) | Photo;
   /**
-   * Photos with any of these tags appear in this collection
+   * Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.
    */
-  tags: (string | PhotoTag)[];
+  filter?:
+    | {
+        field:
+          | 'tags'
+          | 'folder'
+          | 'width'
+          | 'height'
+          | 'displayOrder'
+          | 'filesize'
+          | 'alt'
+          | 'filename'
+          | 'mimeType'
+          | 'exif.Make'
+          | 'exif.Model'
+          | 'exif.ISO'
+          | 'exif.FocalLength';
+        operator:
+          | 'equals'
+          | 'not_equals'
+          | 'contains'
+          | 'in'
+          | 'not_in'
+          | 'greater_than'
+          | 'less_than'
+          | 'greater_than_equal'
+          | 'less_than_equal'
+          | 'exists';
+        /**
+         * Select tags. Photos with any of these tags will match.
+         */
+        valueTags?: (string | PhotoTag)[] | null;
+        /**
+         * Select folder. Only photos in this folder will match.
+         */
+        valueFolder?: (string | null) | FolderInterface;
+        valueNumber?: number | null;
+        /**
+         * For "in" operator with multiple values, use comma-separated IDs.
+         */
+        valueText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Controls order on the collections index (lower = earlier)
    */
@@ -1771,7 +1813,17 @@ export interface PhotoCollectionsSelect<T extends boolean = true> {
   slug?: T;
   description?: T;
   coverImage?: T;
-  tags?: T;
+  filter?:
+    | T
+    | {
+        field?: T;
+        operator?: T;
+        valueTags?: T;
+        valueFolder?: T;
+        valueNumber?: T;
+        valueText?: T;
+        id?: T;
+      };
   displayOrder?: T;
   hiddenFromIndex?: T;
   updatedAt?: T;

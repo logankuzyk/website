@@ -52,14 +52,108 @@ export const PhotoCollections: CollectionConfig = {
       },
     },
     {
-      name: 'tags',
-      type: 'relationship',
-      relationTo: 'photo-tags',
-      hasMany: true,
-      required: true,
+      name: 'filter',
+      type: 'array',
       admin: {
-        description: 'Photos with any of these tags appear in this collection',
+        description: 'Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.',
       },
+      labels: {
+        singular: 'Condition',
+        plural: 'Conditions',
+      },
+      fields: [
+        {
+          name: 'field',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Tags', value: 'tags' },
+            { label: 'Folder', value: 'folder' },
+            { label: 'Width', value: 'width' },
+            { label: 'Height', value: 'height' },
+            { label: 'Display order', value: 'displayOrder' },
+            { label: 'File size (bytes)', value: 'filesize' },
+            { label: 'Alt text', value: 'alt' },
+            { label: 'Filename', value: 'filename' },
+            { label: 'MIME type', value: 'mimeType' },
+            { label: 'EXIF Make', value: 'exif.Make' },
+            { label: 'EXIF Model', value: 'exif.Model' },
+            { label: 'EXIF ISO', value: 'exif.ISO' },
+            { label: 'EXIF Focal length', value: 'exif.FocalLength' },
+          ],
+        },
+        {
+          name: 'operator',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Equals', value: 'equals' },
+            { label: 'Not equals', value: 'not_equals' },
+            { label: 'Contains', value: 'contains' },
+            { label: 'In (any of)', value: 'in' },
+            { label: 'Not in', value: 'not_in' },
+            { label: 'Greater than', value: 'greater_than' },
+            { label: 'Less than', value: 'less_than' },
+            { label: 'Greater or equal', value: 'greater_than_equal' },
+            { label: 'Less or equal', value: 'less_than_equal' },
+            { label: 'Exists', value: 'exists' },
+          ],
+        },
+        {
+          name: 'valueTags',
+          type: 'relationship',
+          relationTo: 'photo-tags',
+          hasMany: true,
+          admin: {
+            condition: (_, siblingData) =>
+              siblingData?.field === 'tags' && siblingData?.operator !== 'exists',
+            description: 'Select tags. Photos with any of these tags will match.',
+          },
+        },
+        {
+          name: 'valueFolder',
+          type: 'relationship',
+          relationTo: 'payload-folders',
+          filterOptions: {
+            folderType: { contains: 'photos' },
+          },
+          admin: {
+            condition: (_, siblingData) =>
+              siblingData?.field === 'folder' && siblingData?.operator !== 'exists',
+            description: 'Select folder. Only photos in this folder will match.',
+          },
+        },
+        {
+          name: 'valueNumber',
+          type: 'number',
+          admin: {
+            condition: (_, siblingData) => {
+              const numFields = ['width', 'height', 'displayOrder', 'filesize']
+              return (
+                numFields.includes(siblingData?.field) && siblingData?.operator !== 'exists'
+              )
+            },
+          },
+        },
+        {
+          name: 'valueText',
+          type: 'text',
+          admin: {
+            condition: (_, siblingData) => {
+              const relFields = ['tags', 'folder']
+              const numFields = ['width', 'height', 'displayOrder', 'filesize']
+              const field = siblingData?.field
+              return (
+                field &&
+                !relFields.includes(field) &&
+                !numFields.includes(field) &&
+                siblingData?.operator !== 'exists'
+              )
+            },
+            description: 'For "in" operator with multiple values, use comma-separated IDs.',
+          },
+        },
+      ],
     },
     {
       name: 'displayOrder',

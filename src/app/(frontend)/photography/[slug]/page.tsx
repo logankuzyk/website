@@ -9,6 +9,7 @@ import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import React from 'react'
 
+import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -59,14 +60,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
     notFound()
   }
 
-  const tagIds = Array.isArray(collection.tags)
-    ? collection.tags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
-    : []
-
-  const where = {
-    mimeType: { contains: 'image' as const },
-    ...(tagIds.length > 0 && { tags: { in: tagIds } }),
-  }
+  const where = getPhotoCollectionWhere(collection)
 
   const photosResult = await payload.find({
     collection: 'photos',

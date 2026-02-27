@@ -9,6 +9,7 @@ import { getPayload } from 'payload'
 import Link from 'next/link'
 import React from 'react'
 
+import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -22,20 +23,14 @@ async function getRepresentativePhoto(
   if (collection.coverImage && typeof collection.coverImage === 'object' && collection.coverImage) {
     return collection.coverImage as Photo
   }
-  const tagIds = Array.isArray(collection.tags)
-    ? collection.tags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
-    : []
-  if (tagIds.length === 0) return null
+  const where = getPhotoCollectionWhere(collection)
   const result = await payload.find({
     collection: 'photos',
     depth: 1,
     limit: 1,
     overrideAccess: false,
     sort: 'displayOrder',
-    where: {
-      mimeType: { contains: 'image' },
-      tags: { in: tagIds },
-    },
+    where,
   })
   return (result.docs?.[0] as Photo) ?? null
 }
