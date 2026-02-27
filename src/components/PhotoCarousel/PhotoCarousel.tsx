@@ -13,6 +13,7 @@ type PhotoCarouselProps = {
   initialIndex: number
   onClose: () => void
   onIndexChange?: (index: number) => void
+  carouselEnabled?: boolean
 }
 
 const SWIPE_THRESHOLD = 50
@@ -23,6 +24,7 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   initialIndex,
   onClose,
   onIndexChange,
+  carouselEnabled = true,
 }) => {
   const [index, setIndex] = useState(initialIndex)
   const [uiVisible, setUiVisible] = useState(true)
@@ -71,10 +73,12 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
         if (drawerOpen) setDrawerOpen(false)
         else onClose()
       }
-      if (e.key === 'ArrowLeft') prev()
-      if (e.key === 'ArrowRight') next()
+      if (carouselEnabled) {
+        if (e.key === 'ArrowLeft') prev()
+        if (e.key === 'ArrowRight') next()
+      }
     },
-    [onClose, drawerOpen, resetHideTimer, prev, next],
+    [onClose, drawerOpen, resetHideTimer, prev, next, carouselEnabled],
   )
 
   useEffect(() => {
@@ -96,6 +100,7 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   }
 
   const handleTouchEnd = () => {
+    if (!carouselEnabled) return
     const diff = touchStartX.current - touchEndX.current
     if (Math.abs(diff) > SWIPE_THRESHOLD) {
       if (diff > 0) next()
@@ -158,7 +163,7 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ touchAction: 'pan-x' }}
+        style={{ touchAction: carouselEnabled ? 'pan-x' : 'auto' }}
       >
         <div
           className="flex h-full w-full transition-transform duration-300 ease-out"
@@ -197,37 +202,43 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
           <X />
         </IconButton>
 
-        {/* Previous */}
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation()
-            prev()
-          }}
-          className="pointer-events-auto absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:bg-white/10 hover:text-white"
-          aria-label="Previous photo"
-        >
-          <ChevronLeft />
-        </IconButton>
+        {/* Previous - only when carousel enabled */}
+        {carouselEnabled && (
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation()
+              prev()
+            }}
+            className="pointer-events-auto absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:bg-white/10 hover:text-white"
+            aria-label="Previous photo"
+          >
+            <ChevronLeft />
+          </IconButton>
+        )}
 
-        {/* Next */}
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation()
-            next()
-          }}
-          className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:bg-white/10 hover:text-white"
-          aria-label="Next photo"
-        >
-          <ChevronRight />
-        </IconButton>
+        {/* Next - only when carousel enabled */}
+        {carouselEnabled && (
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation()
+              next()
+            }}
+            className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:bg-white/10 hover:text-white"
+            aria-label="Next photo"
+          >
+            <ChevronRight />
+          </IconButton>
+        )}
 
-        {/* Bottom center: gallery index + chevron to open drawer */}
+        {/* Bottom center: gallery index + chevron to open drawer - only when carousel enabled */}
         <div
           className={`pointer-events-auto absolute bottom-0 left-1/2 z-30 flex w-full -translate-x-1/2 flex-col items-center gap-1 pb-4 md:max-w-[33vw] ${!drawerOpen ? '' : 'invisible'}`}
         >
-          <span className="text-sm text-white/70">
-            {index + 1} / {photos.length}
-          </span>
+          {carouselEnabled && (
+            <span className="text-sm text-white/70">
+              {index + 1} / {photos.length}
+            </span>
+          )}
           <IconButton
             onClick={(e) => {
               e.stopPropagation()

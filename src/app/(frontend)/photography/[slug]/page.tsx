@@ -1,7 +1,7 @@
 import type { Photo, PhotoCollection } from '@/payload-types'
 import type { Metadata } from 'next'
 
-import { PhotosMasonry } from '@/components/PhotosMasonry/PhotosMasonry'
+import { PhotoGrid } from '@/components/PhotoGrid'
 import { Separator } from '@/components/Separator/Separator'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
@@ -62,16 +62,19 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
 
   const where = getPhotoCollectionWhere(collection)
 
+  const fetchLimit =
+    collection.displayLimit != null && collection.displayLimit > 0 ? collection.displayLimit : 200
   const photosResult = await payload.find({
     collection: 'photos',
     depth: 1,
-    limit: 200,
+    limit: fetchLimit,
     overrideAccess: false,
     sort: 'displayOrder',
     where,
   })
 
   const photos = (photosResult.docs ?? []) as Photo[]
+  const items = photos.map((photo) => ({ type: 'photo' as const, photo }))
 
   return (
     <article className="pb-24">
@@ -83,7 +86,18 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
           </h1>
           <Separator />
         </header>
-        <PhotosMasonry photos={photos} />
+        <PhotoGrid
+          items={items}
+          masonry={collection.displayMasonry !== false}
+          cropToSquare={collection.displayCropToSquare === true}
+          enableFullScreen={collection.displayEnableFullScreen !== false}
+          enableCarousel={collection.displayEnableCarousel !== false}
+          limit={
+            collection.displayLimit != null && collection.displayLimit > 0
+              ? collection.displayLimit
+              : undefined
+          }
+        />
       </div>
     </article>
   )

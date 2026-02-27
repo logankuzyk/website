@@ -215,6 +215,10 @@ export interface Page {
    */
   template: 'default' | 'career' | 'photos';
   /**
+   * Display individual photos (from folder/tags) or photo collection previews.
+   */
+  photosSource?: ('photos' | 'collections') | null;
+  /**
    * Select which Media folder to display. Create folders in Media to organize photo subcollections (e.g. landscapes, portraits).
    */
   photosFolder?: (string | null) | FolderInterface;
@@ -222,6 +226,34 @@ export interface Page {
    * Filter to media with any of these tags. Combine with folder for more specific filtering.
    */
   photosTags?: (string | PhotoTag)[] | null;
+  /**
+   * Select photo collections to display. Each shows its cover or first photo.
+   */
+  photoCollections?: (string | PhotoCollection)[] | null;
+  /**
+   * Use masonry layout. When off, uses a regular grid.
+   */
+  photosMasonry?: boolean | null;
+  /**
+   * Crop all photos to square aspect ratio.
+   */
+  photosCropToSquare?: boolean | null;
+  /**
+   * Show collection name below each collection preview.
+   */
+  photosShowCollectionNames?: boolean | null;
+  /**
+   * Allow clicking photos to open full screen view.
+   */
+  photosEnableFullScreen?: boolean | null;
+  /**
+   * Allow navigating between photos in full screen (only when full screen is enabled).
+   */
+  photosEnableCarousel?: boolean | null;
+  /**
+   * Maximum number of entries to display. Leave empty for no limit.
+   */
+  photosLimit?: number | null;
   /**
    * Add content blocks. Only shown when using Default template.
    */
@@ -524,6 +556,117 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photo-collections".
+ */
+export interface PhotoCollection {
+  id: string;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional description for the collection
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional cover image. If not set, the first photo in the collection is used.
+   */
+  coverImage?: (string | null) | Photo;
+  /**
+   * Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.
+   */
+  filter?:
+    | {
+        field:
+          | 'tags'
+          | 'folder'
+          | 'width'
+          | 'height'
+          | 'displayOrder'
+          | 'filesize'
+          | 'alt'
+          | 'filename'
+          | 'mimeType'
+          | 'exif.Make'
+          | 'exif.Model'
+          | 'exif.ISO'
+          | 'exif.FocalLength';
+        operator:
+          | 'equals'
+          | 'not_equals'
+          | 'contains'
+          | 'in'
+          | 'not_in'
+          | 'greater_than'
+          | 'less_than'
+          | 'greater_than_equal'
+          | 'less_than_equal'
+          | 'exists';
+        /**
+         * Select tags. Photos with any of these tags will match.
+         */
+        valueTags?: (string | PhotoTag)[] | null;
+        /**
+         * Select folder. Only photos in this folder will match.
+         */
+        valueFolder?: (string | null) | FolderInterface;
+        valueNumber?: number | null;
+        /**
+         * For "in" operator with multiple values, use comma-separated IDs.
+         */
+        valueText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Controls order on the collections index (lower = earlier)
+   */
+  displayOrder?: number | null;
+  /**
+   * When checked, this collection is hidden from the main /photography page but remains accessible via direct link
+   */
+  hiddenFromIndex?: boolean | null;
+  /**
+   * Use masonry layout on the collection page. When off, uses a regular grid.
+   */
+  displayMasonry?: boolean | null;
+  /**
+   * Crop all photos to square aspect ratio on the collection page.
+   */
+  displayCropToSquare?: boolean | null;
+  /**
+   * Allow clicking photos to open full screen view.
+   */
+  displayEnableFullScreen?: boolean | null;
+  /**
+   * Allow navigating between photos in full screen (only when full screen is enabled).
+   */
+  displayEnableCarousel?: boolean | null;
+  /**
+   * Maximum number of photos to display on the collection page. Leave empty for no limit.
+   */
+  displayLimit?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -899,97 +1042,6 @@ export interface PhotosPreviewBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'photosPreview';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "photo-collections".
- */
-export interface PhotoCollection {
-  id: string;
-  name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  /**
-   * Optional description for the collection
-   */
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Optional cover image. If not set, the first photo in the collection is used.
-   */
-  coverImage?: (string | null) | Photo;
-  /**
-   * Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.
-   */
-  filter?:
-    | {
-        field:
-          | 'tags'
-          | 'folder'
-          | 'width'
-          | 'height'
-          | 'displayOrder'
-          | 'filesize'
-          | 'alt'
-          | 'filename'
-          | 'mimeType'
-          | 'exif.Make'
-          | 'exif.Model'
-          | 'exif.ISO'
-          | 'exif.FocalLength';
-        operator:
-          | 'equals'
-          | 'not_equals'
-          | 'contains'
-          | 'in'
-          | 'not_in'
-          | 'greater_than'
-          | 'less_than'
-          | 'greater_than_equal'
-          | 'less_than_equal'
-          | 'exists';
-        /**
-         * Select tags. Photos with any of these tags will match.
-         */
-        valueTags?: (string | PhotoTag)[] | null;
-        /**
-         * Select folder. Only photos in this folder will match.
-         */
-        valueFolder?: (string | null) | FolderInterface;
-        valueNumber?: number | null;
-        /**
-         * For "in" operator with multiple values, use comma-separated IDs.
-         */
-        valueText?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Controls order on the collections index (lower = earlier)
-   */
-  displayOrder?: number | null;
-  /**
-   * When checked, this collection is hidden from the main /photography page but remains accessible via direct link
-   */
-  hiddenFromIndex?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1414,8 +1466,16 @@ export interface PagesSelect<T extends boolean = true> {
         media?: T;
       };
   template?: T;
+  photosSource?: T;
   photosFolder?: T;
   photosTags?: T;
+  photoCollections?: T;
+  photosMasonry?: T;
+  photosCropToSquare?: T;
+  photosShowCollectionNames?: T;
+  photosEnableFullScreen?: T;
+  photosEnableCarousel?: T;
+  photosLimit?: T;
   layout?:
     | T
     | {
@@ -1826,6 +1886,11 @@ export interface PhotoCollectionsSelect<T extends boolean = true> {
       };
   displayOrder?: T;
   hiddenFromIndex?: T;
+  displayMasonry?: T;
+  displayCropToSquare?: T;
+  displayEnableFullScreen?: T;
+  displayEnableCarousel?: T;
+  displayLimit?: T;
   updatedAt?: T;
   createdAt?: T;
 }

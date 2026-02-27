@@ -171,6 +171,51 @@ export const PhotoCollections: CollectionConfig = {
       },
       label: 'Hidden from photography index',
     },
+    {
+      name: 'displayMasonry',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Use masonry layout on the collection page. When off, uses a regular grid.',
+      },
+      label: 'Masonry layout',
+    },
+    {
+      name: 'displayCropToSquare',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Crop all photos to square aspect ratio on the collection page.',
+      },
+      label: 'Crop to square',
+    },
+    {
+      name: 'displayEnableFullScreen',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Allow clicking photos to open full screen view.',
+      },
+      label: 'Enable full screen view',
+    },
+    {
+      name: 'displayEnableCarousel',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        condition: (_, siblingData) => siblingData?.displayEnableFullScreen !== false,
+        description: 'Allow navigating between photos in full screen (only when full screen is enabled).',
+      },
+      label: 'Enable carousel',
+    },
+    {
+      name: 'displayLimit',
+      type: 'number',
+      admin: {
+        description: 'Maximum number of photos to display on the collection page. Leave empty for no limit.',
+      },
+      label: 'Total limit',
+    },
   ],
   labels: {
     singular: 'Photo Collection',

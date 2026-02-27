@@ -1,10 +1,11 @@
-import type { Photo } from '@/payload-types'
+import type { Photo, PhotoCollection } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { CareerTimeline } from '@/components/CareerTimeline/CareerTimeline'
+import { PhotoGrid, type PhotoGridItem } from '@/components/PhotoGrid'
 import { Separator } from '@/components/Separator/Separator'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
-import { PhotosMasonry } from '@/components/PhotosMasonry/PhotosMasonry'
+import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
@@ -82,17 +83,7 @@ export default async function Page({ params: paramsPromise }: Args) {
       {template === 'career' && <CareerPageContent />}
       {template === 'photos' && (
         <PhotosPageContent
-          photosFolder={
-            typeof page.photosFolder === 'object' && page.photosFolder
-              ? page.photosFolder.id
-              : page.photosFolder
-          }
-          photosTags={
-            Array.isArray(page.photosTags)
-              ? page.photosTags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
-              : []
-          }
-          title={page.title}
+          page={page}
         />
       )}
       {(template === 'default' || !template) && <RenderBlocks blocks={layout ?? []} />}
@@ -153,44 +144,89 @@ async function CareerPageContent() {
   )
 }
 
-async function PhotosPageContent({
-  photosFolder,
-  photosTags,
-  title,
-}: {
-  photosFolder: string | number | null | undefined
-  photosTags?: (string | number)[]
-  title?: string | null
-}) {
+async function PhotosPageContent({ page }: { page: NonNullable<Awaited<ReturnType<typeof queryPageBySlug>>> }) {
   const payload = await getPayload({ config: configPromise })
-  let photos: Photo[] = []
+  const photosSource = page.photosSource ?? 'photos'
 
-  const hasFolder = Boolean(photosFolder)
-  const hasTags = Array.isArray(photosTags) && photosTags.length > 0
+  let items: PhotoGridItem[] = []
 
-  const where = {
-    mimeType: { contains: 'image' as const },
-    ...(hasFolder && { folder: { equals: photosFolder } }),
-    ...(hasTags && { tags: { in: photosTags } }),
+  if (photosSource === 'collections') {
+    const collectionRefs = page.photoCollections
+    const collectionIds = Array.isArray(collectionRefs)
+      ? collectionRefs.map((c) => (typeof c === 'object' && c ? c.id : c)).filter(Boolean)
+      : []
+
+    for (const id of collectionIds) {
+      const collection = await payload.findByID({
+        collection: 'photo-collections',
+        id: id as string,
+        depth: 1,
+      }) as PhotoCollection | null
+      if (!collection) continue
+
+      const photo = await getRepresentativePhoto(collection, payload)
+      if (!photo) continue
+
+      items.push({
+        type: 'collection',
+        photo,
+        collectionName: collection.name,
+        href: `/photography/${collection.slug}`,
+      })
+    }
+  } else {
+    const photosFolder =
+      typeof page.photosFolder === 'object' && page.photosFolder
+        ? page.photosFolder.id
+        : page.photosFolder
+    const photosTags = Array.isArray(page.photosTags)
+      ? page.photosTags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
+      : []
+
+    const hasFolder = Boolean(photosFolder)
+    const hasTags = photosTags.length > 0
+
+    const where = {
+      mimeType: { contains: 'image' as const },
+      ...(hasFolder && { folder: { equals: photosFolder } }),
+      ...(hasTags && { tags: { in: photosTags } }),
+    }
+
+    const fetchLimit = page.photosLimit != null && page.photosLimit > 0 ? page.photosLimit : 200
+    const result = await payload.find({
+      collection: 'photos',
+      depth: 1,
+      limit: fetchLimit,
+      overrideAccess: false,
+      sort: 'displayOrder',
+      where,
+    })
+
+    const photos = (result.docs ?? []) as Photo[]
+    items = photos.map((photo) => ({ type: 'photo' as const, photo }))
   }
 
-  const result = await payload.find({
-    collection: 'photos',
-    depth: 1,
-    limit: 200,
-    overrideAccess: false,
-    sort: 'displayOrder',
-    where,
-  })
-  photos = (result.docs ?? []) as Photo[]
+  const emptyMessage =
+    photosSource === 'collections'
+      ? 'No collections selected. Add photo collections in the page settings.'
+      : 'No photos yet. Select a folder in the page settings and upload images to it in Photos.'
 
   return (
     <div className="container pt-8">
       <header className="mb-16">
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{title || 'Photos'}</h1>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{page.title || 'Photos'}</h1>
         <Separator />
       </header>
-      <PhotosMasonry photos={photos} />
+      <PhotoGrid
+        items={items}
+        masonry={page.photosMasonry !== false}
+        cropToSquare={page.photosCropToSquare === true}
+        showCollectionNames={page.photosShowCollectionNames !== false}
+        enableFullScreen={page.photosEnableFullScreen !== false}
+        enableCarousel={page.photosEnableCarousel !== false}
+        emptyMessage={emptyMessage}
+        limit={page.photosLimit != null && page.photosLimit > 0 ? page.photosLimit : undefined}
+      />
     </div>
   )
 }

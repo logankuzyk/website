@@ -85,11 +85,26 @@ export const Pages: CollectionConfig<'pages'> = {
               ],
             },
             {
+              name: 'photosSource',
+              type: 'select',
+              defaultValue: 'photos',
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description: 'Display individual photos (from folder/tags) or photo collection previews.',
+              },
+              options: [
+                { label: 'Individual photos', value: 'photos' },
+                { label: 'Photo collections', value: 'collections' },
+              ],
+              label: 'Photos source',
+            },
+            {
               name: 'photosFolder',
               type: 'relationship',
               relationTo: 'payload-folders',
               admin: {
-                condition: (_, siblingData) => siblingData?.template === 'photos',
+                condition: (_, siblingData) =>
+                  siblingData?.template === 'photos' && siblingData?.photosSource === 'photos',
                 description:
                   'Select which Media folder to display. Create folders in Media to organize photo subcollections (e.g. landscapes, portraits).',
               },
@@ -104,11 +119,85 @@ export const Pages: CollectionConfig<'pages'> = {
               relationTo: 'photo-tags',
               hasMany: true,
               admin: {
-                condition: (_, siblingData) => siblingData?.template === 'photos',
+                condition: (_, siblingData) =>
+                  siblingData?.template === 'photos' && siblingData?.photosSource === 'photos',
                 description:
                   'Filter to media with any of these tags. Combine with folder for more specific filtering.',
               },
               label: 'Photos tags',
+            },
+            {
+              name: 'photoCollections',
+              type: 'relationship',
+              relationTo: 'photo-collections',
+              hasMany: true,
+              admin: {
+                condition: (_, siblingData) =>
+                  siblingData?.template === 'photos' && siblingData?.photosSource === 'collections',
+                description: 'Select photo collections to display. Each shows its cover or first photo.',
+              },
+              label: 'Photo collections',
+            },
+            {
+              name: 'photosMasonry',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description: 'Use masonry layout. When off, uses a regular grid.',
+              },
+              label: 'Masonry layout',
+            },
+            {
+              name: 'photosCropToSquare',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description: 'Crop all photos to square aspect ratio.',
+              },
+              label: 'Crop to square',
+            },
+            {
+              name: 'photosShowCollectionNames',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                condition: (_, siblingData) =>
+                  siblingData?.template === 'photos' && siblingData?.photosSource === 'collections',
+                description: 'Show collection name below each collection preview.',
+              },
+              label: 'Show collection names',
+            },
+            {
+              name: 'photosEnableFullScreen',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description: 'Allow clicking photos to open full screen view.',
+              },
+              label: 'Enable full screen view',
+            },
+            {
+              name: 'photosEnableCarousel',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                condition: (_, siblingData) =>
+                  siblingData?.template === 'photos' && siblingData?.photosEnableFullScreen !== false,
+                description: 'Allow navigating between photos in full screen (only when full screen is enabled).',
+              },
+              label: 'Enable carousel',
+            },
+            {
+              name: 'photosLimit',
+              type: 'number',
+              admin: {
+                condition: (_, siblingData) => siblingData?.template === 'photos',
+                description: 'Maximum number of entries to display. Leave empty for no limit.',
+              },
+              label: 'Total limit',
             },
             {
               name: 'layout',

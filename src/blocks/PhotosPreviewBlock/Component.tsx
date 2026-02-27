@@ -2,7 +2,7 @@ import type { Photo, PhotoCollection } from '@/payload-types'
 
 import { PhotosPreviewCard } from '@/components/PhotosPreviewCard/PhotosPreviewCard'
 import { Separator } from '@/components/Separator/Separator'
-import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
+import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
 import { Button } from '@/components/ui/button'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -20,25 +20,6 @@ type PhotosPreviewBlockProps = {
   showViewMore?: boolean | null
   linkLabel?: string | null
   id?: string
-}
-
-async function getRepresentativePhoto(
-  collection: PhotoCollection,
-  payload: Awaited<ReturnType<typeof getPayload>>
-): Promise<Photo | null> {
-  if (collection.coverImage && typeof collection.coverImage === 'object' && collection.coverImage) {
-    return collection.coverImage as Photo
-  }
-  const where = getPhotoCollectionWhere(collection)
-  const result = await payload.find({
-    collection: 'photos',
-    depth: 1,
-    limit: 1,
-    overrideAccess: false,
-    sort: 'displayOrder',
-    where,
-  })
-  return (result.docs?.[0] as Photo) ?? null
 }
 
 async function resolveItem(

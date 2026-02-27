@@ -185,7 +185,7 @@ Slug: `footer`
 |----------|----------|
 | default | Renders layout blocks (CallToAction, Content, etc.) |
 | career | Renders CareerTimeline with published career entries |
-| photos | Renders PhotosMasonry filtered by `photosFolder` and/or `photosTags` |
+| photos | Renders PhotoGrid with individual photos (folder/tags) or photo collections |
 
 ---
 
