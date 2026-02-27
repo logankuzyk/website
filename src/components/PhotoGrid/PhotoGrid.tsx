@@ -5,10 +5,11 @@ import type { Photo } from '@/payload-types'
 import { Media as MediaComponent } from '@/components/Media'
 import { PhotoCarousel } from '@/components/PhotoCarousel/PhotoCarousel'
 import { useSafeQueryReplace } from '@/utilities/useSafeQueryReplace'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { useSearchParams } from 'next/navigation'
 import Masonry from 'react-layout-masonry'
 import Link from 'next/link'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 export type PhotoGridItem =
   | { type: 'photo'; photo: Photo }
@@ -23,6 +24,16 @@ type PhotoGridProps = {
   enableCarousel?: boolean
   emptyMessage?: string
   limit?: number
+  overscan?: number
+}
+
+const GAP = 16
+const BREAKPOINTS = { sm: 640, md: 768, lg: 1024 } as const
+
+function getColumns(width: number): number {
+  if (width < BREAKPOINTS.sm) return 1
+  if (width < BREAKPOINTS.lg) return 2
+  return 3
 }
 
 const gridClassName = 'grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
@@ -36,15 +47,61 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   enableCarousel = true,
   emptyMessage,
   limit,
+  overscan = 2,
 }) => {
   const [mounted, setMounted] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const gridRef = useRef<HTMLDivElement>(null)
   const safeQueryReplace = useSafeQueryReplace()
   const searchParams = useSearchParams()
 
   const limitedItems = limit != null && limit > 0 ? items.slice(0, limit) : items
   const photoItems = limitedItems.filter((i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo')
   const photosForCarousel = photoItems.map((i) => i.photo)
+
+  const shouldVirtualize = cropToSquare || !masonry
+
+  const columns = useMemo(() => getColumns(containerWidth || 1024), [containerWidth])
+  const rowCount = Math.ceil(limitedItems.length / columns) || 0
+  const itemWidth = containerWidth > 0 ? (containerWidth - (columns - 1) * GAP) / columns : 300
+  const rowHeight = cropToSquare ? itemWidth : itemWidth / (16 / 9)
+
+  const virtualizer = useWindowVirtualizer({
+    count: shouldVirtualize ? rowCount : 0,
+    estimateSize: () => rowHeight,
+    overscan,
+    gap: GAP,
+    scrollMargin,
+    getItemKey: (index) => index,
+  })
+
+  useLayoutEffect(() => {
+    if (!gridRef.current) return
+    const el = gridRef.current
+    const updateScrollMargin = () => {
+      setScrollMargin(el.getBoundingClientRect().top + window.scrollY)
+    }
+    updateScrollMargin()
+    const ro = new ResizeObserver(updateScrollMargin)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [mounted])
+
+  useLayoutEffect(() => {
+    if (!gridRef.current) return
+    const el = gridRef.current
+    const updateWidth = () => setContainerWidth(el.offsetWidth)
+    updateWidth()
+    const ro = new ResizeObserver(updateWidth)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [mounted])
+
+  useEffect(() => {
+    virtualizer.measure()
+  }, [columns, rowHeight, virtualizer])
 
   const setPhotoParam = useCallback(
     (photoId: string | null) => {
@@ -70,8 +127,17 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     const index = photoItems.findIndex((p) => p.photo.id === photoId)
     if (index >= 0) {
       setCarouselIndex(index)
+      if (shouldVirtualize && virtualizer) {
+        const globalIndex = limitedItems.findIndex(
+          (item) => item.type === 'photo' && item.photo.id === photoId
+        )
+        if (globalIndex >= 0) {
+          const rowIndex = Math.floor(globalIndex / columns)
+          virtualizer.scrollToIndex(rowIndex, { align: 'center' })
+        }
+      }
     }
-  }, [mounted, photoItems, searchParams])
+  }, [mounted, photoItems, limitedItems, searchParams, shouldVirtualize, virtualizer, columns])
 
   const openCarousel = useCallback(
     (index: number) => {
@@ -183,39 +249,94 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     )
   }
 
-  const gridContent = limitedItems.map((item, index) => renderItem(item, index))
+  const carousel = enableFullScreen && carouselIndex !== null && photoItems.length > 0 && (
+    <PhotoCarousel
+      photos={photosForCarousel}
+      initialIndex={carouselIndex}
+      onClose={closeCarousel}
+      onIndexChange={handleIndexChange}
+      carouselEnabled={enableCarousel}
+    />
+  )
 
-  if (!mounted || !masonry) {
+  if (!mounted) {
     return (
       <>
-        <div className={gridClassName}>{gridContent}</div>
-        {enableFullScreen && carouselIndex !== null && photoItems.length > 0 && (
-          <PhotoCarousel
-            photos={photosForCarousel}
-            initialIndex={carouselIndex}
-            onClose={closeCarousel}
-            onIndexChange={handleIndexChange}
-            carouselEnabled={enableCarousel}
-          />
-        )}
+        <div ref={gridRef} className={gridClassName}>
+          {limitedItems.map((item, index) => renderItem(item, index))}
+        </div>
+        {carousel}
+      </>
+    )
+  }
+
+  if (shouldVirtualize && rowCount > 0) {
+    const virtualItems = virtualizer.getVirtualItems()
+    return (
+      <>
+        <div ref={gridRef} className="w-full">
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualItems.map((virtualRow) => {
+              const startIndex = virtualRow.index * columns
+              const rowItems = limitedItems.slice(startIndex, startIndex + columns)
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
+                  }}
+                  className={`grid w-full gap-4 ${columns === 1 ? 'grid-cols-1' : columns === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}
+                >
+                  {rowItems.map((item, colIndex) => {
+                    const itemIndex = startIndex + colIndex
+                    return (
+                      <div key={item.type === 'photo' ? item.photo.id : item.href} className="w-full">
+                        {renderItem(item, itemIndex)}
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        {carousel}
+      </>
+    )
+  }
+
+  const gridContent = limitedItems.map((item, index) => renderItem(item, index))
+
+  if (!masonry) {
+    return (
+      <>
+        <div ref={gridRef} className={gridClassName}>
+          {gridContent}
+        </div>
+        {carousel}
       </>
     )
   }
 
   return (
     <>
-      <Masonry columns={{ 640: 1, 768: 2, 1024: 3 }} gap={16} className="w-full">
-        {gridContent}
-      </Masonry>
-      {enableFullScreen && carouselIndex !== null && photoItems.length > 0 && (
-        <PhotoCarousel
-          photos={photosForCarousel}
-          initialIndex={carouselIndex}
-          onClose={closeCarousel}
-          onIndexChange={handleIndexChange}
-          carouselEnabled={enableCarousel}
-        />
-      )}
+      <div ref={gridRef} className="w-full">
+        <Masonry columns={{ 640: 1, 768: 2, 1024: 3 }} gap={16} className="w-full">
+          {gridContent}
+        </Masonry>
+      </div>
+      {carousel}
     </>
   )
 }
