@@ -15,6 +15,7 @@ type PhotosPreviewItem = {
 
 type PhotosPreviewBlockProps = {
   items?: PhotosPreviewItem[] | null
+  title?: string | null
   showViewMore?: boolean | null
   linkLabel?: string | null
   id?: string
@@ -49,12 +50,17 @@ async function resolveItem(
   item: PhotosPreviewItem,
   payload: Awaited<ReturnType<typeof getPayload>>
 ): Promise<{ photo: Photo; title: string; href: string } | null> {
+  const collectionRef = item.photoCollection
+  if (!collectionRef || (typeof collectionRef === 'string' && !collectionRef.trim())) {
+    return null
+  }
+
   const collection =
-    typeof item.photoCollection === 'object' && item.photoCollection
-      ? item.photoCollection
+    typeof collectionRef === 'object' && collectionRef
+      ? collectionRef
       : await payload.findByID({
           collection: 'photo-collections',
-          id: item.photoCollection as string,
+          id: collectionRef as string,
           depth: 1,
         })
 
@@ -73,6 +79,7 @@ async function resolveItem(
 export const PhotosPreviewBlock: React.FC<PhotosPreviewBlockProps> = async (props) => {
   const {
     items = [],
+    title,
     showViewMore = true,
     linkLabel = 'View more',
     id,
@@ -87,12 +94,16 @@ export const PhotosPreviewBlock: React.FC<PhotosPreviewBlockProps> = async (prop
     (item): item is { photo: Photo; title: string; href: string } => item !== null
   )
 
+  const hasTitle = title && title.trim().length > 0
+
   return (
     <div className="container pt-8" id={id ? `block-${id}` : undefined}>
-      <header className="mb-16">
-        <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">Photos</h2>
-        <Separator />
-      </header>
+      {hasTitle && (
+        <header className="mb-16">
+          <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">{title}</h2>
+          <Separator />
+        </header>
+      )}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {validItems.map((item) => (
           <PhotosPreviewCard

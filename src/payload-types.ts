@@ -885,6 +885,10 @@ export interface PhotosPreviewBlock {
       }[]
     | null;
   /**
+   * Optional section title. When provided, a separator is shown below it.
+   */
+  title?: string | null;
+  /**
    * Show the "View more" button linking to /photography
    */
   showViewMore?: boolean | null;
@@ -1489,6 +1493,7 @@ export interface PhotosPreviewBlockSelect<T extends boolean = true> {
         photoCollection?: T;
         id?: T;
       };
+  title?: T;
   showViewMore?: T;
   linkLabel?: T;
   id?: T;

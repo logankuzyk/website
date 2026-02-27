@@ -31,6 +31,14 @@ export const PhotosPreview: Block = {
       label: 'Collections',
     },
     {
+      name: 'title',
+      type: 'text',
+      admin: {
+        description: 'Optional section title. When provided, a separator is shown below it.',
+      },
+      label: 'Title',
+    },
+    {
       name: 'showViewMore',
       type: 'checkbox',
       defaultValue: true,
