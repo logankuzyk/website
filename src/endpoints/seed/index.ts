@@ -48,20 +48,26 @@ export const seed = async ({
   payload.logger.info(`— Clearing collections and globals...`)
 
   // clear the database
-  await Promise.all(
-    globals.map((global) =>
-      payload.updateGlobal({
-        slug: global,
-        data: {
-          navItems: [],
-        },
-        depth: 0,
-        context: {
-          disableRevalidate: true,
-        },
-      }),
-    ),
-  )
+  await Promise.all([
+    payload.updateGlobal({
+      slug: 'header',
+      data: { navItems: [] },
+      depth: 0,
+      context: { disableRevalidate: true },
+    }),
+    payload.updateGlobal({
+      slug: 'footer',
+      data: { navItems: [] },
+      depth: 0,
+      context: { disableRevalidate: true },
+    }),
+    payload.updateGlobal({
+      slug: 'site',
+      data: { photographyIndexPage: null },
+      depth: 0,
+      context: { disableRevalidate: true },
+    }),
+  ])
 
   await Promise.all(
     collections
@@ -445,6 +451,8 @@ export const seed = async ({
         collectionNature.id,
         collectionPortraits.id,
       ],
+      viewMorePage: photosPage.id,
+      photographyIndexPage: photosPage.id,
     }),
     req,
   })
@@ -546,6 +554,13 @@ export const seed = async ({
             },
           },
         ],
+      },
+    }),
+    payload.updateGlobal({
+      slug: 'site',
+      context: { disableRevalidate: true },
+      data: {
+        photographyIndexPage: photosPage.id,
       },
     }),
   ])

@@ -167,7 +167,8 @@ export const PhotoCollections: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       admin: {
-        description: 'When checked, this collection is hidden from the main /photography page but remains accessible via direct link',
+        description:
+          'When checked, this collection is hidden from the photography index but remains accessible via direct link',
       },
       label: 'Hidden from photography index',
     },

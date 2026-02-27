@@ -6,6 +6,7 @@ import { PhotoGrid, type PhotoGridItem } from '@/components/PhotoGrid'
 import { Separator } from '@/components/Separator/Separator'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
+import { getPageUrl } from '@/utilities/getPageUrl'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
@@ -156,6 +157,20 @@ async function PhotosPageContent({ page }: { page: NonNullable<Awaited<ReturnTyp
       ? collectionRefs.map((c) => (typeof c === 'object' && c ? c.id : c)).filter(Boolean)
       : []
 
+    const indexPageRef = page.photosPhotographyIndexPage
+    const indexPage =
+      typeof indexPageRef === 'object' && indexPageRef
+        ? indexPageRef
+        : indexPageRef
+          ? await payload.findByID({
+              collection: 'pages',
+              id: indexPageRef as string,
+              depth: 0,
+            })
+          : null
+    const baseUrl = getPageUrl(indexPage)
+    const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+
     for (const id of collectionIds) {
       const collection = await payload.findByID({
         collection: 'photo-collections',
@@ -171,7 +186,7 @@ async function PhotosPageContent({ page }: { page: NonNullable<Awaited<ReturnTyp
         type: 'collection',
         photo,
         collectionName: collection.name,
-        href: `/photography/${collection.slug}`,
+        href: `${basePath}/${collection.slug}`,
       })
     }
   } else {

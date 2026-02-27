@@ -139,6 +139,18 @@ export const Pages: CollectionConfig<'pages'> = {
               label: 'Photo collections',
             },
             {
+              name: 'photosPhotographyIndexPage',
+              type: 'relationship',
+              relationTo: 'pages',
+              admin: {
+                condition: (_, siblingData) =>
+                  siblingData?.template === 'photos' && siblingData?.photosSource === 'collections',
+                description:
+                  'Page used as the base for collection links. Collection URLs will be {pageUrl}/{collectionSlug}.',
+              },
+              label: 'Photography index page',
+            },
+            {
               name: 'photosMasonry',
               type: 'checkbox',
               defaultValue: true,

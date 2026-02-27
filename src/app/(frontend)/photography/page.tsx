@@ -10,6 +10,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
+import { getPageUrl } from '@/utilities/getPageUrl'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -38,6 +39,20 @@ async function getRepresentativePhoto(
 export default async function PhotographyIndexPage() {
   const payload = await getPayload({ config: configPromise })
 
+  const site = await payload.findGlobal({ slug: 'site', depth: 1 })
+  const indexPage =
+    typeof site.photographyIndexPage === 'object' && site.photographyIndexPage
+      ? site.photographyIndexPage
+      : site.photographyIndexPage
+        ? await payload.findByID({
+            collection: 'pages',
+            id: site.photographyIndexPage as string,
+            depth: 0,
+          })
+        : null
+  const baseUrl = getPageUrl(indexPage)
+  const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+
   const collectionsResult = await payload.find({
     collection: 'photo-collections',
     depth: 1,
@@ -61,7 +76,7 @@ export default async function PhotographyIndexPage() {
 
   return (
     <article className="pb-24">
-      <PayloadRedirects disableNotFound url="/photography" />
+      <PayloadRedirects disableNotFound url={basePath} />
       <div className="container pt-8">
         <header className="mb-16">
           <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Photography</h1>
@@ -71,7 +86,7 @@ export default async function PhotographyIndexPage() {
           {collectionsWithPhotos.map(({ collection, photo }) => (
             <Link
               key={collection.id}
-              href={`/photography/${collection.slug}`}
+              href={`${basePath}/${collection.slug}`}
               className="group block w-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               <div className="relative aspect-square w-full overflow-hidden">
@@ -99,12 +114,27 @@ export default async function PhotographyIndexPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const payload = await getPayload({ config: configPromise })
+  const site = await payload.findGlobal({ slug: 'site', depth: 1 })
+  const indexPage =
+    typeof site.photographyIndexPage === 'object' && site.photographyIndexPage
+      ? site.photographyIndexPage
+      : site.photographyIndexPage
+        ? await payload.findByID({
+            collection: 'pages',
+            id: site.photographyIndexPage as string,
+            depth: 0,
+          })
+        : null
+  const baseUrl = getPageUrl(indexPage)
+  const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+
   const title = 'Photo Collections | Logan Kuzyk'
   return {
     title,
     openGraph: mergeOpenGraph({
       title,
-      url: `${getServerSideURL()}/photography`,
+      url: `${getServerSideURL()}${basePath}`,
     }),
   }
 }

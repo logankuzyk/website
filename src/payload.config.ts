@@ -15,6 +15,7 @@ import { Projects } from './collections/Projects'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { Site } from './globals/Site/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -66,7 +67,7 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Photos, Categories, Users, Projects, Career, Tags, PhotoCollections],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, Site],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

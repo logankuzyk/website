@@ -5,20 +5,25 @@ type HomeArgs = {
   heroImage: Photo
   metaImage: Photo
   photoGridCollections?: string[]
+  viewMorePage?: string
+  photographyIndexPage?: string
 }
 
 export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> = ({
   heroImage,
   metaImage,
   photoGridCollections = [],
+  viewMorePage,
+  photographyIndexPage,
 }) => {
   const layout = [
     {
       blockType: 'photoGrid' as const,
       source: 'collections' as const,
       photoCollections: photoGridCollections,
-      showViewMore: true,
+      viewMorePage: viewMorePage ?? undefined,
       linkLabel: 'View more',
+      photographyIndexPage: photographyIndexPage ?? undefined,
     },
   ]
 

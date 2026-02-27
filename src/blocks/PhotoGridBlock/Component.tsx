@@ -1,8 +1,9 @@
-import type { Photo, PhotoCollection } from '@/payload-types'
+import type { Page, Photo, PhotoCollection } from '@/payload-types'
 
 import { PhotoGrid, type PhotoGridItem } from '@/components/PhotoGrid'
 import { Separator } from '@/components/Separator/Separator'
 import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
+import { getPageUrl } from '@/utilities/getPageUrl'
 import { Button } from '@/components/ui/button'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -15,14 +16,16 @@ type PhotoGridBlockProps = {
   photosFolder?: string | { id: string } | null
   photosTags?: (string | { id: string })[] | null
   title?: string | null
-  showViewMore?: boolean | null
+  viewMorePage?: string | Page | null
   linkLabel?: string | null
+  photographyIndexPage?: string | Page | null
   masonry?: boolean | null
   cropToSquare?: boolean | null
   showCollectionNames?: boolean | null
   enableFullScreen?: boolean | null
   enableCarousel?: boolean | null
   limit?: number | null
+  overscan?: number | null
   id?: string
 }
 
@@ -33,14 +36,16 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     photosFolder,
     photosTags = [],
     title,
-    showViewMore = true,
+    viewMorePage,
     linkLabel = 'View more',
+    photographyIndexPage,
     masonry = true,
     cropToSquare = false,
     showCollectionNames = true,
     enableFullScreen = true,
     enableCarousel = true,
     limit,
+    overscan = 2,
     id,
   } = props
 
@@ -51,6 +56,19 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     const collectionIds = Array.isArray(photoCollections)
       ? photoCollections.map((c) => (typeof c === 'object' && c ? c.id : c)).filter(Boolean)
       : []
+
+    const indexPage =
+      typeof photographyIndexPage === 'object' && photographyIndexPage
+        ? photographyIndexPage
+        : photographyIndexPage
+          ? await payload.findByID({
+              collection: 'pages',
+              id: photographyIndexPage as string,
+              depth: 0,
+            })
+          : null
+    const baseUrl = getPageUrl(indexPage)
+    const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
 
     for (const collectionId of collectionIds) {
       const collection = await payload.findByID({
@@ -67,7 +85,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
         type: 'collection',
         photo,
         collectionName: collection.name,
-        href: `/photography/${collection.slug}`,
+        href: `${basePath}/${collection.slug}`,
       })
     }
   } else {
@@ -107,6 +125,23 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
 
   const hasTitle = title && title.trim().length > 0
 
+  let viewMoreHref = ''
+  let viewMoreLabel = linkLabel || 'View more'
+  if (viewMorePage) {
+    const page =
+      typeof viewMorePage === 'object' && viewMorePage
+        ? viewMorePage
+        : await payload.findByID({
+            collection: 'pages',
+            id: viewMorePage as string,
+            depth: 0,
+          })
+    viewMoreHref = getPageUrl(page)
+    if (!linkLabel && page?.title) {
+      viewMoreLabel = page.title as string
+    }
+  }
+
   return (
     <div className="container pt-8" id={id ? `block-${id}` : undefined}>
       {hasTitle && (
@@ -124,11 +159,12 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
         enableCarousel={enableCarousel !== false}
         emptyMessage={emptyMessage}
         limit={limit != null && limit > 0 ? limit : undefined}
+        overscan={overscan != null && overscan >= 0 ? overscan : undefined}
       />
-      {showViewMore && (
+      {viewMorePage && viewMoreHref && (
         <div className="mt-8">
           <Button asChild variant="outline">
-            <Link href="/photography">{linkLabel}</Link>
+            <Link href={viewMoreHref}>{viewMoreLabel}</Link>
           </Button>
         </div>
       )}

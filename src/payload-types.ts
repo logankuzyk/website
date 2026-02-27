@@ -120,10 +120,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    site: Site;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    site: SiteSelect<false> | SiteSelect<true>;
   };
   locale: null;
   user: User;
@@ -230,6 +232,10 @@ export interface Page {
    * Select photo collections to display. Each shows its cover or first photo.
    */
   photoCollections?: (string | PhotoCollection)[] | null;
+  /**
+   * Page used as the base for collection links. Collection URLs will be {pageUrl}/{collectionSlug}.
+   */
+  photosPhotographyIndexPage?: (string | null) | Page;
   /**
    * Use masonry layout. When off, uses a regular grid.
    */
@@ -642,7 +648,7 @@ export interface PhotoCollection {
    */
   displayOrder?: number | null;
   /**
-   * When checked, this collection is hidden from the main /photography page but remains accessible via direct link
+   * When checked, this collection is hidden from the photography index but remains accessible via direct link
    */
   hiddenFromIndex?: boolean | null;
   /**
@@ -1036,13 +1042,17 @@ export interface PhotoGridBlock {
    */
   title?: string | null;
   /**
-   * Show the "View more" button linking to /photography
+   * When set, shows a "View more" button linking to this page.
    */
-  showViewMore?: boolean | null;
+  viewMorePage?: (string | null) | Page;
   /**
-   * Label for the link to the photography collections index
+   * Label for the View more button. Leave empty to use the linked page title.
    */
   linkLabel?: string | null;
+  /**
+   * Page used as the base for collection links. Collection URLs will be {pageUrl}/{collectionSlug}.
+   */
+  photographyIndexPage?: (string | null) | Page;
   /**
    * Use masonry layout. When off, uses a regular grid.
    */
@@ -1067,6 +1077,10 @@ export interface PhotoGridBlock {
    * Maximum number of entries to display. Leave empty for no limit.
    */
   limit?: number | null;
+  /**
+   * Number of rows to render outside the visible area when using virtualization (grid or square crop layouts). Higher values reduce blank space when scrolling but use more memory.
+   */
+  overscan?: number | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'photoGrid';
@@ -1498,6 +1512,7 @@ export interface PagesSelect<T extends boolean = true> {
   photosFolder?: T;
   photosTags?: T;
   photoCollections?: T;
+  photosPhotographyIndexPage?: T;
   photosMasonry?: T;
   photosCropToSquare?: T;
   photosShowCollectionNames?: T;
@@ -1622,14 +1637,16 @@ export interface PhotoGridBlockSelect<T extends boolean = true> {
   photosFolder?: T;
   photosTags?: T;
   title?: T;
-  showViewMore?: T;
+  viewMorePage?: T;
   linkLabel?: T;
+  photographyIndexPage?: T;
   masonry?: T;
   cropToSquare?: T;
   showCollectionNames?: T;
   enableFullScreen?: T;
   enableCarousel?: T;
   limit?: T;
+  overscan?: T;
   id?: T;
   blockName?: T;
 }
@@ -2261,6 +2278,19 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site".
+ */
+export interface Site {
+  id: string;
+  /**
+   * Page used as the base for photography collection URLs. Collection links will be {pageUrl}/{collectionSlug}. Create a page with slug "photography" to match the /photography route.
+   */
+  photographyIndexPage?: (string | null) | Page;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2301,6 +2331,16 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site_select".
+ */
+export interface SiteSelect<T extends boolean = true> {
+  photographyIndexPage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

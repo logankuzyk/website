@@ -61,23 +61,34 @@ export const PhotoGrid: Block = {
       label: 'Title',
     },
     {
-      name: 'showViewMore',
-      type: 'checkbox',
-      defaultValue: true,
+      name: 'viewMorePage',
+      type: 'relationship',
+      relationTo: 'pages',
       admin: {
-        description: 'Show the "View more" button linking to /photography',
+        description: 'When set, shows a "View more" button linking to this page.',
       },
-      label: 'Show View more button',
+      label: 'View more link',
     },
     {
       name: 'linkLabel',
       type: 'text',
       defaultValue: 'View more',
       admin: {
-        condition: (_, siblingData) => siblingData?.showViewMore !== false,
-        description: 'Label for the link to the photography collections index',
+        condition: (_, siblingData) => Boolean(siblingData?.viewMorePage),
+        description: 'Label for the View more button. Leave empty to use the linked page title.',
       },
       label: 'Link label',
+    },
+    {
+      name: 'photographyIndexPage',
+      type: 'relationship',
+      relationTo: 'pages',
+      admin: {
+        condition: (_, siblingData) => siblingData?.source === 'collections',
+        description:
+          'Page used as the base for collection links. Collection URLs will be {pageUrl}/{collectionSlug}.',
+      },
+      label: 'Photography index page',
     },
     {
       name: 'masonry',
@@ -133,6 +144,16 @@ export const PhotoGrid: Block = {
         description: 'Maximum number of entries to display. Leave empty for no limit.',
       },
       label: 'Total limit',
+    },
+    {
+      name: 'overscan',
+      type: 'number',
+      defaultValue: 2,
+      admin: {
+        description:
+          'Number of rows to render outside the visible area when using virtualization (grid or square crop layouts). Higher values reduce blank space when scrolling but use more memory.',
+      },
+      label: 'Virtualization overscan',
     },
   ],
   labels: {

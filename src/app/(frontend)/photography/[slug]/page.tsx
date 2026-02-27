@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation'
 import React from 'react'
 
 import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
+import { getPageUrl } from '@/utilities/getPageUrl'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -60,6 +61,20 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
     notFound()
   }
 
+  const site = await payload.findGlobal({ slug: 'site', depth: 1 })
+  const indexPage =
+    typeof site.photographyIndexPage === 'object' && site.photographyIndexPage
+      ? site.photographyIndexPage
+      : site.photographyIndexPage
+        ? await payload.findByID({
+            collection: 'pages',
+            id: site.photographyIndexPage as string,
+            depth: 0,
+          })
+        : null
+  const baseUrl = getPageUrl(indexPage)
+  const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+
   const where = getPhotoCollectionWhere(collection)
 
   const fetchLimit =
@@ -78,7 +93,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
 
   return (
     <article className="pb-24">
-      <PayloadRedirects disableNotFound url={`/photography/${slug}`} />
+      <PayloadRedirects disableNotFound url={`${basePath}/${slug}`} />
       <div className="container pt-8">
         <header className="mb-16">
           <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
@@ -120,6 +135,20 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   })
 
   const collection = collectionResult.docs?.[0]
+  const site = await payload.findGlobal({ slug: 'site', depth: 1 })
+  const indexPage =
+    typeof site.photographyIndexPage === 'object' && site.photographyIndexPage
+      ? site.photographyIndexPage
+      : site.photographyIndexPage
+        ? await payload.findByID({
+            collection: 'pages',
+            id: site.photographyIndexPage as string,
+            depth: 0,
+          })
+        : null
+  const baseUrl = getPageUrl(indexPage)
+  const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+
   const title = collection
     ? `Photography / ${collection.name} | Logan Kuzyk`
     : 'Photos | Logan Kuzyk'
@@ -128,7 +157,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     title,
     openGraph: mergeOpenGraph({
       title,
-      url: `${getServerSideURL()}/photography/${slug}`,
+      url: `${getServerSideURL()}${basePath}/${slug}`,
     }),
   }
 }
