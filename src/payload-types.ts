@@ -75,6 +75,7 @@ export interface Config {
     projects: Project;
     career: Career;
     'photo-tags': PhotoTag;
+    locations: Location;
     'photo-collections': PhotoCollection;
     redirects: Redirect;
     forms: Form;
@@ -101,6 +102,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     career: CareerSelect<false> | CareerSelect<true>;
     'photo-tags': PhotoTagsSelect<false> | PhotoTagsSelect<true>;
+    locations: LocationsSelect<false> | LocationsSelect<true>;
     'photo-collections': PhotoCollectionsSelect<false> | PhotoCollectionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -293,6 +295,10 @@ export interface Photo {
    */
   tags?: (string | PhotoTag)[] | null;
   /**
+   * Location where the photo was taken. Used for filtering in collections.
+   */
+  location?: (string | null) | Location;
+  /**
    * Controls order in photos gallery (lower = earlier)
    */
   displayOrder?: number | null;
@@ -434,6 +440,29 @@ export interface PhotoTag {
    */
   generateSlug?: boolean | null;
   slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations".
+ */
+export interface Location {
+  id: string;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional parent location. Leave empty for top-level.
+   */
+  parent?: (string | null) | Location;
+  /**
+   * Child locations. You can also set the parent on each child.
+   */
+  children?: (string | Location)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -609,6 +638,7 @@ export interface PhotoCollection {
         field:
           | 'tags'
           | 'folder'
+          | 'location'
           | 'width'
           | 'height'
           | 'displayOrder'
@@ -639,6 +669,10 @@ export interface PhotoCollection {
          * Select folder. Only photos in this folder will match.
          */
         valueFolder?: (string | null) | FolderInterface;
+        /**
+         * Select location(s). Photos in any of these locations will match.
+         */
+        valueLocation?: (string | Location)[] | null;
         valueNumber?: number | null;
         /**
          * For "in" operator with multiple values, use comma-separated IDs.
@@ -1414,6 +1448,10 @@ export interface PayloadLockedDocument {
         value: string | PhotoTag;
       } | null)
     | ({
+        relationTo: 'locations';
+        value: string | Location;
+      } | null)
+    | ({
         relationTo: 'photo-collections';
         value: string | PhotoCollection;
       } | null)
@@ -1691,6 +1729,7 @@ export interface PostsSelect<T extends boolean = true> {
  */
 export interface PhotosSelect<T extends boolean = true> {
   tags?: T;
+  location?: T;
   displayOrder?: T;
   alt?: T;
   caption?: T;
@@ -1918,6 +1957,19 @@ export interface PhotoTagsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations_select".
+ */
+export interface LocationsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  parent?: T;
+  children?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "photo-collections_select".
  */
 export interface PhotoCollectionsSelect<T extends boolean = true> {
@@ -1934,6 +1986,7 @@ export interface PhotoCollectionsSelect<T extends boolean = true> {
         operator?: T;
         valueTags?: T;
         valueFolder?: T;
+        valueLocation?: T;
         valueNumber?: T;
         valueText?: T;
         id?: T;

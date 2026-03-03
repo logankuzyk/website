@@ -28,6 +28,15 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
+      // Allow R2/CDN URLs for admin panel photo previews when using cloud storage
+      ...(process.env.STORAGE_URL
+        ? [
+            {
+              hostname: new URL(process.env.STORAGE_URL).hostname,
+              protocol: new URL(process.env.STORAGE_URL).protocol.replace(':', ''),
+            },
+          ]
+        : []),
     ],
   },
   webpack: (webpackConfig) => {

@@ -89,6 +89,7 @@ export const PhotoCollections: CollectionConfig = {
           options: [
             { label: 'Tags', value: 'tags' },
             { label: 'Folder', value: 'folder' },
+            { label: 'Location', value: 'location' },
             { label: 'Width', value: 'width' },
             { label: 'Height', value: 'height' },
             { label: 'Display order', value: 'displayOrder' },
@@ -144,6 +145,18 @@ export const PhotoCollections: CollectionConfig = {
           },
         },
         {
+          name: 'valueLocation',
+          type: 'relationship',
+          relationTo: 'locations',
+          hasMany: true,
+          admin: {
+            condition: (_, siblingData) =>
+              siblingData?.field === 'location' && siblingData?.operator !== 'exists',
+            description: 'Select location(s). Photos in any of these locations will match.',
+          },
+          label: 'Location(s)',
+        },
+        {
           name: 'valueNumber',
           type: 'number',
           admin: {
@@ -158,7 +171,7 @@ export const PhotoCollections: CollectionConfig = {
           type: 'text',
           admin: {
             condition: (_, siblingData) => {
-              const relFields = ['tags', 'folder']
+              const relFields = ['tags', 'folder', 'location']
               const numFields = ['width', 'height', 'displayOrder', 'filesize']
               const field = siblingData?.field
               return (

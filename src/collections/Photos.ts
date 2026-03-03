@@ -42,6 +42,14 @@ export const Photos: CollectionConfig = {
       },
     },
     {
+      name: 'location',
+      type: 'relationship',
+      relationTo: 'locations',
+      admin: {
+        description: 'Location where the photo was taken. Used for filtering in collections.',
+      },
+    },
+    {
       name: 'displayOrder',
       type: 'number',
       admin: {
@@ -66,7 +74,21 @@ export const Photos: CollectionConfig = {
   upload: {
     // Upload to the public/photos directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/photos'),
-    adminThumbnail: 'thumbnail',
+    // Use a function when R2 is enabled: string adminThumbnail causes Payload to fall back to /api/...
+    // URLs which don't work with disablePayloadAccessControl. See payloadcms/payload#12659
+    adminThumbnail:
+      process.env.R2_BUCKET && process.env.STORAGE_URL
+        ? ({ doc }) => {
+            const sizes = doc?.sizes as Record<string, { url?: string; filename?: string }> | undefined
+            const thumbnail = sizes?.thumbnail
+            if (thumbnail?.url) return thumbnail.url
+            if (thumbnail?.filename) {
+              const baseUrl = process.env.STORAGE_URL!.replace(/\/$/, '')
+              return [baseUrl, 'photos', encodeURIComponent(thumbnail.filename)].join('/')
+            }
+            return false
+          }
+        : 'thumbnail',
     focalPoint: true,
     imageSizes: [
       {

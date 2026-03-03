@@ -14,6 +14,7 @@ type FilterCondition = {
   operator?: string | null
   valueTags?: (string | { id: string })[] | null
   valueFolder?: string | { id: string } | null
+  valueLocation?: (string | { id: string })[] | null
   valueNumber?: number | null
   valueText?: string | null
 }
@@ -33,6 +34,18 @@ function conditionToWhere(condition: FilterCondition): Where | null {
     value = ids
   } else if (field === 'folder' && condition.valueFolder) {
     value = typeof condition.valueFolder === 'object' ? condition.valueFolder.id : condition.valueFolder
+  } else if (field === 'location' && condition.valueLocation) {
+    const ids = condition.valueLocation
+      .map((l) => (typeof l === 'object' && l ? l.id : l))
+      .filter(Boolean)
+    if (ids.length === 0) return null
+    if (operator === 'equals' && ids.length > 1) {
+      return { location: { in: ids } } as Where
+    }
+    if (operator === 'not_equals' && ids.length > 1) {
+      return { location: { not_in: ids } } as Where
+    }
+    value = ids.length === 1 ? ids[0] : ids
   } else if (condition.valueNumber != null) {
     value = condition.valueNumber
   } else if (condition.valueText != null && condition.valueText !== '') {
