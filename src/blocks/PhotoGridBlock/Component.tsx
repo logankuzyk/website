@@ -71,11 +71,11 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
 
     for (const collectionId of collectionIds) {
-      const collection = await payload.findByID({
+      const collection = (await payload.findByID({
         collection: 'photo-collections',
         id: collectionId as string,
         depth: 1,
-      }) as PhotoCollection | null
+      })) as PhotoCollection | null
       if (!collection) continue
 
       const photo = await getRepresentativePhoto(collection, payload)

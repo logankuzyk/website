@@ -48,7 +48,8 @@ export const PhotoGrid: Block = {
       hasMany: true,
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'photos',
-        description: 'Filter to media with any of these tags. Combine with folder for more specific filtering.',
+        description:
+          'Filter to media with any of these tags. Combine with folder for more specific filtering.',
       },
       label: 'Photos tags',
     },
@@ -133,7 +134,8 @@ export const PhotoGrid: Block = {
       defaultValue: true,
       admin: {
         condition: (_, siblingData) => siblingData?.enableFullScreen !== false,
-        description: 'Allow navigating between photos in full screen (only when full screen is enabled).',
+        description:
+          'Allow navigating between photos in full screen (only when full screen is enabled).',
       },
       label: 'Enable carousel',
     },

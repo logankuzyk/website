@@ -576,6 +576,10 @@ export interface PhotoCollection {
   generateSlug?: boolean | null;
   slug: string;
   /**
+   * Optional parent collection. Leave empty for top-level sets.
+   */
+  parent?: (string | null) | PhotoCollection;
+  /**
    * Optional description for the collection
    */
   description?: {
@@ -648,7 +652,7 @@ export interface PhotoCollection {
    */
   displayOrder?: number | null;
   /**
-   * When checked, this collection is hidden from the photography index but remains accessible via direct link
+   * When checked, this collection is hidden from the gallery index but remains accessible via direct link
    */
   hiddenFromIndex?: boolean | null;
   /**
@@ -1920,6 +1924,7 @@ export interface PhotoCollectionsSelect<T extends boolean = true> {
   name?: T;
   generateSlug?: T;
   slug?: T;
+  parent?: T;
   description?: T;
   coverImage?: T;
   filter?:

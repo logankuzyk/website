@@ -90,7 +90,8 @@ export const Pages: CollectionConfig<'pages'> = {
               defaultValue: 'photos',
               admin: {
                 condition: (_, siblingData) => siblingData?.template === 'photos',
-                description: 'Display individual photos (from folder/tags) or photo collection previews.',
+                description:
+                  'Display individual photos (from folder/tags) or photo collection previews.',
               },
               options: [
                 { label: 'Individual photos', value: 'photos' },
@@ -134,7 +135,8 @@ export const Pages: CollectionConfig<'pages'> = {
               admin: {
                 condition: (_, siblingData) =>
                   siblingData?.template === 'photos' && siblingData?.photosSource === 'collections',
-                description: 'Select photo collections to display. Each shows its cover or first photo.',
+                description:
+                  'Select photo collections to display. Each shows its cover or first photo.',
               },
               label: 'Photo collections',
             },
@@ -197,8 +199,10 @@ export const Pages: CollectionConfig<'pages'> = {
               defaultValue: true,
               admin: {
                 condition: (_, siblingData) =>
-                  siblingData?.template === 'photos' && siblingData?.photosEnableFullScreen !== false,
-                description: 'Allow navigating between photos in full screen (only when full screen is enabled).',
+                  siblingData?.template === 'photos' &&
+                  siblingData?.photosEnableFullScreen !== false,
+                description:
+                  'Allow navigating between photos in full screen (only when full screen is enabled).',
               },
               label: 'Enable carousel',
             },

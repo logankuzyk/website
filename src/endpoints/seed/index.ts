@@ -75,7 +75,6 @@ export const seed = async ({
       .map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
   )
 
-
   await Promise.all(
     collections
       .filter((collection) => Boolean(payload.collections[collection].config.versions))
@@ -446,11 +445,7 @@ export const seed = async ({
     data: home({
       heroImage: imageHomeDoc,
       metaImage: image2Doc,
-      photoGridCollections: [
-        collectionLandscapes.id,
-        collectionNature.id,
-        collectionPortraits.id,
-      ],
+      photoGridCollections: [collectionLandscapes.id, collectionNature.id, collectionPortraits.id],
       viewMorePage: photosPage.id,
       photographyIndexPage: photosPage.id,
     }),
@@ -568,7 +563,9 @@ export const seed = async ({
   payload.logger.info('Seeded database successfully!')
 }
 
-async function fetchFileByURL(url: string): Promise<{ name: string; data: Buffer; mimetype: string; size: number }> {
+async function fetchFileByURL(
+  url: string,
+): Promise<{ name: string; data: Buffer; mimetype: string; size: number }> {
   const res = await fetch(url, {
     credentials: 'include',
     method: 'GET',

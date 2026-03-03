@@ -20,7 +20,7 @@ export const PhotoCollections: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'displayOrder', 'hiddenFromIndex', 'updatedAt'],
+    defaultColumns: ['name', 'slug', 'parent', 'displayOrder', 'hiddenFromIndex', 'updatedAt'],
   },
   fields: [
     {
@@ -31,6 +31,17 @@ export const PhotoCollections: CollectionConfig = {
     slugField({
       fieldToUse: 'name',
     }),
+    {
+      name: 'parent',
+      type: 'relationship',
+      relationTo: 'photo-collections',
+      admin: {
+        description: 'Optional parent collection. Leave empty for top-level sets.',
+      },
+      filterOptions: ({ id }) =>
+        id != null ? { id: { not_equals: id } } : true,
+      label: 'Parent collection',
+    },
     {
       name: 'description',
       type: 'richText',
@@ -61,7 +72,8 @@ export const PhotoCollections: CollectionConfig = {
         },
       ],
       admin: {
-        description: 'Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.',
+        description:
+          'Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.',
         initCollapsed: false,
       },
       labels: {
@@ -137,9 +149,7 @@ export const PhotoCollections: CollectionConfig = {
           admin: {
             condition: (_, siblingData) => {
               const numFields = ['width', 'height', 'displayOrder', 'filesize']
-              return (
-                numFields.includes(siblingData?.field) && siblingData?.operator !== 'exists'
-              )
+              return numFields.includes(siblingData?.field) && siblingData?.operator !== 'exists'
             },
           },
         },
@@ -176,7 +186,7 @@ export const PhotoCollections: CollectionConfig = {
       defaultValue: false,
       admin: {
         description:
-          'When checked, this collection is hidden from the photography index but remains accessible via direct link',
+          'When checked, this collection is hidden from the gallery index but remains accessible via direct link',
       },
       label: 'Hidden from photography index',
     },
@@ -213,7 +223,8 @@ export const PhotoCollections: CollectionConfig = {
       defaultValue: true,
       admin: {
         condition: (_, siblingData) => siblingData?.displayEnableFullScreen !== false,
-        description: 'Allow navigating between photos in full screen (only when full screen is enabled).',
+        description:
+          'Allow navigating between photos in full screen (only when full screen is enabled).',
       },
       label: 'Enable carousel',
     },
@@ -221,7 +232,8 @@ export const PhotoCollections: CollectionConfig = {
       name: 'displayLimit',
       type: 'number',
       admin: {
-        description: 'Maximum number of photos to display on the collection page. Leave empty for no limit.',
+        description:
+          'Maximum number of photos to display on the collection page. Leave empty for no limit.',
       },
       label: 'Total limit',
     },

@@ -10,11 +10,12 @@ import { getPageUrl } from '@/utilities/getPageUrl'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
-import React, { cache } from 'react'
+import React from 'react'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { queryPageBySlug } from '@/utilities/queryPageBySlug'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
@@ -82,11 +83,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
       <RenderHero {...hero} />
       {template === 'career' && <CareerPageContent />}
-      {template === 'photos' && (
-        <PhotosPageContent
-          page={page}
-        />
-      )}
+      {template === 'photos' && <PhotosPageContent page={page} />}
       {(template === 'default' || !template) && <RenderBlocks blocks={layout ?? []} />}
     </article>
   )
@@ -102,27 +99,6 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
   return generateMeta({ doc: page })
 }
-
-const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
-  const { isEnabled: draft } = await draftMode()
-
-  const payload = await getPayload({ config: configPromise })
-
-  const result = await payload.find({
-    collection: 'pages',
-    draft,
-    limit: 1,
-    pagination: false,
-    overrideAccess: draft,
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
-  })
-
-  return result.docs?.[0] || null
-})
 
 async function CareerPageContent() {
   const payload = await getPayload({ config: configPromise })
@@ -145,7 +121,11 @@ async function CareerPageContent() {
   )
 }
 
-async function PhotosPageContent({ page }: { page: NonNullable<Awaited<ReturnType<typeof queryPageBySlug>>> }) {
+async function PhotosPageContent({
+  page,
+}: {
+  page: NonNullable<Awaited<ReturnType<typeof queryPageBySlug>>>
+}) {
   const payload = await getPayload({ config: configPromise })
   const photosSource = page.photosSource ?? 'photos'
 
@@ -172,11 +152,11 @@ async function PhotosPageContent({ page }: { page: NonNullable<Awaited<ReturnTyp
     const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
 
     for (const id of collectionIds) {
-      const collection = await payload.findByID({
+      const collection = (await payload.findByID({
         collection: 'photo-collections',
         id: id as string,
         depth: 1,
-      }) as PhotoCollection | null
+      })) as PhotoCollection | null
       if (!collection) continue
 
       const photo = await getRepresentativePhoto(collection, payload)
@@ -229,7 +209,9 @@ async function PhotosPageContent({ page }: { page: NonNullable<Awaited<ReturnTyp
   return (
     <div className="container pt-8">
       <header className="mb-16">
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{page.title || 'Photos'}</h1>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+          {page.title || 'Photos'}
+        </h1>
         <Separator />
       </header>
       <PhotoGrid

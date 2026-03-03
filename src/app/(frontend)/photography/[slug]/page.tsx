@@ -1,9 +1,10 @@
 import type { Photo, PhotoCollection } from '@/payload-types'
 import type { Metadata } from 'next'
 
-import { PhotoGrid } from '@/components/PhotoGrid'
+import { PhotoGrid, type PhotoGridItem } from '@/components/PhotoGrid'
 import { Separator } from '@/components/Separator/Separator'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
@@ -74,6 +75,62 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
         : null
   const baseUrl = getPageUrl(indexPage)
   const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+
+  const childCollectionsResult = await payload.find({
+    collection: 'photo-collections',
+    depth: 1,
+    limit: 100,
+    overrideAccess: false,
+    pagination: false,
+    sort: ['displayOrder', 'name'],
+    where: {
+      and: [
+        { parent: { equals: collection.id } },
+        { hiddenFromIndex: { not_equals: true } },
+      ],
+    },
+  })
+
+  const childCollections = (childCollectionsResult.docs ?? []) as PhotoCollection[]
+  const isCollectionSet = childCollections.length > 0
+
+  if (isCollectionSet) {
+    const collectionsWithPhotos = await Promise.all(
+      childCollections.map(async (child) => {
+        const photo = await getRepresentativePhoto(child, payload)
+        return { collection: child, photo }
+      })
+    )
+
+    const items: PhotoGridItem[] = collectionsWithPhotos.map(({ collection: child, photo }) => ({
+      type: 'collection' as const,
+      photo,
+      collectionName: child.name,
+      href: `${basePath}/${child.slug}`,
+    }))
+
+    return (
+      <article className="pb-24">
+        <PayloadRedirects disableNotFound url={`${basePath}/${slug}`} />
+        <div className="container pt-8">
+          <header className="mb-16">
+            <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+              Photography / {collection.name}
+            </h1>
+            <Separator />
+          </header>
+          <PhotoGrid
+            items={items}
+            masonry={false}
+            cropToSquare={true}
+            showCollectionNames={true}
+            enableFullScreen={false}
+            enableCarousel={false}
+          />
+        </div>
+      </article>
+    )
+  }
 
   const where = getPhotoCollectionWhere(collection)
 

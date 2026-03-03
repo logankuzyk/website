@@ -13,7 +13,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 
 export type PhotoGridItem =
   | { type: 'photo'; photo: Photo }
-  | { type: 'collection'; photo: Photo; collectionName: string; href: string }
+  | { type: 'collection'; photo: Photo | null; collectionName: string; href: string }
 
 type PhotoGridProps = {
   items: PhotoGridItem[]
@@ -54,11 +54,14 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const [scrollMargin, setScrollMargin] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
+  const isClosingRef = useRef(false)
   const safeQueryReplace = useSafeQueryReplace()
   const searchParams = useSearchParams()
 
   const limitedItems = limit != null && limit > 0 ? items.slice(0, limit) : items
-  const photoItems = limitedItems.filter((i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo')
+  const photoItems = limitedItems.filter(
+    (i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo',
+  )
   const photosForCarousel = photoItems.map((i) => i.photo)
 
   const shouldVirtualize = cropToSquare || !masonry
@@ -122,6 +125,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   useEffect(() => {
     if (!mounted || !photoItems.length) return
+    if (isClosingRef.current) {
+      isClosingRef.current = false
+      return
+    }
     const photoId = searchParams.get('photo')
     if (!photoId) return
     const index = photoItems.findIndex((p) => p.photo.id === photoId)
@@ -129,7 +136,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       setCarouselIndex(index)
       if (shouldVirtualize && virtualizer) {
         const globalIndex = limitedItems.findIndex(
-          (item) => item.type === 'photo' && item.photo.id === photoId
+          (item) => item.type === 'photo' && item.photo.id === photoId,
         )
         if (globalIndex >= 0) {
           const rowIndex = Math.floor(globalIndex / columns)
@@ -149,6 +156,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   )
 
   const closeCarousel = useCallback(() => {
+    isClosingRef.current = true
     setCarouselIndex(null)
     setPhotoParam(null)
   }, [setPhotoParam])
@@ -207,12 +215,18 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     const content = (
       <>
         <div className={imageWrapperClass}>
-          <MediaComponent
-            resource={item.photo}
-            imgClassName={imgClass}
-            fill={cropToSquare}
-            {...(cropToSquare && { className: 'relative block size-full' })}
-          />
+          {item.photo ? (
+            <MediaComponent
+              resource={item.photo}
+              imgClassName={imgClass}
+              fill={cropToSquare}
+              {...(cropToSquare && { className: 'relative block size-full' })}
+            />
+          ) : (
+            <div className="flex size-full items-center justify-center bg-muted text-muted-foreground text-sm">
+              No photos
+            </div>
+          )}
         </div>
         {showCollectionNames && (
           <span className="mt-2 block text-left text-sm font-medium">{item.collectionName}</span>
@@ -221,11 +235,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     )
 
     return (
-      <Link
-        key={item.href}
-        href={item.href}
-        className={`block cursor-pointer ${cardBaseClass}`}
-      >
+      <Link key={item.href} href={item.href} className={`block cursor-pointer ${cardBaseClass}`}>
         {content}
       </Link>
     )
@@ -301,7 +311,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                   {rowItems.map((item, colIndex) => {
                     const itemIndex = startIndex + colIndex
                     return (
-                      <div key={item.type === 'photo' ? item.photo.id : item.href} className="w-full">
+                      <div
+                        key={item.type === 'photo' ? item.photo.id : item.href}
+                        className="w-full"
+                      >
                         {renderItem(item, itemIndex)}
                       </div>
                     )
