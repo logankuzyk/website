@@ -215,57 +215,24 @@ export interface Page {
     media?: (string | null) | Photo;
   };
   /**
-   * Choose the page layout. Career and Photos use predefined templates.
+   * Page layout. Use Default with blocks to build your page content.
    */
-  template: 'default' | 'career' | 'photos';
+  template: 'default';
   /**
-   * Display individual photos (from folder/tags) or photo collection previews.
+   * Add content blocks to build your page.
    */
-  photosSource?: ('photos' | 'collections') | null;
-  /**
-   * Select which Media folder to display. Create folders in Media to organize photo subcollections (e.g. landscapes, portraits).
-   */
-  photosFolder?: (string | null) | FolderInterface;
-  /**
-   * Filter to media with any of these tags. Combine with folder for more specific filtering.
-   */
-  photosTags?: (string | PhotoTag)[] | null;
-  /**
-   * Select photo collections to display. Each shows its cover or first photo.
-   */
-  photoCollections?: (string | PhotoCollection)[] | null;
-  /**
-   * Page used as the base for collection links. Collection URLs will be {pageUrl}/{collectionSlug}.
-   */
-  photosPhotographyIndexPage?: (string | null) | Page;
-  /**
-   * Use masonry layout. When off, uses a regular grid.
-   */
-  photosMasonry?: boolean | null;
-  /**
-   * Crop all photos to square aspect ratio.
-   */
-  photosCropToSquare?: boolean | null;
-  /**
-   * Show collection name below each collection preview.
-   */
-  photosShowCollectionNames?: boolean | null;
-  /**
-   * Allow clicking photos to open full screen view.
-   */
-  photosEnableFullScreen?: boolean | null;
-  /**
-   * Allow navigating between photos in full screen (only when full screen is enabled).
-   */
-  photosEnableCarousel?: boolean | null;
-  /**
-   * Maximum number of entries to display. Leave empty for no limit.
-   */
-  photosLimit?: number | null;
-  /**
-   * Add content blocks. Only shown when using Default template.
-   */
-  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | PhotoGridBlock)[] | null;
+  layout?:
+    | (
+        | CallToActionBlock
+        | ContentBlock
+        | MediaBlock
+        | ArchiveBlock
+        | FormBlock
+        | PhotoGridBlock
+        | ProjectsGridBlock
+        | CareerTimelineBlock
+      )[]
+    | null;
   meta?: {
     title?: string | null;
     /**
@@ -594,126 +561,6 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "photo-collections".
- */
-export interface PhotoCollection {
-  id: string;
-  name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  /**
-   * Optional parent collection. Leave empty for top-level sets.
-   */
-  parent?: (string | null) | PhotoCollection;
-  /**
-   * Optional description for the collection
-   */
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Optional cover image. If not set, the first photo in the collection is used.
-   */
-  coverImage?: (string | null) | Photo;
-  /**
-   * Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.
-   */
-  filter?:
-    | {
-        field:
-          | 'tags'
-          | 'folder'
-          | 'location'
-          | 'width'
-          | 'height'
-          | 'displayOrder'
-          | 'filesize'
-          | 'alt'
-          | 'filename'
-          | 'mimeType'
-          | 'exif.Make'
-          | 'exif.Model'
-          | 'exif.ISO'
-          | 'exif.FocalLength';
-        operator:
-          | 'equals'
-          | 'not_equals'
-          | 'contains'
-          | 'in'
-          | 'not_in'
-          | 'greater_than'
-          | 'less_than'
-          | 'greater_than_equal'
-          | 'less_than_equal'
-          | 'exists';
-        /**
-         * Select tags. Photos with any of these tags will match.
-         */
-        valueTags?: (string | PhotoTag)[] | null;
-        /**
-         * Select folder. Only photos in this folder will match.
-         */
-        valueFolder?: (string | null) | FolderInterface;
-        /**
-         * Select location(s). Photos in any of these locations will match.
-         */
-        valueLocation?: (string | Location)[] | null;
-        valueNumber?: number | null;
-        /**
-         * For "in" operator with multiple values, use comma-separated IDs.
-         */
-        valueText?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Controls order on the collections index (lower = earlier)
-   */
-  displayOrder?: number | null;
-  /**
-   * When checked, this collection is hidden from the gallery index but remains accessible via direct link
-   */
-  hiddenFromIndex?: boolean | null;
-  /**
-   * Use masonry layout on the collection page. When off, uses a regular grid.
-   */
-  displayMasonry?: boolean | null;
-  /**
-   * Crop all photos to square aspect ratio on the collection page.
-   */
-  displayCropToSquare?: boolean | null;
-  /**
-   * Allow clicking photos to open full screen view.
-   */
-  displayEnableFullScreen?: boolean | null;
-  /**
-   * Allow navigating between photos in full screen (only when full screen is enabled).
-   */
-  displayEnableCarousel?: boolean | null;
-  /**
-   * Maximum number of photos to display on the collection page. Leave empty for no limit.
-   */
-  displayLimit?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CallToActionBlock".
  */
 export interface CallToActionBlock {
@@ -843,6 +690,9 @@ export interface ArchiveBlock {
   populateBy?: ('collection' | 'selection') | null;
   relationTo?: 'posts' | null;
   categories?: (string | Category)[] | null;
+  /**
+   * Posts per page when using collection mode. Pagination uses ?page=n in the URL.
+   */
   limit?: number | null;
   selectedDocs?:
     | {
@@ -1122,6 +972,156 @@ export interface PhotoGridBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'photoGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photo-collections".
+ */
+export interface PhotoCollection {
+  id: string;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional parent collection. Leave empty for top-level sets.
+   */
+  parent?: (string | null) | PhotoCollection;
+  /**
+   * Optional description for the collection
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional cover image. If not set, the first photo in the collection is used.
+   */
+  coverImage?: (string | null) | Photo;
+  /**
+   * Filter photos by any property. Add conditions to define which photos appear in this collection. All conditions are combined with AND.
+   */
+  filter?:
+    | {
+        field:
+          | 'tags'
+          | 'folder'
+          | 'location'
+          | 'width'
+          | 'height'
+          | 'displayOrder'
+          | 'filesize'
+          | 'alt'
+          | 'filename'
+          | 'mimeType'
+          | 'exif.Make'
+          | 'exif.Model'
+          | 'exif.ISO'
+          | 'exif.FocalLength';
+        operator:
+          | 'equals'
+          | 'not_equals'
+          | 'contains'
+          | 'in'
+          | 'not_in'
+          | 'greater_than'
+          | 'less_than'
+          | 'greater_than_equal'
+          | 'less_than_equal'
+          | 'exists';
+        /**
+         * Select tags. Photos with any of these tags will match.
+         */
+        valueTags?: (string | PhotoTag)[] | null;
+        /**
+         * Select folder. Only photos in this folder will match.
+         */
+        valueFolder?: (string | null) | FolderInterface;
+        /**
+         * Select location(s). Photos in any of these locations will match.
+         */
+        valueLocation?: (string | Location)[] | null;
+        valueNumber?: number | null;
+        /**
+         * For "in" operator with multiple values, use comma-separated IDs.
+         */
+        valueText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Controls order on the collections index (lower = earlier)
+   */
+  displayOrder?: number | null;
+  /**
+   * When checked, this collection is hidden from the gallery index but remains accessible via direct link
+   */
+  hiddenFromIndex?: boolean | null;
+  /**
+   * Use masonry layout on the collection page. When off, uses a regular grid.
+   */
+  displayMasonry?: boolean | null;
+  /**
+   * Crop all photos to square aspect ratio on the collection page.
+   */
+  displayCropToSquare?: boolean | null;
+  /**
+   * Allow clicking photos to open full screen view.
+   */
+  displayEnableFullScreen?: boolean | null;
+  /**
+   * Allow navigating between photos in full screen (only when full screen is enabled).
+   */
+  displayEnableCarousel?: boolean | null;
+  /**
+   * Maximum number of photos to display on the collection page. Leave empty for no limit.
+   */
+  displayLimit?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectsGridBlock".
+ */
+export interface ProjectsGridBlock {
+  /**
+   * Optional section title. When provided, a separator is shown below it.
+   */
+  title?: string | null;
+  /**
+   * Maximum number of projects to display. Leave empty for no limit.
+   */
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectsGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CareerTimelineBlock".
+ */
+export interface CareerTimelineBlock {
+  /**
+   * Optional section title. When provided, a separator is shown below it.
+   */
+  title?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'careerTimeline';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1550,17 +1550,6 @@ export interface PagesSelect<T extends boolean = true> {
         media?: T;
       };
   template?: T;
-  photosSource?: T;
-  photosFolder?: T;
-  photosTags?: T;
-  photoCollections?: T;
-  photosPhotographyIndexPage?: T;
-  photosMasonry?: T;
-  photosCropToSquare?: T;
-  photosShowCollectionNames?: T;
-  photosEnableFullScreen?: T;
-  photosEnableCarousel?: T;
-  photosLimit?: T;
   layout?:
     | T
     | {
@@ -1570,6 +1559,8 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         photoGrid?: T | PhotoGridBlockSelect<T>;
+        projectsGrid?: T | ProjectsGridBlockSelect<T>;
+        careerTimeline?: T | CareerTimelineBlockSelect<T>;
       };
   meta?:
     | T
@@ -1689,6 +1680,25 @@ export interface PhotoGridBlockSelect<T extends boolean = true> {
   enableCarousel?: T;
   limit?: T;
   overscan?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectsGridBlock_select".
+ */
+export interface ProjectsGridBlockSelect<T extends boolean = true> {
+  title?: T;
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CareerTimelineBlock_select".
+ */
+export interface CareerTimelineBlockSelect<T extends boolean = true> {
+  title?: T;
   id?: T;
   blockName?: T;
 }

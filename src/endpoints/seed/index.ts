@@ -400,7 +400,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [contactPage, , photosPage] = await Promise.all([
+  const [contactPage, , photosPage, , ] = await Promise.all([
     payload.create({
       collection: 'pages',
       depth: 0,
@@ -413,10 +413,10 @@ export const seed = async ({
       data: {
         slug: 'career',
         title: 'Career',
-        template: 'career',
+        template: 'default',
         hero: { type: 'none' },
         _status: 'published',
-        layout: [],
+        layout: [{ blockType: 'careerTimeline', title: 'Career' }],
         meta: { title: 'Career', description: 'Professional experience and work history' },
       },
       req,
@@ -427,13 +427,53 @@ export const seed = async ({
       data: {
         slug: 'photography',
         title: 'Photos',
-        template: 'photos',
-        photosFolder: photosFolder.id,
-        photosTags: [tagLandscape.id, tagNature.id],
+        template: 'default',
         hero: { type: 'none' },
         _status: 'published',
-        layout: [],
+        layout: [
+          {
+            blockType: 'photoGrid',
+            source: 'collections',
+            photoCollections: [collectionLandscapes.id, collectionNature.id, collectionPortraits.id],
+            photographyIndexPage: null,
+          },
+        ],
         meta: { title: 'Photos', description: 'Photo gallery' },
+      },
+      req,
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: {
+        slug: 'projects',
+        title: 'Projects',
+        template: 'default',
+        hero: { type: 'none' },
+        _status: 'published',
+        layout: [{ blockType: 'projectsGrid', title: 'Projects' }],
+        meta: { title: 'Projects', description: 'A selection of projects and work' },
+      },
+      req,
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: {
+        slug: 'posts',
+        title: 'Posts',
+        template: 'default',
+        hero: { type: 'none' },
+        _status: 'published',
+        layout: [
+          {
+            blockType: 'archive',
+            populateBy: 'collection',
+            relationTo: 'posts',
+            limit: 12,
+          },
+        ],
+        meta: { title: "Logan's Posts", description: 'Blog posts' },
       },
       req,
     }),

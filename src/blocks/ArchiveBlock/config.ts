@@ -71,9 +71,10 @@ export const Archive: Block = {
       type: 'number',
       admin: {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
+        description: 'Posts per page when using collection mode. Pagination uses ?page=n in the URL.',
         step: 1,
       },
-      defaultValue: 10,
+      defaultValue: 12,
       label: 'Limit',
     },
     {
