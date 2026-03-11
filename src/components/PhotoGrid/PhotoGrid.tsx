@@ -170,14 +170,14 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   )
 
   const imageWrapperClass = cropToSquare
-    ? 'relative aspect-square w-full overflow-hidden border border-[var(--border-dim)] p-1'
-    : 'w-full overflow-hidden border border-[var(--border-dim)] p-1'
+    ? 'relative aspect-square w-full overflow-hidden'
+    : 'w-full overflow-hidden'
   const imgClass = cropToSquare
     ? 'object-cover object-center size-full'
     : 'w-full h-auto object-cover'
 
   const cardBaseClass =
-    'w-full overflow-hidden g-card text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+    'w-full overflow-hidden g-card text-left transition-opacity hover:opacity-90 focus:outline-none border-2 border-transparent focus:border-accent-frost'
 
   const renderPhotoCard = (item: Extract<PhotoGridItem, { type: 'photo' }>, index: number) => {
     const content = (

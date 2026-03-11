@@ -70,7 +70,7 @@ function PhotographyIndexContent({
                 <MediaComponent
                   resource={photo}
                   fill
-                  className="relative block size-full transition-transform duration-300 group-hover:scale-105"
+                  className="relative block size-full"
                   imgClassName="object-cover object-center"
                   loading="lazy"
                 />
