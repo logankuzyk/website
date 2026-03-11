@@ -12,13 +12,15 @@ export async function Footer() {
   const navItems = footerData?.navItems || []
 
   return (
-    <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-      <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-end">
-        <div className="flex flex-col-reverse items-start md:flex-row gap-4 md:items-center">
+    <footer
+      className="mt-auto border-t border-border bg-obsidian dark:bg-carbon [--link:var(--text-snow)] [--link-hover:var(--accent-frost)]"
+    >
+      <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-end md:items-center text-[var(--text-snow)] text-left">
+        <div className="flex flex-col-reverse items-start md:flex-row gap-6 md:items-center">
           <ThemeSelector />
-          <nav className="flex flex-col md:flex-row gap-4">
+          <nav className="flex flex-col md:flex-row gap-6 md:items-center items-start text-left">
             {navItems.map(({ link }, i) => {
-              return <CMSLink className="text-white" key={i} {...link} />
+              return <CMSLink key={i} {...link} appearance="link" />
             })}
           </nav>
         </div>
