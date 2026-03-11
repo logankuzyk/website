@@ -138,7 +138,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
     collection.displayLimit != null && collection.displayLimit > 0 ? collection.displayLimit : 200
   const photosResult = await payload.find({
     collection: 'photos',
-    depth: 1,
+    depth: 3,
     limit: fetchLimit,
     overrideAccess: false,
     sort: 'displayOrder',

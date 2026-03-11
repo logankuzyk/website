@@ -18,7 +18,7 @@ export async function getRepresentativePhoto(
   const where = getPhotoCollectionWhere(collection)
   const result = await payload.find({
     collection: 'photos',
-    depth: 1,
+    depth: 3,
     limit: 1,
     overrideAccess: false,
     sort: 'displayOrder',

@@ -131,12 +131,15 @@
   /* Obsidian & Frost (dark mode backgrounds) */
   --obsidian: #05070a;
   --carbon: #12151c;
+  /* Glacier variants */
+  --glacier-medium: #aaaaaa;
 
   /* --- 2. Semantic aliases → palette --- */
   --bg-obsidian: var(--obsidian);
   --bg-carbon: var(--carbon);
   --text-snow: var(--nord6);
   --text-glacier: var(--nord3);
+  --text-glacier-medium: var(--glacier-medium);
   --accent-frost: var(--nord8);
   --border-dim: color-mix(in srgb, var(--nord6) 10%, transparent);
 
@@ -300,6 +303,7 @@
   --color-bg-carbon: var(--bg-carbon);
   --color-text-snow: var(--text-snow);
   --color-text-glacier: var(--text-glacier);
+  --color-glacier-medium: var(--glacier-medium);
   --color-accent-frost: var(--accent-frost);
   --color-border-dim: var(--border-dim);
   --color-link: var(--link);
@@ -337,24 +341,3 @@ html[data-theme='light'] {
   color: var(--link-hover);
 }
 
-/* EXIF data table - Obsidian & Frost */
-table.exif-data {
-  width: 100%;
-  border-collapse: collapse;
-}
-table.exif-data th {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  color: var(--text-glacier);
-  text-align: left;
-  padding: 0.5rem 0.75rem 0.5rem 0;
-  border-bottom: 1px solid var(--border-dim);
-}
-table.exif-data td {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent-frost);
-  text-align: right;
-  padding: 0.5rem 0 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--border-dim);
-}

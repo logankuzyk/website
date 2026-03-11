@@ -36,7 +36,7 @@ async function getRepresentativePhotoForCollection(
   const where = getPhotoCollectionWhere(collection)
   const result = await payload.find({
     collection: 'photos',
-    depth: 1,
+    depth: 3,
     limit: 1,
     overrideAccess: false,
     sort: 'displayOrder',
@@ -248,7 +248,7 @@ async function PhotosPageContent({
     const fetchLimit = page.photosLimit != null && page.photosLimit > 0 ? page.photosLimit : 200
     const result = await payload.find({
       collection: 'photos',
-      depth: 1,
+      depth: 3,
       limit: fetchLimit,
       overrideAccess: false,
       sort: 'displayOrder',

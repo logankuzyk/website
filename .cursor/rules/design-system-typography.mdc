@@ -99,7 +99,7 @@ Use these in components for theme-aware typography.
 
 - **Headings (H1/H2)**: `font-serif tracking-[-0.01em]` + size
 - **Body**: `font-sans` (default), `leading-[1.6]` for body copy
-- **EXIF / tech data**: `font-mono text-sm` — use `table.exif-data` for EXIF tables
+- **EXIF / tech data**: `font-mono text-sm` — use `ExifSection` component with `formatExif` helpers
 - **UI labels**: `font-mono text-xs uppercase tracking-wider`
 
 ## Obsidian & Frost Theme
@@ -121,4 +121,4 @@ Core principles for the Technical Editorial design system:
 | `--accent-frost` | #88C0D0 | Data, UI accents |
 | `--border-dim` | rgba(236,239,244,0.1) | Subtle dividers |
 
-**EXIF table**: Labels use Geist Sans Bold + `--text-glacier`; values use Geist Mono + `--accent-frost`.
+**EXIF display**: Labels use Geist Sans + `--text-glacier`; values use Geist Mono + `--accent-frost`. Use `formatExif` utilities for shutter speed, focal length, aperture, ISO, and date.

@@ -230,35 +230,17 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
           </IconButton>
         )}
 
-        {/* Bottom center: gallery index + chevron to open drawer - only when carousel enabled */}
-        <div
-          className={`pointer-events-auto absolute bottom-0 left-1/2 z-30 flex w-full -translate-x-1/2 flex-col items-center gap-1 pb-4 md:max-w-[33vw] ${!drawerOpen ? '' : 'invisible'}`}
-        >
-          {carouselEnabled && (
-            <span className="text-sm text-white/70">
-              {index + 1} / {photos.length}
-            </span>
-          )}
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation()
-              toggleDrawer()
-            }}
-            className="text-white/80 hover:bg-white/10 hover:text-white"
-            aria-label="Open info"
-            aria-expanded={false}
-          >
-            <ChevronUp />
-          </IconButton>
-        </div>
       </div>
 
-      {/* Photo info drawer - slides over chevron + index when opened */}
+      {/* Photo info drawer - toggle bar stays fixed at bottom, content expands above */}
       <PhotoInfoDrawer
         photo={currentPhoto}
         open={drawerOpen}
         onToggle={toggleDrawer}
         uiVisible={uiVisible}
+        index={index}
+        total={photos.length}
+        carouselEnabled={carouselEnabled}
       />
     </div>
   )

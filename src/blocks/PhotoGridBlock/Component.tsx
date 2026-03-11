@@ -107,7 +107,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     const fetchLimit = limit != null && limit > 0 ? limit : 200
     const result = await payload.find({
       collection: 'photos',
-      depth: 1,
+      depth: 3,
       limit: fetchLimit,
       overrideAccess: false,
       sort: 'displayOrder',
