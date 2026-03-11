@@ -1,0 +1,124 @@
+---
+description: Typography design system - font roles, usage guidelines, type scale
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# Typography Design System
+
+Typography for the Photography & Tech Portfolio. Goal: modern tech-journal feel (Vercel meets Leica).
+
+## Font Stack
+
+| Font | Role | CSS Variable | Use For |
+|------|------|--------------|---------|
+| **Instrument Serif** | Primary (serif) | `--font-serif` / `font-serif` | Headings, storytelling |
+| **Geist Sans** | Secondary (sans) | `--font-sans` / `font-sans` | Body, UI, navigation |
+| **Geist Mono** | Functional (mono) | `--font-mono` / `font-mono` | EXIF, specs, labels |
+
+## When to Use Each Font
+
+### Instrument Serif (The Voice)
+
+High-level storytelling. Use for:
+
+- Page titles (H1)
+- Project names (H2)
+- Hero quotes (large pull quotes)
+
+**Styling**: Use `letter-spacing: -0.01em` (`tracking-[-0.01em]`) for Obsidian & Frost editorial feel.
+
+```tsx
+<h1 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">Page Title</h1>
+```
+
+### Geist Sans (The Bridge)
+
+The workhorse. Use for:
+
+- Body text and long-form descriptions
+- Project descriptions
+- Primary navigation menus
+
+Should feel "invisible" — ensures legibility without drawing attention.
+
+### Geist Mono (The Data)
+
+Infrastructure and fact-based UI. Use for:
+
+- **EXIF data tables**: Aperture, Shutter Speed, ISO
+- **Technical specs**: Tech stack, software versions
+- **UI labels**: Small all-caps like "VIEW PROJECT" or "SCROLL"
+- **Captions**: Small image descriptions with technical archive look
+
+```tsx
+<span className="font-mono text-xs uppercase tracking-wider">VIEW PROJECT</span>
+<dl className="font-mono text-sm">...</dl>
+```
+
+## Visual Hierarchy
+
+Typical project/photography page structure:
+
+1. **H1** — Instrument Serif, large (text-4xl/5xl), tracking-[-0.01em]
+2. **Mono label** — Geist Mono, text-xs, uppercase (e.g. "VIEW PROJECT")
+3. **Body** — Geist Sans, text-base or text-lg
+4. **EXIF / specs** — Geist Mono, text-sm
+
+## Type Scale (Major Third: 1.250, max 48px)
+
+| Token | Size | Use Case |
+|-------|------|----------|
+| `text-xs` | 0.64rem | Mono labels, captions |
+| `text-sm` | 0.8rem | Small body, metadata |
+| `text-base` | 1rem | Body copy |
+| `text-lg` | 1.25rem | Lead paragraphs |
+| `text-xl` | 1.563rem | H3, subheadings |
+| `text-2xl` | 1.953rem | H2, project names |
+| `text-3xl` | 2.441rem | Section titles |
+| `text-4xl` | 1.875rem | Page titles (base) |
+| `text-5xl` | 3rem | Page titles (md), hero |
+| `text-6xl` | 3rem | Hero display (capped at 48px) |
+
+## CSS Variables
+
+**Font families**: `--font-serif`, `--font-sans`, `--font-mono` (in `@theme`)
+
+**Font weights** (theme-aware for accessibility):
+
+| Variable | Light Mode | Dark Mode |
+|----------|------------|-----------|
+| `--font-weight-body` | 400 | 450 |
+| `--font-weight-heading` | 500 | 500 |
+| `--font-weight-muted` | 400 | 450 |
+| `--font-weight-mono-label` | 500 | 500 |
+
+Use these in components for theme-aware typography.
+
+## Quick Reference
+
+- **Headings (H1/H2)**: `font-serif tracking-[-0.01em]` + size
+- **Body**: `font-sans` (default), `leading-[1.6]` for body copy
+- **EXIF / tech data**: `font-mono text-sm` — use `table.exif-data` for EXIF tables
+- **UI labels**: `font-mono text-xs uppercase tracking-wider`
+
+## Obsidian & Frost Theme
+
+Core principles for the Technical Editorial design system:
+
+- **Zero border radius**: Every UI element has 0px border-radius (sharp 90-degree edges)
+- **Border-driven hierarchy**: Use 1px solid borders instead of box-shadows for sections/containers
+- **High-contrast dark mode**: Deep ink-like background to prioritize photography
+
+**Palette (CSS variables)**:
+
+| Variable | Value | Use |
+|----------|-------|-----|
+| `--bg-obsidian` | #05070A | Main background |
+| `--bg-carbon` | #12151C | Surface, cards, nav |
+| `--text-snow` | #ECEFF4 | Primary headings |
+| `--text-glacier` | #4C566A | Secondary body |
+| `--accent-frost` | #88C0D0 | Data, UI accents |
+| `--border-dim` | rgba(236,239,244,0.1) | Subtle dividers |
+
+**EXIF table**: Labels use Geist Sans Bold + `--text-glacier`; values use Geist Mono + `--accent-frost`.

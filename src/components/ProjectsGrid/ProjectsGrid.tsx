@@ -23,8 +23,8 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
           key={project.id}
           href={`/projects/${project.slug}`}
           className={cn(
-            'group flex flex-col overflow-hidden rounded-lg border border-border bg-card',
-            'transition-shadow duration-200 hover:border-foreground/20 hover:shadow-md',
+            'group flex flex-col overflow-hidden border border-border bg-card',
+            'transition-colors duration-200 hover:border-foreground/20',
           )}
         >
           {/* Thumbnail - fixed aspect ratio */}
@@ -39,7 +39,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
 
           {/* Content */}
           <div className="flex flex-1 flex-col p-6">
-            <h2 className="text-lg font-semibold tracking-tight">{project.title}</h2>
+            <h2 className="font-serif text-lg tracking-tight">{project.title}</h2>
             <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
               {project.description}
             </p>

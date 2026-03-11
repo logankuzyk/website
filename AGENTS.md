@@ -1132,6 +1132,13 @@ For deeper exploration of specific topics, refer to the context files located in
     - Performance best practices
     - Styling components
 
+14. **`design-system-typography.mdc`** - Frontend typography design system
+
+    - Font stack (EB Garamond, Geist Sans, Geist Mono)
+    - When to use each font
+    - Visual hierarchy and usage guidelines
+    - Type scale and accessibility
+
 ## Resources
 
 - Docs: https://payloadcms.com/docs

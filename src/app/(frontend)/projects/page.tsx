@@ -28,7 +28,7 @@ export default async function ProjectsPage() {
     <article className="pt-24 pb-24">
       <div className="container">
         <header className="mb-16">
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Projects</h1>
+          <h1 className="font-serif text-4xl tracking-tight md:text-5xl">Projects</h1>
           <Separator />
           <p className="mt-6 max-w-2xl text-muted-foreground">
             A selection of projects I&apos;ve worked on. Click any card to view details.

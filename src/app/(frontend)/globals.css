@@ -43,8 +43,20 @@
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 86rem;
-  --font-mono: var(--font-geist-mono);
-  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* Major Third type scale (1.250), max 48px */
+  --text-xs: 0.64rem;
+  --text-sm: 0.8rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.563rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+  --text-4xl: 1.875rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3rem;
 }
 
 @layer utilities {
@@ -86,84 +98,160 @@
   }
 }
 
+/* ==========================================================================
+   Color palette
+   Section 1: All hex values defined here. No hex codes elsewhere.
+   Section 2: Semantic aliases map to palette names.
+   Section 3: Theme variables map to palette or aliases.
+   ========================================================================== */
 :root {
-  --background: oklch(100% 0 0deg);
-  --foreground: oklch(14.5% 0 0deg);
-  --card: oklch(96.5% 0.005 265deg);
-  --card-foreground: oklch(14.5% 0 0deg);
-  --popover: oklch(100% 0 0deg);
-  --popover-foreground: oklch(14.5% 0 0deg);
-  --primary: oklch(20.5% 0 0deg);
-  --primary-foreground: oklch(98.5% 0 0deg);
-  --secondary: oklch(97% 0 0deg);
-  --secondary-foreground: oklch(20.5% 0 0deg);
-  --muted: oklch(97% 0 0deg);
-  --muted-foreground: oklch(55.6% 0 0deg);
-  --accent: oklch(97% 0 0deg);
-  --accent-foreground: oklch(20.5% 0 0deg);
-  --destructive: oklch(57.7% 0.245 27.325deg);
-  --destructive-foreground: oklch(57.7% 0.245 27.325deg);
-  --border: oklch(92.2% 0 0deg);
-  --input: oklch(92.2% 0 0deg);
-  --ring: oklch(70.8% 0 0deg);
-  --chart-1: oklch(64.6% 0.222 41.116deg);
-  --chart-2: oklch(60% 0.118 184.704deg);
-  --chart-3: oklch(39.8% 0.07 227.392deg);
-  --chart-4: oklch(82.8% 0.189 84.429deg);
-  --chart-5: oklch(76.9% 0.188 70.08deg);
-  --radius: 0.625rem;
-  --sidebar: oklch(98.5% 0 0deg);
-  --sidebar-foreground: oklch(14.5% 0 0deg);
-  --sidebar-primary: oklch(20.5% 0 0deg);
-  --sidebar-primary-foreground: oklch(98.5% 0 0deg);
-  --sidebar-accent: oklch(97% 0 0deg);
-  --sidebar-accent-foreground: oklch(20.5% 0 0deg);
-  --sidebar-border: oklch(92.2% 0 0deg);
-  --sidebar-ring: oklch(70.8% 0 0deg);
-  --success: oklch(78% 0.08 200deg);
-  --warning: oklch(89% 0.1 75deg);
-  --error: oklch(75% 0.15 25deg);
+  /* --- 1. Palette (hex values only) --- */
+  /* Nord - https://www.nordtheme.com/ */
+  /* Polar Night */
+  --nord0: #2e3440;
+  --nord1: #3b4252;
+  --nord2: #434c5e;
+  --nord3: #4c566a;
+  /* Snow Storm */
+  --nord4: #d8dee9;
+  --nord5: #e5e9f0;
+  --nord6: #eceff4;
+  /* Frost */
+  --nord7: #8fbcbb;
+  --nord8: #88c0d0;
+  --nord9: #81a1c1;
+  --nord10: #5e81ac;
+  /* Aurora */
+  --nord11: #bf616a;
+  --nord12: #d08770;
+  --nord13: #ebcb8b;
+  --nord14: #a3be8c;
+  --nord15: #b48ead;
+  /* Obsidian & Frost (dark mode backgrounds) */
+  --obsidian: #05070a;
+  --carbon: #12151c;
+
+  /* --- 2. Semantic aliases → palette --- */
+  --bg-obsidian: var(--obsidian);
+  --bg-carbon: var(--carbon);
+  --text-snow: var(--nord6);
+  --text-glacier: var(--nord3);
+  --accent-frost: var(--nord8);
+  --border-dim: color-mix(in srgb, var(--nord6) 10%, transparent);
+
+  /* --- Font weights --- */
+  --font-weight-body: 400;
+  --font-weight-heading: 500;
+  --font-weight-muted: 400;
+  --font-weight-mono-label: 500;
+
+  /* --- 3. Light mode: theme variables → palette / aliases --- */
+  --background: var(--nord6);
+  --foreground: var(--nord0);
+  --card: var(--nord5);
+  --card-foreground: var(--nord0);
+  --popover: var(--nord6);
+  --popover-foreground: var(--nord0);
+  --primary: var(--nord10);
+  --primary-foreground: var(--nord6);
+  --secondary: var(--nord5);
+  --secondary-foreground: var(--nord0);
+  --muted: var(--nord5);
+  --muted-foreground: var(--nord3);
+  --accent: var(--nord8);
+  --accent-foreground: var(--nord0);
+  --destructive: var(--nord11);
+  --destructive-foreground: var(--nord6);
+  --border: var(--nord4);
+  --input: var(--nord5);
+  --ring: var(--nord8);
+  --chart-1: var(--nord9);
+  --chart-2: var(--nord14);
+  --chart-3: var(--nord8);
+  --chart-4: var(--nord15);
+  --chart-5: var(--nord12);
+  --sidebar: var(--nord5);
+  --sidebar-foreground: var(--nord0);
+  --sidebar-primary: var(--nord10);
+  --sidebar-primary-foreground: var(--nord6);
+  --sidebar-accent: var(--nord5);
+  --sidebar-accent-foreground: var(--nord0);
+  --sidebar-border: var(--nord4);
+  --sidebar-ring: var(--nord8);
+  --success: var(--nord14);
+  --warning: var(--nord13);
+  --error: var(--nord11);
+  --link: var(--primary);
+  --link-hover: var(--accent);
+
+  --radius: 0;
 }
 
 [data-theme='dark'] {
-  --background: oklch(14.5% 0 0deg);
-  --foreground: oklch(98.5% 0 0deg);
-  --card: oklch(17% 0 0deg);
-  --card-foreground: oklch(98.5% 0 0deg);
-  --popover: oklch(14.5% 0 0deg);
-  --popover-foreground: oklch(98.5% 0 0deg);
-  --primary: oklch(98.5% 0 0deg);
-  --primary-foreground: oklch(20.5% 0 0deg);
-  --secondary: oklch(26.9% 0 0deg);
-  --secondary-foreground: oklch(98.5% 0 0deg);
-  --muted: oklch(26.9% 0 0deg);
-  --muted-foreground: oklch(70.8% 0 0deg);
-  --accent: oklch(26.9% 0 0deg);
-  --accent-foreground: oklch(98.5% 0 0deg);
-  --destructive: oklch(39.6% 0.141 25.723deg);
-  --destructive-foreground: oklch(63.7% 0.237 25.331deg);
-  --border: oklch(26.9% 0 0deg);
-  --input: oklch(26.9% 0 0deg);
-  --ring: oklch(43.9% 0 0deg);
-  --chart-1: oklch(48.8% 0.243 264.376deg);
-  --chart-2: oklch(69.6% 0.17 162.48deg);
-  --chart-3: oklch(76.9% 0.188 70.08deg);
-  --chart-4: oklch(62.7% 0.265 303.9deg);
-  --chart-5: oklch(64.5% 0.246 16.439deg);
-  --sidebar: oklch(20.5% 0 0deg);
-  --sidebar-foreground: oklch(98.5% 0 0deg);
-  --sidebar-primary: oklch(48.8% 0.243 264.376deg);
-  --sidebar-primary-foreground: oklch(98.5% 0 0deg);
-  --sidebar-accent: oklch(26.9% 0 0deg);
-  --sidebar-accent-foreground: oklch(98.5% 0 0deg);
-  --sidebar-border: oklch(26.9% 0 0deg);
-  --sidebar-ring: oklch(43.9% 0 0deg);
-  --success: oklch(28% 0.1 200deg);
-  --warning: oklch(35% 0.08 70deg);
-  --error: oklch(45% 0.1 25deg);
+  /* --- 3. Dark mode: theme variables → palette / aliases --- */
+  --background: var(--bg-obsidian);
+  --foreground: var(--text-snow);
+  --card: var(--bg-carbon);
+  --card-foreground: var(--text-snow);
+  --popover: var(--bg-carbon);
+  --popover-foreground: var(--text-snow);
+  --primary: var(--accent-frost);
+  --primary-foreground: var(--obsidian);
+  --secondary: var(--bg-carbon);
+  --secondary-foreground: var(--text-snow);
+  --muted: var(--bg-carbon);
+  --muted-foreground: var(--text-glacier);
+  --accent: var(--accent-frost);
+  --accent-foreground: var(--obsidian);
+  --destructive: var(--nord11);
+  --destructive-foreground: var(--nord6);
+  --border: var(--border-dim);
+  --input: var(--bg-carbon);
+  --ring: var(--accent-frost);
+  --chart-1: var(--nord9);
+  --chart-2: var(--nord14);
+  --chart-3: var(--nord8);
+  --chart-4: var(--nord15);
+  --chart-5: var(--nord12);
+  --sidebar: var(--bg-carbon);
+  --sidebar-foreground: var(--nord6);
+  --sidebar-primary: var(--accent-frost);
+  --sidebar-primary-foreground: var(--obsidian);
+  --sidebar-accent: var(--bg-carbon);
+  --sidebar-accent-foreground: var(--text-snow);
+  --sidebar-border: var(--border-dim);
+  --sidebar-ring: var(--nord8);
+  --success: var(--nord14);
+  --warning: var(--nord13);
+  --error: var(--nord11);
+  --link: var(--text-snow);
+  --link-hover: var(--accent-frost);
+
+  --font-weight-body: 450;
+  --font-weight-heading: 500;
+  --font-weight-muted: 450;
+  --font-weight-mono-label: 500;
+  --radius: 0;
 }
 
 @theme inline {
+  /* Nord palette - use as bg-nord0, text-nord8, etc. */
+  --color-nord0: var(--nord0);
+  --color-nord1: var(--nord1);
+  --color-nord2: var(--nord2);
+  --color-nord3: var(--nord3);
+  --color-nord4: var(--nord4);
+  --color-nord5: var(--nord5);
+  --color-nord6: var(--nord6);
+  --color-nord7: var(--nord7);
+  --color-nord8: var(--nord8);
+  --color-nord9: var(--nord9);
+  --color-nord10: var(--nord10);
+  --color-nord11: var(--nord11);
+  --color-nord12: var(--nord12);
+  --color-nord13: var(--nord13);
+  --color-nord14: var(--nord14);
+  --color-nord15: var(--nord15);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -188,10 +276,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -203,6 +291,18 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  /* Palette - obsidian, carbon for direct use */
+  --color-obsidian: var(--obsidian);
+  --color-carbon: var(--carbon);
+  /* Semantic aliases */
+  --color-bg-obsidian: var(--bg-obsidian);
+  --color-bg-carbon: var(--bg-carbon);
+  --color-text-snow: var(--text-snow);
+  --color-text-glacier: var(--text-glacier);
+  --color-accent-frost: var(--accent-frost);
+  --color-border-dim: var(--border-dim);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
 }
 
 @layer base {
@@ -210,7 +310,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground min-h-[100vh] flex flex-col;
+    @apply bg-background font-sans text-foreground min-h-screen flex flex-col;
   }
 }
 
@@ -221,4 +321,38 @@ html {
 html[data-theme='dark'],
 html[data-theme='light'] {
   opacity: initial;
+}
+
+/* Links in dark mode - monochromatic default, accent on hover */
+[data-theme='dark'] .prose a,
+[data-theme='dark'] .prose-invert a,
+[data-theme='dark'] .payload-richtext a {
+  color: var(--link);
+}
+[data-theme='dark'] .prose a:hover,
+[data-theme='dark'] .prose-invert a:hover,
+[data-theme='dark'] .payload-richtext a:hover {
+  color: var(--link-hover);
+}
+
+/* EXIF data table - Obsidian & Frost */
+table.exif-data {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.exif-data th {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--text-glacier);
+  text-align: left;
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--border-dim);
+}
+table.exif-data td {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-frost);
+  text-align: right;
+  padding: 0.5rem 0 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border-dim);
 }

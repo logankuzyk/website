@@ -22,7 +22,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
         {/* Profile image */}
         {profileImage && typeof profileImage === 'object' && (
           <div className="shrink-0">
-            <div className="relative h-48 w-48 overflow-hidden border border-border md:h-64 md:w-64">
+            <div className="relative h-48 w-48 overflow-hidden border border-[var(--border-dim)] p-1 md:h-64 md:w-64">
               <Media resource={profileImage} imgClassName="h-full w-full object-cover" />
             </div>
           </div>
@@ -31,12 +31,16 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
         {/* Text block */}
         <div className="flex max-w-xl flex-col items-center text-center md:items-start md:text-left">
           {name && (
-            <h1 className="text-4xl font-semibold tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl lg:text-6xl">
               {name}
             </h1>
           )}
-          {role && <p className="mt-4 text-xl text-muted-foreground md:text-2xl">{role}</p>}
-          {bio && <p className="mt-6 text-muted-foreground leading-relaxed">{bio}</p>}
+          {role && (
+            <p className="mt-4 text-xl leading-[1.6] text-muted-foreground md:text-2xl">{role}</p>
+          )}
+          {bio && (
+            <p className="mt-6 leading-[1.6] text-muted-foreground">{bio}</p>
+          )}
         </div>
       </div>
     </section>

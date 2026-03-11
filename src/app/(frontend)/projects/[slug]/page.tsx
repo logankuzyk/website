@@ -47,11 +47,11 @@ export default async function ProjectDetailPage({ params: paramsPromise }: Args)
 
       <div className="container">
         <header className="mb-12 max-w-3xl">
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+          <h1 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">
             {project.title}
           </h1>
           {project.description && (
-            <p className="mt-4 text-lg text-muted-foreground">{project.description}</p>
+            <p className="mt-4 text-lg leading-[1.6] text-muted-foreground">{project.description}</p>
           )}
         </header>
 

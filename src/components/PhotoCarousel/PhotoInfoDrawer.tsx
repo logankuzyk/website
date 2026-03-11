@@ -52,7 +52,7 @@ export const PhotoInfoDrawer: React.FC<PhotoInfoDrawerProps> = ({
 
   return (
     <div
-      className={`fixed bottom-0 left-1/2 z-40 w-full -translate-x-1/2 bg-black/95 text-white shadow-2xl transition-opacity duration-200 md:max-w-[33vw] ${drawerVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+      className={`fixed bottom-0 left-1/2 z-40 w-full -translate-x-1/2 border border-[var(--border-dim)] bg-black/95 text-white transition-opacity duration-200 md:max-w-[33vw] ${drawerVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
     >
       {/* Drawer panel - slides up over chevron + index when open */}
       <div
@@ -112,7 +112,7 @@ function PhotoInfoContent({
           download={filename}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex w-full items-center rounded-md border border-white/20 px-3 py-2 text-sm text-white transition-colors hover:bg-white/10 sm:w-auto"
+          className="inline-flex w-full items-center border border-[var(--border-dim)] px-3 py-2 text-sm text-white transition-colors hover:bg-white/10 sm:w-auto"
         >
           <Download className="mr-2 size-4" />
           Download
@@ -121,7 +121,7 @@ function PhotoInfoContent({
 
       {photo.caption && (
         <section className="mb-6">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-white/50">Description</h3>
+          <h3 className="mb-3 font-mono text-xs font-medium uppercase tracking-wider text-white/50">Description</h3>
           <div className="prose prose-invert max-w-none text-sm leading-relaxed prose-p:mb-2 prose-p:last:mb-0">
             <RichText data={photo.caption} enableGutter={false} enableProse={false} />
           </div>
@@ -130,12 +130,12 @@ function PhotoInfoContent({
 
       {tags.length > 0 && (
         <section className="mb-6">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-white/50">Tags</h3>
+          <h3 className="mb-3 font-mono text-xs font-medium uppercase tracking-wider text-white/50">Tags</h3>
           <div className="flex flex-wrap gap-2">
             {tags.map((name) => (
               <span
                 key={String(name)}
-                className="rounded-md bg-white/15 px-2.5 py-1 text-sm text-white/90"
+                className="border border-[var(--border-dim)] bg-white/15 px-2.5 py-1 text-sm text-white/90"
               >
                 {name}
               </span>
@@ -146,15 +146,17 @@ function PhotoInfoContent({
 
       {exifEntries.length > 0 && (
         <section className="mb-6">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-white/50">Camera & EXIF</h3>
-          <dl className="space-y-2.5 text-sm">
-            {exifEntries.map(([key, value]) => (
-              <div key={key} className="flex justify-between gap-4 border-b border-white/10 pb-2 last:border-0">
-                <dt className="text-white/50">{EXIF_LABELS[key] ?? key}</dt>
-                <dd className="text-right font-medium text-white/90">{String(value)}</dd>
-              </div>
-            ))}
-          </dl>
+          <h3 className="mb-3 font-mono text-xs font-medium uppercase tracking-wider text-white/50">Camera & EXIF</h3>
+          <table className="exif-data">
+            <tbody>
+              {exifEntries.map(([key, value]) => (
+                <tr key={key}>
+                  <th scope="row">{EXIF_LABELS[key] ?? key}</th>
+                  <td>{String(value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       )}
 

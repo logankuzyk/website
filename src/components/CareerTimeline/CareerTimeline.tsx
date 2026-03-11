@@ -41,7 +41,7 @@ export const CareerTimeline: React.FC<CareerTimelineProps> = ({ entries }) => {
               <div className="relative z-10 flex shrink-0 items-center justify-center">
                 <div
                   className={cn(
-                    'flex h-6 w-6 items-center justify-center rounded-full border-2 border-border bg-background text-[10px] font-medium md:h-8 md:w-8 md:text-xs',
+                    'flex h-6 w-6 items-center justify-center border-2 border-border bg-background text-[10px] font-medium md:h-8 md:w-8 md:text-xs',
                     isFirst && 'border-primary/50',
                   )}
                   aria-hidden
@@ -54,7 +54,7 @@ export const CareerTimeline: React.FC<CareerTimelineProps> = ({ entries }) => {
               <div className="min-w-0 flex-1 pb-2">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-xl font-semibold tracking-tight md:text-2xl">
+                    <h2 className="font-serif text-xl tracking-tight md:text-2xl">
                       {entry.company}
                     </h2>
                     <p className="mt-1 text-sm font-medium text-muted-foreground">
@@ -71,7 +71,7 @@ export const CareerTimeline: React.FC<CareerTimelineProps> = ({ entries }) => {
                   {/* Logo */}
                   {entry.logo && typeof entry.logo === 'object' && (
                     <div className="shrink-0">
-                      <div className="h-16 w-16 overflow-hidden rounded border border-border md:h-20 md:w-20">
+                      <div className="h-16 w-16 overflow-hidden border border-[var(--border-dim)] p-1 md:h-20 md:w-20">
                         <Media
                           resource={entry.logo}
                           imgClassName="h-full w-full object-cover"

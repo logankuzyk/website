@@ -113,7 +113,7 @@ async function CareerPageContent() {
   return (
     <div className="container pt-8">
       <header className="mb-16">
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Career</h1>
+        <h1 className="font-serif text-4xl tracking-tight md:text-5xl">Career</h1>
         <Separator />
       </header>
       <CareerTimeline entries={docs} />
@@ -209,7 +209,7 @@ async function PhotosPageContent({
   return (
     <div className="container pt-8">
       <header className="mb-16">
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+        <h1 className="font-serif text-4xl tracking-tight md:text-5xl">
           {page.title || 'Photos'}
         </h1>
         <Separator />

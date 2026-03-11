@@ -146,7 +146,9 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     <div className="container pt-8" id={id ? `block-${id}` : undefined}>
       {hasTitle && (
         <header className="mb-16">
-          <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">{title}</h2>
+          <h2 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">
+            {title}
+          </h2>
           <Separator />
         </header>
       )}

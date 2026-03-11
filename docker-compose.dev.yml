@@ -4,7 +4,7 @@
 # Default dev credentials (used when MONGO_USERNAME/MONGO_PASSWORD are not in .env):
 #   admin / devpassword
 # Use the same in DATABASE_URL for npm run dev, e.g.:
-#   DATABASE_URL=mongodb://admin:devpassword@127.0.0.1:27017/logankuzyk?authSource=admin
+  # DATABASE_URL=mongodb://admin:devpassword@127.0.0.1:27017/logankuzyk?authSource=admin
 
 services:
   mongo:

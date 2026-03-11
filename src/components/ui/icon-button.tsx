@@ -18,7 +18,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       ref={ref}
       type="button"
       className={cn(
-        'inline-flex items-center justify-center rounded-full transition-colors [&_svg]:size-6 [&_svg]:shrink-0',
+        'inline-flex items-center justify-center transition-colors [&_svg]:size-6 [&_svg]:shrink-0',
         iconButtonVariants.size[size],
         className,
       )}
