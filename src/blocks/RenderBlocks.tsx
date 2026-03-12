@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 
 import type { Page } from '@/payload-types'
 
@@ -36,7 +36,7 @@ export const RenderBlocks: React.FC<{
 
   if (hasBlocks) {
     return (
-      <Fragment>
+      <div className="space-y-16">
         {blocks.map((block, index) => {
           const { blockType } = block
 
@@ -50,7 +50,7 @@ export const RenderBlocks: React.FC<{
                   : { ...block, disableInnerContainer: true }
 
               return (
-                <div className="my-16" key={index}>
+                <div key={index}>
                   {/* @ts-expect-error there may be some mismatch between the expected types here */}
                   <Block {...blockProps} />
                 </div>
@@ -59,7 +59,7 @@ export const RenderBlocks: React.FC<{
           }
           return null
         })}
-      </Fragment>
+      </div>
     )
   }
 

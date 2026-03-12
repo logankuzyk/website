@@ -8,7 +8,7 @@ type SeparatorProps = {
 
 export const Separator: React.FC<SeparatorProps> = ({ className }) => (
   <div
-    className={cn('mt-4 h-px w-full bg-foreground/20', className)}
+    className={cn('mt-4 w-full border-t border-border', className)}
     aria-hidden
   />
 )

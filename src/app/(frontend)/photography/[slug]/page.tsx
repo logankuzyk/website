@@ -113,7 +113,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
       <article className="pb-24">
         <PayloadRedirects disableNotFound url={`${basePath}/${slug}`} />
         <div className="container pt-8">
-          <header className="mb-16">
+          <header className="mb-12">
             <h1 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">
               Photography / {collection.name}
             </h1>
@@ -152,7 +152,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
     <article className="pb-24">
       <PayloadRedirects disableNotFound url={`${basePath}/${slug}`} />
       <div className="container pt-8">
-        <header className="mb-16">
+        <header className="mb-12">
           <h1 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">
             Photography / {collection.name}
           </h1>

@@ -21,7 +21,9 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
       blockType: 'photoGrid' as const,
       source: 'collections' as const,
       photoCollections: photoGridCollections,
-      viewMorePage: viewMorePage ?? undefined,
+      viewMorePage: viewMorePage
+        ? { relationTo: 'pages' as const, value: viewMorePage }
+        : undefined,
       linkLabel: 'View more',
       photographyIndexPage: photographyIndexPage ?? undefined,
     },

@@ -918,6 +918,10 @@ export interface PhotoGridBlock {
    */
   photoCollections?: (string | PhotoCollection)[] | null;
   /**
+   * Display photos from a folder or from a photo collection.
+   */
+  photosFrom?: ('folder' | 'collection') | null;
+  /**
    * Select which Media folder to display.
    */
   photosFolder?: (string | null) | FolderInterface;
@@ -926,15 +930,27 @@ export interface PhotoGridBlock {
    */
   photosTags?: (string | PhotoTag)[] | null;
   /**
+   * Select a photo collection. Photos matching the collection filter will be displayed.
+   */
+  photosFromCollection?: (string | null) | PhotoCollection;
+  /**
    * Optional section title. When provided, a separator is shown below it.
    */
   title?: string | null;
   /**
-   * When set, shows a "View more" button linking to this page.
+   * When set, shows a "View more" button linking to this page or photo collection.
    */
-  viewMorePage?: (string | null) | Page;
+  viewMorePage?:
+    | ({
+        relationTo: 'pages';
+        value: string | Page;
+      } | null)
+    | ({
+        relationTo: 'photo-collections';
+        value: string | PhotoCollection;
+      } | null);
   /**
-   * Label for the View more button. Leave empty to use the linked page title.
+   * Label for the View more button. Leave empty to use the linked page or collection title.
    */
   linkLabel?: string | null;
   /**
@@ -1667,8 +1683,10 @@ export interface FormBlockSelect<T extends boolean = true> {
 export interface PhotoGridBlockSelect<T extends boolean = true> {
   source?: T;
   photoCollections?: T;
+  photosFrom?: T;
   photosFolder?: T;
   photosTags?: T;
+  photosFromCollection?: T;
   title?: T;
   viewMorePage?: T;
   linkLabel?: T;

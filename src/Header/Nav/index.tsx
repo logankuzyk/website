@@ -5,8 +5,7 @@ import React, { useState } from 'react'
 import type { Header as HeaderType } from '@/payload-types'
 
 import { CMSLink } from '@/components/Link'
-import Link from 'next/link'
-import { Menu, SearchIcon, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { cn } from '@/utilities/ui'
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
@@ -20,13 +19,6 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         {navItems.map(({ link }, i) => (
           <CMSLink key={i} {...link} appearance="link" />
         ))}
-        <Link
-          href="/search"
-          className="text-[var(--link)] hover:text-[var(--link-hover)]"
-        >
-          <span className="sr-only">Search</span>
-          <SearchIcon className="w-5" />
-        </Link>
       </nav>
 
       {/* Mobile menu button */}
@@ -49,19 +41,12 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           mobileMenuOpen ? 'block' : 'hidden',
         )}
       >
-        <nav className="container py-4 flex flex-col gap-4 items-start text-left text-lg [&_a]:text-lg">
+        <nav className="container pb-8 flex flex-col gap-4 items-start text-left text-lg [&_a]:text-lg">
           {navItems.map(({ link }, i) => (
             <div key={i} onClick={() => setMobileMenuOpen(false)}>
               <CMSLink {...link} appearance="link" className="block" />
             </div>
           ))}
-          <Link
-            href="/search"
-            className="text-[var(--link)] underline underline-offset-4 hover:text-[var(--link-hover)]"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Search
-          </Link>
         </nav>
       </div>
     </>
