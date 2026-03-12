@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { appendPrefixToCollectionBeforeChangeHook } from '../hooks/uploadPrefixed'
+import { revalidateDelete, revalidatePhoto } from './Photos/hooks/revalidatePhoto'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,6 +25,8 @@ export const Photos: CollectionConfig = {
   folders: true,
   hooks: {
     beforeChange: [appendPrefixToCollectionBeforeChangeHook('photos')],
+    afterChange: [revalidatePhoto],
+    afterDelete: [revalidateDelete],
   },
   access: {
     create: authenticated,

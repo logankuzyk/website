@@ -10,6 +10,7 @@ import {
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { slugField } from 'payload'
+import { revalidateDelete, revalidateProject } from './hooks/revalidateProject'
 
 export const Projects: CollectionConfig<'projects'> = {
   slug: 'projects',
@@ -101,6 +102,10 @@ export const Projects: CollectionConfig<'projects'> = {
     },
     slugField(),
   ],
+  hooks: {
+    afterChange: [revalidateProject],
+    afterDelete: [revalidateDelete],
+  },
   versions: {
     drafts: {
       autosave: true,

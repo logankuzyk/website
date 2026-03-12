@@ -8,6 +8,7 @@ import {
 import { slugField } from 'payload'
 
 import { anyone } from '../../access/anyone'
+import { revalidateDelete, revalidatePhotoCollection } from './hooks/revalidatePhotoCollection'
 import { authenticated } from '../../access/authenticated'
 
 export const PhotoCollections: CollectionConfig = {
@@ -17,6 +18,10 @@ export const PhotoCollections: CollectionConfig = {
     delete: authenticated,
     read: anyone,
     update: authenticated,
+  },
+  hooks: {
+    afterChange: [revalidatePhotoCollection],
+    afterDelete: [revalidateDelete],
   },
   admin: {
     useAsTitle: 'name',
