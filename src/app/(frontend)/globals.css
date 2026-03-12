@@ -189,6 +189,10 @@
   --link-hover: var(--accent);
 
   --radius: 0;
+
+  /* Image placeholder (dot grid) */
+  --image-placeholder-bg: var(--muted);
+  --image-placeholder-dot: var(--muted-foreground);
 }
 
 [data-theme='dark'] {
@@ -230,6 +234,10 @@
   --error: var(--nord11);
   --link: var(--text-snow);
   --link-hover: var(--accent-frost);
+
+  /* Image placeholder (dot grid) - slightly lighter than obsidian */
+  --image-placeholder-bg: var(--card);
+  --image-placeholder-dot: var(--muted-foreground);
 
   --font-weight-body: 450;
   --font-weight-heading: 500;
