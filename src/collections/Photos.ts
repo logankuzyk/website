@@ -20,7 +20,7 @@ export const Photos: CollectionConfig = {
   slug: 'photos',
   admin: {
     useAsTitle: 'filename',
-    defaultColumns: ['filename', 'alt', 'tags', 'displayOrder', 'updatedAt'],
+    defaultColumns: ['filename', 'alt', 'tags', 'updatedAt'],
   },
   folders: true,
   hooks: {
@@ -50,13 +50,6 @@ export const Photos: CollectionConfig = {
       relationTo: 'locations',
       admin: {
         description: 'Location where the photo was taken. Used for filtering in collections.',
-      },
-    },
-    {
-      name: 'displayOrder',
-      type: 'number',
-      admin: {
-        description: 'Controls order in photos gallery (lower = earlier)',
       },
     },
     {

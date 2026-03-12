@@ -1,6 +1,7 @@
 import type { Page, Photo, PhotoCollection } from '@/payload-types'
 
 import { PhotoGrid, type PhotoGridItem } from '@/components/PhotoGrid'
+import { PhotoSortToolbar } from '@/components/PhotoSortToolbar'
 import { Separator } from '@/components/Separator/Separator'
 import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
 import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
@@ -30,6 +31,8 @@ type PhotoGridBlockProps = {
   showCollectionNames?: boolean | null
   enableFullScreen?: boolean | null
   enableCarousel?: boolean | null
+  defaultSort?: 'dateTaken' | 'filename' | 'createdAt' | null
+  defaultOrder?: 'asc' | 'desc' | null
   limit?: number | null
   overscan?: number | null
   id?: string
@@ -52,6 +55,8 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     showCollectionNames = true,
     enableFullScreen = true,
     enableCarousel = true,
+    defaultSort = 'dateTaken',
+    defaultOrder = 'desc',
     limit,
     overscan = 2,
     id,
@@ -136,7 +141,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
       depth: 3,
       limit: fetchLimit,
       overrideAccess: false,
-      sort: 'displayOrder',
+      sort: 'createdAt',
       where,
     })
 
@@ -201,15 +206,25 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     }
   }
 
+  const showSortToolbar = Boolean(source !== 'collections' && hasTitle)
+
   return (
     <div className="container pt-8" id={id ? `block-${id}` : undefined}>
       {hasTitle && (
-        <header className="mb-12">
+        <header className={showSortToolbar ? 'mb-4' : 'mb-12'}>
           <h2 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">
             {title}
           </h2>
           <Separator />
         </header>
+      )}
+      {showSortToolbar && (
+        <div className="mb-8">
+          <PhotoSortToolbar
+            defaultSort={defaultSort ?? 'dateTaken'}
+            defaultOrder={defaultOrder ?? 'desc'}
+          />
+        </div>
       )}
       <PhotoGrid
         items={items}
@@ -218,6 +233,9 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
         showCollectionNames={showCollectionNames !== false}
         enableFullScreen={enableFullScreen !== false}
         enableCarousel={enableCarousel !== false}
+        enableSortToolbar={showSortToolbar}
+        defaultSort={defaultSort ?? 'dateTaken'}
+        defaultOrder={defaultOrder ?? 'desc'}
         emptyMessage={emptyMessage}
         limit={limit != null && limit > 0 ? limit : undefined}
         overscan={overscan != null && overscan >= 0 ? overscan : undefined}

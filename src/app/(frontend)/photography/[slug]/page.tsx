@@ -2,6 +2,7 @@ import type { Photo, PhotoCollection } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { PhotoGrid, type PhotoGridItem } from '@/components/PhotoGrid'
+import { PhotoSortToolbar } from '@/components/PhotoSortToolbar'
 import { Separator } from '@/components/Separator/Separator'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
@@ -141,7 +142,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
     depth: 3,
     limit: fetchLimit,
     overrideAccess: false,
-    sort: 'displayOrder',
+    sort: 'createdAt',
     where,
   })
 
@@ -152,18 +153,22 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
     <article className="pb-24">
       <PayloadRedirects disableNotFound url={`${basePath}/${slug}`} />
       <div className="container pt-8">
-        <header className="mb-12">
+        <header className="mb-4">
           <h1 className="font-serif text-4xl tracking-[-0.01em] text-foreground md:text-5xl">
             Photography / {collection.name}
           </h1>
           <Separator />
         </header>
+        <div className="mb-8">
+          <PhotoSortToolbar />
+        </div>
         <PhotoGrid
           items={items}
           masonry={collection.displayMasonry !== false}
           cropToSquare={collection.displayCropToSquare === true}
           enableFullScreen={collection.displayEnableFullScreen !== false}
           enableCarousel={collection.displayEnableCarousel !== false}
+          enableSortToolbar
           limit={
             collection.displayLimit != null && collection.displayLimit > 0
               ? collection.displayLimit

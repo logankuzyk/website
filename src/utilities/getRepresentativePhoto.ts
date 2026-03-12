@@ -21,7 +21,7 @@ export async function getRepresentativePhoto(
     depth: 3,
     limit: 1,
     overrideAccess: false,
-    sort: 'displayOrder',
+    sort: 'createdAt',
     where,
   })
   return (result.docs?.[0] as Photo) ?? null

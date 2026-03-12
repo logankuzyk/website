@@ -15,6 +15,43 @@ export type PhotoGridItem =
   | { type: 'photo'; photo: Photo }
   | { type: 'collection'; photo: Photo | null; collectionName: string; href: string }
 
+function parseDateTaken(value: string | null | undefined): number {
+  if (value == null || value === '') return 0
+  try {
+    const str = String(value).trim()
+    const num = parseFloat(str)
+    if (/^\d{9,11}$/.test(str) && !Number.isNaN(num)) {
+      return num * 1000
+    }
+    return new Date(value as string).getTime()
+  } catch {
+    return 0
+  }
+}
+
+function comparePhotos(
+  a: Extract<PhotoGridItem, { type: 'photo' }>,
+  b: Extract<PhotoGridItem, { type: 'photo' }>,
+  sort: string,
+  order: 'asc' | 'desc',
+): number {
+  let diff = 0
+  switch (sort) {
+    case 'dateTaken':
+      diff =
+        parseDateTaken(a.photo.exif?.DateTimeOriginal) -
+        parseDateTaken(b.photo.exif?.DateTimeOriginal)
+      break
+    case 'filename':
+      diff = (a.photo.filename ?? '').localeCompare(b.photo.filename ?? '')
+      break
+    default:
+      diff =
+        new Date(a.photo.createdAt).getTime() - new Date(b.photo.createdAt).getTime()
+  }
+  return order === 'asc' ? diff : -diff
+}
+
 type PhotoGridProps = {
   items: PhotoGridItem[]
   masonry?: boolean
@@ -22,6 +59,9 @@ type PhotoGridProps = {
   showCollectionNames?: boolean
   enableFullScreen?: boolean
   enableCarousel?: boolean
+  enableSortToolbar?: boolean
+  defaultSort?: 'dateTaken' | 'filename' | 'createdAt'
+  defaultOrder?: 'asc' | 'desc'
   emptyMessage?: string
   limit?: number
   overscan?: number
@@ -45,6 +85,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   showCollectionNames = true,
   enableFullScreen = true,
   enableCarousel = true,
+  enableSortToolbar = false,
+  defaultSort = 'dateTaken',
+  defaultOrder = 'desc',
   emptyMessage,
   limit,
   overscan = 2,
@@ -58,7 +101,23 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const safeQueryReplace = useSafeQueryReplace()
   const searchParams = useSearchParams()
 
-  const limitedItems = limit != null && limit > 0 ? items.slice(0, limit) : items
+  const sort = searchParams.get('sort') || defaultSort
+  const order = (searchParams.get('order') as 'asc' | 'desc') || defaultOrder
+
+  const sortedItems = useMemo(() => {
+    if (!enableSortToolbar) return items
+    const photoItems = items.filter(
+      (i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo',
+    )
+    const collectionItems = items.filter(
+      (i): i is Extract<PhotoGridItem, { type: 'collection' }> => i.type === 'collection',
+    )
+    if (photoItems.length === 0) return items
+    const sorted = [...photoItems].sort((a, b) => comparePhotos(a, b, sort, order))
+    return [...sorted, ...collectionItems]
+  }, [items, enableSortToolbar, sort, order])
+
+  const limitedItems = limit != null && limit > 0 ? sortedItems.slice(0, limit) : sortedItems
   const photoItems = limitedItems.filter(
     (i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo',
   )

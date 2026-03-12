@@ -252,19 +252,19 @@ export const seed = async ({
   await payload.update({
     collection: 'photos',
     id: image1Doc.id,
-    data: { folder: photosFolder.id, displayOrder: 0, tags: [tagLandscape.id, tagNature.id] },
+    data: { folder: photosFolder.id, tags: [tagLandscape.id, tagNature.id] },
     req,
   })
   await payload.update({
     collection: 'photos',
     id: image2Doc.id,
-    data: { folder: photosFolder.id, displayOrder: 1, tags: [tagNature.id] },
+    data: { folder: photosFolder.id, tags: [tagNature.id] },
     req,
   })
   await payload.update({
     collection: 'photos',
     id: image3Doc.id,
-    data: { folder: photosFolder.id, displayOrder: 2, tags: [tagLandscape.id, tagPortrait.id] },
+    data: { folder: photosFolder.id, tags: [tagLandscape.id, tagPortrait.id] },
     req,
   })
 

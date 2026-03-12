@@ -265,10 +265,6 @@ export interface Photo {
    * Location where the photo was taken. Used for filtering in collections.
    */
   location?: (string | null) | Location;
-  /**
-   * Controls order in photos gallery (lower = earlier)
-   */
-  displayOrder?: number | null;
   alt?: string | null;
   caption?: {
     root: {
@@ -977,6 +973,14 @@ export interface PhotoGridBlock {
    * Allow navigating between photos in full screen (only when full screen is enabled).
    */
   enableCarousel?: boolean | null;
+  /**
+   * Default sort field when no URL params are present.
+   */
+  defaultSort?: ('dateTaken' | 'filename' | 'createdAt') | null;
+  /**
+   * Default sort order when no URL params are present.
+   */
+  defaultOrder?: ('asc' | 'desc') | null;
   /**
    * Maximum number of entries to display. Leave empty for no limit.
    */
@@ -1696,6 +1700,8 @@ export interface PhotoGridBlockSelect<T extends boolean = true> {
   showCollectionNames?: T;
   enableFullScreen?: T;
   enableCarousel?: T;
+  defaultSort?: T;
+  defaultOrder?: T;
   limit?: T;
   overscan?: T;
   id?: T;
@@ -1758,7 +1764,6 @@ export interface PostsSelect<T extends boolean = true> {
 export interface PhotosSelect<T extends boolean = true> {
   tags?: T;
   location?: T;
-  displayOrder?: T;
   alt?: T;
   caption?: T;
   exif?:

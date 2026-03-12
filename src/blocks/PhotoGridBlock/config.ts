@@ -167,6 +167,35 @@ export const PhotoGrid: Block = {
       label: 'Enable carousel',
     },
     {
+      name: 'defaultSort',
+      type: 'select',
+      defaultValue: 'dateTaken',
+      admin: {
+        condition: (_, siblingData) => siblingData?.source === 'photos',
+        description: 'Default sort field when no URL params are present.',
+      },
+      options: [
+        { label: 'Date taken', value: 'dateTaken' },
+        { label: 'Filename', value: 'filename' },
+        { label: 'Created at', value: 'createdAt' },
+      ],
+      label: 'Default sort',
+    },
+    {
+      name: 'defaultOrder',
+      type: 'select',
+      defaultValue: 'desc',
+      admin: {
+        condition: (_, siblingData) => siblingData?.source === 'photos',
+        description: 'Default sort order when no URL params are present.',
+      },
+      options: [
+        { label: 'Ascending', value: 'asc' },
+        { label: 'Descending', value: 'desc' },
+      ],
+      label: 'Default order',
+    },
+    {
       name: 'limit',
       type: 'number',
       admin: {
