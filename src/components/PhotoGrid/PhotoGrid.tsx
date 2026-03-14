@@ -15,6 +15,27 @@ export type PhotoGridItem =
   | { type: 'photo'; photo: Photo }
   | { type: 'collection'; photo: Photo | null; collectionName: string; href: string }
 
+/** Mulberry32 seeded PRNG for deterministic shuffle (SSR/hydration safe). */
+function createSeededRandom(seed: string): () => number {
+  let s = (Number(seed) || 0) >>> 0
+  if (s === 0) s = 1
+  return () => {
+    s = Math.imul(s ^ (s >>> 15), s | 1)
+    s ^= s + Math.imul(s ^ (s >>> 7), s | 61)
+    return ((s ^ (s >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function shuffleWithSeed<T>(array: T[], seed: string): T[] {
+  const result = [...array]
+  const random = createSeededRandom(seed)
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 function parseDateTaken(value: string | null | undefined): number {
   if (value == null || value === '') return 0
   try {
@@ -60,7 +81,7 @@ type PhotoGridProps = {
   enableFullScreen?: boolean
   enableCarousel?: boolean
   enableSortToolbar?: boolean
-  defaultSort?: 'dateTaken' | 'filename' | 'createdAt'
+  defaultSort?: 'dateTaken' | 'filename' | 'createdAt' | 'random'
   defaultOrder?: 'asc' | 'desc'
   emptyMessage?: string
   limit?: number
@@ -68,6 +89,8 @@ type PhotoGridProps = {
 }
 
 const GAP = 16
+/** Extra height for collection title (mt-2 + text-sm line height) */
+const COLLECTION_TITLE_HEIGHT = 28
 const BREAKPOINTS = { sm: 640, md: 768, lg: 1024 } as const
 
 function getColumns(width: number): number {
@@ -101,11 +124,15 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const safeQueryReplace = useSafeQueryReplace()
   const searchParams = useSearchParams()
 
-  const sort = searchParams.get('sort') || defaultSort
-  const order = (searchParams.get('order') as 'asc' | 'desc') || defaultOrder
+  const sort = enableSortToolbar
+    ? searchParams.get('sort') || defaultSort
+    : defaultSort
+  const order = enableSortToolbar
+    ? (searchParams.get('order') as 'asc' | 'desc') || defaultOrder
+    : defaultOrder
+  const seed = enableSortToolbar ? searchParams.get('seed') || '0' : '0'
 
   const sortedItems = useMemo(() => {
-    if (!enableSortToolbar) return items
     const photoItems = items.filter(
       (i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo',
     )
@@ -113,9 +140,12 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       (i): i is Extract<PhotoGridItem, { type: 'collection' }> => i.type === 'collection',
     )
     if (photoItems.length === 0) return items
-    const sorted = [...photoItems].sort((a, b) => comparePhotos(a, b, sort, order))
+    const sorted =
+      sort === 'random'
+        ? shuffleWithSeed(photoItems, seed)
+        : [...photoItems].sort((a, b) => comparePhotos(a, b, sort, order))
     return [...sorted, ...collectionItems]
-  }, [items, enableSortToolbar, sort, order])
+  }, [items, sort, order, seed])
 
   const limitedItems = limit != null && limit > 0 ? sortedItems.slice(0, limit) : sortedItems
   const photoItems = limitedItems.filter(
@@ -128,7 +158,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const columns = useMemo(() => getColumns(containerWidth || 1024), [containerWidth])
   const rowCount = Math.ceil(limitedItems.length / columns) || 0
   const itemWidth = containerWidth > 0 ? (containerWidth - (columns - 1) * GAP) / columns : 300
-  const rowHeight = cropToSquare ? itemWidth : itemWidth / (16 / 9)
+  const hasCollectionTitles =
+    showCollectionNames && limitedItems.some((i) => i.type === 'collection')
+  const baseRowHeight = cropToSquare ? itemWidth : itemWidth / (16 / 9)
+  const rowHeight = baseRowHeight + (hasCollectionTitles ? COLLECTION_TITLE_HEIGHT : 0)
 
   const virtualizer = useWindowVirtualizer({
     count: shouldVirtualize ? rowCount : 0,

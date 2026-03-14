@@ -167,6 +167,17 @@ export const PhotoGrid: Block = {
       label: 'Enable carousel',
     },
     {
+      name: 'enableSortToolbar',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        condition: (_, siblingData) => siblingData?.source === 'photos',
+        description:
+          'Allow visitors to change sort order. When disabled, photos use the default sort below.',
+      },
+      label: 'Show sort controls',
+    },
+    {
       name: 'defaultSort',
       type: 'select',
       defaultValue: 'dateTaken',
@@ -178,6 +189,7 @@ export const PhotoGrid: Block = {
         { label: 'Date taken', value: 'dateTaken' },
         { label: 'Filename', value: 'filename' },
         { label: 'Created at', value: 'createdAt' },
+        { label: 'Random', value: 'random' },
       ],
       label: 'Default sort',
     },

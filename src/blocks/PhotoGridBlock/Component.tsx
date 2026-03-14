@@ -31,7 +31,8 @@ type PhotoGridBlockProps = {
   showCollectionNames?: boolean | null
   enableFullScreen?: boolean | null
   enableCarousel?: boolean | null
-  defaultSort?: 'dateTaken' | 'filename' | 'createdAt' | null
+  enableSortToolbar?: boolean | null
+  defaultSort?: 'dateTaken' | 'filename' | 'createdAt' | 'random' | null
   defaultOrder?: 'asc' | 'desc' | null
   limit?: number | null
   overscan?: number | null
@@ -55,6 +56,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     showCollectionNames = true,
     enableFullScreen = true,
     enableCarousel = true,
+    enableSortToolbar = true,
     defaultSort = 'dateTaken',
     defaultOrder = 'desc',
     limit,
@@ -206,7 +208,9 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
     }
   }
 
-  const showSortToolbar = Boolean(source !== 'collections' && hasTitle)
+  const showSortToolbar = Boolean(
+    source !== 'collections' && hasTitle && enableSortToolbar !== false,
+  )
 
   return (
     <div className="container pt-8" id={id ? `block-${id}` : undefined}>

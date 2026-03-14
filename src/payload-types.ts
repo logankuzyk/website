@@ -974,9 +974,13 @@ export interface PhotoGridBlock {
    */
   enableCarousel?: boolean | null;
   /**
+   * Allow visitors to change sort order. When disabled, photos use the default sort below.
+   */
+  enableSortToolbar?: boolean | null;
+  /**
    * Default sort field when no URL params are present.
    */
-  defaultSort?: ('dateTaken' | 'filename' | 'createdAt') | null;
+  defaultSort?: ('dateTaken' | 'filename' | 'createdAt' | 'random') | null;
   /**
    * Default sort order when no URL params are present.
    */
@@ -1700,6 +1704,7 @@ export interface PhotoGridBlockSelect<T extends boolean = true> {
   showCollectionNames?: T;
   enableFullScreen?: T;
   enableCarousel?: T;
+  enableSortToolbar?: T;
   defaultSort?: T;
   defaultOrder?: T;
   limit?: T;
