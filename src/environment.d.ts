@@ -10,6 +10,8 @@ declare global {
       R2_SECRET_ACCESS_KEY?: string
       R2_ENDPOINT?: string
       R2_REGION?: string
+      STORAGE_URL?: string
+      NEXT_PUBLIC_STORAGE_URL?: string
     }
   }
 }

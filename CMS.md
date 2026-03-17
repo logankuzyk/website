@@ -16,6 +16,8 @@ This document describes the environment variables and Payload CMS data structure
 | `R2_SECRET_ACCESS_KEY` | No | R2 secret key (required if R2_BUCKET is set). |
 | `R2_ENDPOINT` | No | R2 endpoint URL. Format: `https://<account_id>.r2.cloudflarestorage.com` |
 | `R2_REGION` | No | Typically `auto` for R2. |
+| `STORAGE_URL` | No | Public URL for R2 (e.g. `https://media.example.com`). No trailing slash. |
+| `NEXT_PUBLIC_STORAGE_URL` | No | Same as `STORAGE_URL`. Exposed to the browser so images load directly from the CDN instead of proxying through Next.js. |
 
 ### Storage Behavior
 

@@ -76,6 +76,21 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
     src = getMediaUrl(url, cacheTag)
   }
 
+  // When images are served from our R2/CDN (STORAGE_URL), use unoptimized so the browser
+  // loads directly from the CDN instead of proxying through Next.js
+  const storageBase = process.env.NEXT_PUBLIC_STORAGE_URL?.replace(/\/$/, '')
+  const isStorageUrl = Boolean(
+    typeof src === 'string' &&
+      storageBase &&
+      (() => {
+        try {
+          return new URL(src).origin === new URL(storageBase).origin
+        } catch {
+          return false
+        }
+      })(),
+  )
+
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)
 
   // NOTE: this is used by the browser to determine which image to download at different screen sizes
@@ -112,6 +127,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         loading={loading}
         sizes={sizes}
         src={src}
+        unoptimized={isStorageUrl}
         width={!fill ? width : undefined}
       />
     </picture>
