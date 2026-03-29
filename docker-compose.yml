@@ -12,8 +12,9 @@ services:
 
   website:
     build: .
-    ports:
-      - '3000:3000'
+    # Port 3000 is not published; the global edge Nginx in ../infra reaches this service on website-net.
+    expose:
+      - "3000"
     depends_on:
       - mongo
     env_file:
@@ -21,36 +22,8 @@ services:
     environment:
       DATABASE_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/logankuzyk?authSource=admin
     networks:
-      - web
       - app
-    profiles:
-      - prod
-
-  nginx:
-    image: nginx:alpine
-    restart: unless-stopped
-    depends_on:
-      - website
-    networks:
-      - web
-      - app
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs/logankuzyk.com.pem:/etc/ssl/cloudflare/logankuzyk.com.pem:ro
-      - ./certs/logankuzyk.com.key:/etc/ssl/cloudflare/logankuzyk.com.key:ro
-    read_only: true
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-      - /tmp
-    healthcheck:
-      test: ['CMD-SHELL', "wget -q --spider --server-response https://localhost 2>&1 | awk 'NR==1{print $2}' | grep -qE '200|301|302'"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
+      - website-net
     profiles:
       - prod
 
@@ -58,5 +31,8 @@ volumes:
   data:
 
 networks:
-  web: {}
   app: {}
+  # Shared with the global edge stack (../infra) so the edge can proxy to website:3000.
+  # Create once on the host: docker network create website-net
+  website-net:
+    external: true

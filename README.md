@@ -19,35 +19,23 @@ Personal website built with [Payload CMS](https://payloadcms.com) and [Next.js](
 ### Development
 
 1. Clone the repo and install dependencies:
-
-   ```bash
+  ```bash
    npm install
-   ```
-
+  ```
 2. Copy environment variables and configure:
-
-   ```bash
+  ```bash
    cp .env.example .env
-   ```
-
+  ```
    Edit `.env` with your `DATABASE_URL`, `PAYLOAD_SECRET`, and `NEXT_PUBLIC_SERVER_URL`.
-
 3. Start MongoDB (local install or Docker):
-
-   - **Docker (recommended for dev)**: Start only the DB with port exposed, then run the app locally:
-     ```bash
-     npm run dev:db
-     ```
+  - **Docker (recommended for dev)**: Start only the DB with port exposed, then run the app locally:
      Ensure `.env` has `DATABASE_URL=mongodb://MONGO_USERNAME:MONGO_PASSWORD@127.0.0.1:27017/logankuzyk?authSource=admin` (same credentials as `MONGO_USERNAME` / `MONGO_PASSWORD` in `.env`).
-   - **Local MongoDB**: Install and run MongoDB, use `DATABASE_URL=mongodb://127.0.0.1:27017/your-database-name` in `.env`.
-   - **Full stack in Docker**: `docker compose --profile prod up -d` (app runs in container; no need for `npm run dev`).
-
+  - **Local MongoDB**: Install and run MongoDB, use `DATABASE_URL=mongodb://127.0.0.1:27017/your-database-name` in `.env`.
+  - **Full stack in Docker**: `docker compose --profile prod up -d` (app runs in container; no need for `npm run dev`). Public **HTTP/HTTPS** and TLS are handled by the **global edge Nginx** in the `[infra](../infra)` repo—see `[infra/README.md](../infra/README.md)`. The app listens on port 3000 only inside Docker (`website-net`), not on the host.
 4. Run the dev server:
-
-   ```bash
+  ```bash
    npm run dev
-   ```
-
+  ```
 5. Open [http://localhost:3000](http://localhost:3000). Use the admin panel at `/admin` to create your first user and manage content.
 
 ### Seed Database
@@ -56,13 +44,15 @@ To populate the site with sample content, use the "Seed database" link in the ad
 
 ## Project Structure
 
-| Path | Description |
-|------|-------------|
-| `src/collections/` | Payload collections (Pages, Posts, Media, Career, Projects, Tags, etc.) |
-| `src/heros/` | Hero components (Landing, High/Medium/Low Impact) |
-| `src/blocks/` | Layout blocks (Content, Media, CallToAction, Archive, Form) |
-| `src/app/(frontend)/` | Next.js pages and routes |
-| `src/components/` | React components |
+
+| Path                  | Description                                                             |
+| --------------------- | ----------------------------------------------------------------------- |
+| `src/collections/`    | Payload collections (Pages, Posts, Media, Career, Projects, Tags, etc.) |
+| `src/heros/`          | Hero components (Landing, High/Medium/Low Impact)                       |
+| `src/blocks/`         | Layout blocks (Content, Media, CallToAction, Archive, Form)             |
+| `src/app/(frontend)/` | Next.js pages and routes                                                |
+| `src/components/`     | React components                                                        |
+
 
 ## Features
 
@@ -83,16 +73,13 @@ See **[CMS.md](./CMS.md)** for environment variables and a full reference of col
 ## Production
 
 1. Build:
-
-   ```bash
+  ```bash
    npm run build
-   ```
-
+  ```
 2. Start:
-
-   ```bash
+  ```bash
    npm start
-   ```
+  ```
 
 For production, ensure `DATABASE_URL` points to your MongoDB instance. Optionally configure [Cloudflare R2](https://developers.cloudflare.com/r2/) for media storage by setting `R2_BUCKET` and related env vars.
 
@@ -101,12 +88,10 @@ For production, ensure `DATABASE_URL` points to your MongoDB instance. Optionall
 Run the full stack (MongoDB + app) with Docker:
 
 1. Add `MONGO_USERNAME` and `MONGO_PASSWORD` to `.env` (see `.env.example`). MongoDB is secured with auth and not exposed to the host.
-
 2. Start the stack:
-
-   ```bash
+  ```bash
    docker compose --profile prod up -d
-   ```
+  ```
 
 **Upgrading from an existing deployment without auth?** Remove the volume and recreate so MongoDB initializes with authentication:
 
