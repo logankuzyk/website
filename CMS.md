@@ -8,7 +8,7 @@ This document describes the environment variables and Payload CMS data structure
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | MongoDB connection string. Local dev: `mongodb://127.0.0.1:27017/your-database-name`. Docker: `mongodb://mongo:27017/your-database-name` |
 | `PAYLOAD_SECRET` | Yes | Used to encrypt JWT tokens. Generate a secure random string. |
-| `NEXT_PUBLIC_SERVER_URL` | Yes | Base URL for the site (no trailing slash). e.g. `http://localhost:3000` |
+| `NEXT_PUBLIC_SERVER_URL` | Yes | Canonical base URL for the site (no trailing slash). e.g. `http://localhost:3000` or `https://example.com`. In production, production builds issue a 301 from the alternate host (`www` vs apex) to this URL; set DNS for both hosts to point at the app. |
 | `CRON_SECRET` | No | Authenticates cron jobs. Required for scheduled publish when running outside admin. |
 | `PREVIEW_SECRET` | No | Validates draft preview requests. |
 | `R2_BUCKET` | No | When set, media uploads go to Cloudflare R2 instead of local storage. |
