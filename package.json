@@ -52,6 +52,7 @@
     "next-sitemap": "^4.2.3",
     "payload": "3.76.1",
     "payload-exif": "^1.1.1",
+    "payload-plugin-llms-txt": "^0.2.0",
     "prism-react-renderer": "^2.3.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",

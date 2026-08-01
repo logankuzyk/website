@@ -123,11 +123,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     site: Site;
+    'llms-txt-settings': LlmsTxtSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     site: SiteSelect<false> | SiteSelect<true>;
+    'llms-txt-settings': LlmsTxtSettingsSelect<false> | LlmsTxtSettingsSelect<true>;
   };
   locale: null;
   user: User;
@@ -2386,6 +2388,22 @@ export interface Site {
   createdAt?: string | null;
 }
 /**
+ * Controls the content of /llms.txt and /llms-full.txt.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "llms-txt-settings".
+ */
+export interface LlmsTxtSetting {
+  id: string;
+  enabled?: boolean | null;
+  /**
+   * Shown at the top of llms.txt instead of the plugin siteDescription option, when set.
+   */
+  introOverride?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2437,6 +2455,17 @@ export interface FooterSelect<T extends boolean = true> {
  */
 export interface SiteSelect<T extends boolean = true> {
   photographyIndexPage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "llms-txt-settings_select".
+ */
+export interface LlmsTxtSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  introOverride?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
