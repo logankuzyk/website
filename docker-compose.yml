@@ -9,6 +9,7 @@ services:
     networks:
       - app
     # No ports exposed - MongoDB only accessible within Docker network
+    restart: unless-stopped
 
   website:
     build: .
@@ -24,8 +25,7 @@ services:
     networks:
       - app
       - website-net
-    profiles:
-      - prod
+    restart: unless-stopped
 
 volumes:
   data:
