@@ -19,21 +19,37 @@ import { Header } from './Header/config'
 import { Site } from './globals/Site/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { fileUploadErrorResponse } from './hooks/fileUploadErrorResponse'
+import { probeImageDecoders } from './utilities/imageDecodeProbe'
 import { getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// The Photos pipeline accepts AVIF/HEIC/HEIF uploads, which requires a sharp binary built
-// with libheif. Prebuilt sharp includes it, but a stripped/rebuilt binary in a container
-// would silently reject every such upload — warn loudly at startup instead.
-if (!sharp.format.heif?.input?.buffer) {
-  console.warn(
-    '[media] sharp was built without HEIF/AVIF decode support — AVIF and HEIC photo uploads will be rejected.',
-  )
-}
+// musl (Alpine) has a small stack; run the system libvips without the operation cache to
+// stay clear of stack-overflow edge cases. Photo processing here is one-shot per image, so
+// the cache buys little anyway.
+sharp.cache(false)
 
 export default buildConfig({
+  // Re-shape sharp's bare `FileUploadError` so the admin BulkUpload drawer counts an
+  // undecodable image as a failed file instead of a silent success.
+  hooks: {
+    afterError: [fileUploadErrorResponse],
+  },
+  // Verify at boot that the runtime can actually decode the formats the Photos pipeline
+  // accepts. `sharp.format.heif.input` being truthy only means "accepts a HEIF container";
+  // it does not prove a high-bit-depth AV1 or HEVC decoder is present.
+  onInit: async (payload) => {
+    for (const result of await probeImageDecoders()) {
+      if (!result.ok) {
+        payload.logger.error(
+          `[media] cannot decode ${result.format} — image likely built without system libvips ` +
+            `(see Dockerfile); such uploads will fail. ${result.error}`,
+        )
+      }
+    }
+  },
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.

@@ -35,3 +35,18 @@ jobs:
       - run: npm ci
       - run: npm run generate:importmap
       - run: npm run typecheck
+
+  media:
+    name: Image decode (Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The Dockerfile's `deps` stage already fails the build if sharp isn't the
+      # from-source binding linked to the system libvips; this job proves the final
+      # runtime image can actually decode the formats the pipeline accepts.
+      - name: Build image
+        run: docker build -t website:ci .
+      - name: sharp decodes 10-bit AVIF and HEIC in the final image
+        run: |
+          docker run --rm -v "$PWD/scripts/verify-image-decode.mjs:/verify.mjs" \
+            --entrypoint node website:ci /verify.mjs
