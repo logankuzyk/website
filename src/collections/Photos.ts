@@ -105,12 +105,12 @@ export const Photos: CollectionConfig = {
           }
         : 'thumbnail',
     focalPoint: true,
-    // Never upscale a size past the source resolution. Payload also skips a size entirely
-    // when the original is smaller in both dimensions, so the frontend must tolerate
-    // missing entries in `sizes` (see buildImageSrcSet).
-    resizeOptions: {
-      withoutEnlargement: true,
-    },
+    // NOTE: do not set a top-level `resizeOptions` here. It applies to the *original*, not to
+    // the `imageSizes` ladder, and its mere presence makes Payload run the pristine upload
+    // through sharp — re-encoding it at sharp's default quality and stripping EXIF. Sparse
+    // sizes ("skip a rendition when the source is smaller in both dimensions") are already
+    // Payload's default per-size behaviour, so the frontend must tolerate missing entries in
+    // `sizes` regardless (see buildImageSrcSet).
     // Every generated size is re-encoded to WebP for delivery. WebP is chosen over AVIF for
     // the conversion step because encode is ~10x faster (matters for bulk photo uploads and
     // the backfill), while still ~25-35% smaller than JPEG at equivalent quality. Serving AVIF
