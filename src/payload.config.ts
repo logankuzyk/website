@@ -24,6 +24,15 @@ import { getServerSideURL } from './utilities/getURL'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// The Photos pipeline accepts AVIF/HEIC/HEIF uploads, which requires a sharp binary built
+// with libheif. Prebuilt sharp includes it, but a stripped/rebuilt binary in a container
+// would silently reject every such upload — warn loudly at startup instead.
+if (!sharp.format.heif?.input?.buffer) {
+  console.warn(
+    '[media] sharp was built without HEIF/AVIF decode support — AVIF and HEIC photo uploads will be rejected.',
+  )
+}
+
 export default buildConfig({
   admin: {
     components: {
@@ -72,6 +81,15 @@ export default buildConfig({
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
+  // Multipart parser limit for uploads (Photos accepts high-res originals + phone HEIC/AVIF).
+  // Uploads are buffered in memory; fine for single-user admin use. If bulk uploads ever
+  // pressure RAM, add `useTempFiles: true` with an explicit writable `tempFileDir`.
+  // NOTE: a reverse proxy in front of the app (infra Nginx) needs a matching body limit.
+  upload: {
+    limits: {
+      fileSize: 75 * 1024 * 1024, // 75 MB
+    },
+  },
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

@@ -158,6 +158,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const columns = useMemo(() => getColumns(containerWidth || 1024), [containerWidth])
   const rowCount = Math.ceil(limitedItems.length / columns) || 0
   const itemWidth = containerWidth > 0 ? (containerWidth - (columns - 1) * GAP) / columns : 300
+  // Actual rendered width of a single tile, handed to <Media> so the browser picks the
+  // smallest rendition that covers the tile (scaled by DPR) instead of a full-width image.
+  const photoTileSizes = `${Math.max(1, Math.round(itemWidth))}px`
   const hasCollectionTitles =
     showCollectionNames && limitedItems.some((i) => i.type === 'collection')
   const baseRowHeight = cropToSquare ? itemWidth : itemWidth / (16 / 9)
@@ -277,6 +280,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         <MediaComponent
           resource={item.photo}
           imgClassName={imgClass}
+          size={photoTileSizes}
           fill={cropToSquare}
           {...(cropToSquare && { className: 'relative block size-full' })}
         />
@@ -311,6 +315,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             <MediaComponent
               resource={item.photo}
               imgClassName={imgClass}
+              size={photoTileSizes}
               fill={cropToSquare}
               {...(cropToSquare && { className: 'relative block size-full' })}
             />

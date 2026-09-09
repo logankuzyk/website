@@ -1,18 +1,16 @@
 'use client'
 
-import type { StaticImageData } from 'next/image'
+import type { ImageLoader, StaticImageData } from 'next/image'
 
 import { ImagePlaceholder } from '@/components/ImagePlaceholder'
 import { cn } from '@/utilities/ui'
 import NextImage from 'next/image'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import type { Props as MediaProps } from '../types'
 
-import { cssVariables } from '@/cssVariables'
+import { collectImageCandidates, pickImageCandidate } from '@/utilities/buildImageSrcSet'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
-
-const { breakpoints } = cssVariables
 
 /**
  * ImageMedia
@@ -59,25 +57,23 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
 
   const [loaded, setLoaded] = useState(false)
 
+  const resourceObject = !srcFromProps && resource && typeof resource === 'object' ? resource : null
+
   let width: number | undefined
   let height: number | undefined
   let alt = altFromProps
   let src: StaticImageData | string = srcFromProps || ''
 
-  if (!src && resource && typeof resource === 'object') {
-    const { alt: altFromResource, height: fullHeight, url, width: fullWidth } = resource
-
-    width = fullWidth!
-    height = fullHeight!
-    alt = altFromResource || ''
-
-    const cacheTag = resource.updatedAt
-
-    src = getMediaUrl(url, cacheTag)
+  if (resourceObject) {
+    width = resourceObject.width ?? undefined
+    height = resourceObject.height ?? undefined
+    alt = resourceObject.alt || ''
+    src = getMediaUrl(resourceObject.url, resourceObject.updatedAt)
   }
 
-  // When images are served from our R2/CDN (STORAGE_URL), use unoptimized so the browser
-  // loads directly from the CDN instead of proxying through Next.js
+  // When images are served from our R2/CDN (STORAGE_URL) there is no Next.js optimizer in the
+  // path. Instead we hand Next.js a loader that maps each requested width to the closest
+  // pre-generated (WebP) rendition, so it still emits a real srcSet from the CDN.
   const storageBase = process.env.NEXT_PUBLIC_STORAGE_URL?.replace(/\/$/, '')
   const isStorageUrl = Boolean(
     typeof src === 'string' &&
@@ -91,14 +87,25 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
       })(),
   )
 
+  const candidates = useMemo(
+    () => (resourceObject ? collectImageCandidates(resourceObject) : []),
+    [resourceObject],
+  )
+
+  const cacheTag = resourceObject?.updatedAt
+
+  const storageLoader = useMemo<ImageLoader | undefined>(() => {
+    if (!isStorageUrl || candidates.length < 2) return undefined
+    return ({ width: requestedWidth }) =>
+      getMediaUrl(pickImageCandidate(candidates, requestedWidth) ?? candidates[candidates.length - 1].url, cacheTag)
+  }, [isStorageUrl, candidates, cacheTag])
+
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)
 
-  // NOTE: this is used by the browser to determine which image to download at different screen sizes
-  const sizes = sizeFromProps
-    ? sizeFromProps
-    : Object.entries(breakpoints)
-        .map(([, value]) => `(max-width: ${value}px) ${value * 2}w`)
-        .join(', ')
+  // Drives which srcSet candidate the browser downloads. Callers that render an image at a
+  // known box size (e.g. a grid tile) should pass an explicit `size` like "320px"; the
+  // honest default otherwise is full viewport width.
+  const sizes = sizeFromProps || '100vw'
 
   const handleLoad = React.useCallback(() => {
     setLoaded(true)
@@ -119,6 +126,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         style={imgStyle}
         fill={fill}
         height={!fill ? height : undefined}
+        loader={storageLoader}
         onLoad={handleLoad}
         onLoadingComplete={handleLoad}
         placeholder="empty"
@@ -127,7 +135,9 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         loading={loading}
         sizes={sizes}
         src={src}
-        unoptimized={isStorageUrl}
+        // Only bypass optimization entirely when we have no rendition ladder to build a
+        // srcSet from (single candidate); otherwise `storageLoader` handles CDN delivery.
+        unoptimized={isStorageUrl && !storageLoader}
         width={!fill ? width : undefined}
       />
     </picture>
