@@ -120,6 +120,16 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
     onLoad?.()
   }, [onLoad])
 
+  // `onLoad` alone misses images that are already complete before React attaches the handler
+  // (cached / very fast CDN renditions). A ref callback that checks `complete` covers that
+  // case — this replaces the deprecated `onLoadingComplete` prop.
+  const imgRef = React.useCallback(
+    (img: HTMLImageElement | null) => {
+      if (img?.complete && img.naturalWidth > 0) handleLoad()
+    },
+    [handleLoad],
+  )
+
   return (
     <picture className={cn('relative block size-full overflow-hidden', pictureClassName)}>
       <ImagePlaceholder
@@ -136,7 +146,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         height={!fill ? height : undefined}
         loader={storageLoader}
         onLoad={handleLoad}
-        onLoadingComplete={handleLoad}
+        ref={imgRef}
         placeholder="empty"
         priority={priority}
         quality={100}
