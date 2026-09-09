@@ -81,6 +81,14 @@ Slug: `media` · Folders: Yes
 
 **Image sizes**: thumbnail (300), square (500×500), small (600), medium (900), large (1400), xlarge (1920), og (1200×630).
 
+**Image pipeline** (`src/collections/Photos.ts`):
+
+- **Input**: any raster photo format is accepted, including AVIF, HEIC and HEIF (decoded by the bundled `sharp`/libheif binary). SVG is rejected. Max upload size is 75 MB (`config.upload.limits.fileSize` in `payload.config.ts`; a reverse proxy in front of the app needs a matching body limit).
+- **Conversion**: every aspect-preserving rendition (thumbnail…xlarge) is re-encoded to **WebP** (quality 70→82, rising with size). `og` is re-encoded to **progressive JPEG** for link-unfurler compatibility. Renditions are never upscaled past the source, so smaller uploads produce a sparse `sizes` set.
+- **Original**: the uploaded file is stored untouched (no top-level `formatOptions`) — it remains the archival copy and the source for the planned "download other formats" gallery feature.
+- **Delivery**: `ImageMedia` builds a real `srcSet` from `sizes.*` even when images are served straight from the CDN (`NEXT_PUBLIC_STORAGE_URL`), via a Next.js image `loader` that maps each requested width to the closest rendition. Callers that render into a known box (e.g. `PhotoGrid` tiles) pass an explicit `size`. The rendition ladder is capped at `xlarge` (1920px WebP); only `priority` (LCP) images may fall back to the raw original, so a missing/inaccurate `size` can never silently serve a multi-MB file.
+- **Backfill**: existing photos are reprocessed with `npm run reprocess:photos` (`-- --dry-run` / `-- --limit N` / `-- --force`). AVIF/HEIC sources decode slowly, so large batches take time.
+
 ### Categories
 
 Slug: `categories`

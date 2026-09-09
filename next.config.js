@@ -34,6 +34,8 @@ const nextConfig = {
             {
               hostname: new URL(process.env.STORAGE_URL).hostname,
               protocol: new URL(process.env.STORAGE_URL).protocol.replace(':', ''),
+              // '' when no explicit port (real CDN); set for a local mock on e.g. :9000
+              port: new URL(process.env.STORAGE_URL).port,
             },
           ]
         : []),

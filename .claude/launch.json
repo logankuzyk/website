@@ -6,6 +6,27 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "website-dev-r2mock",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "cross-env",
+        "NODE_OPTIONS=--no-deprecation",
+        "R2_BUCKET=photos",
+        "R2_ENDPOINT=http://localhost:9000",
+        "R2_ACCESS_KEY_ID=minioadmin",
+        "R2_SECRET_ACCESS_KEY=minioadmin",
+        "R2_REGION=auto",
+        "R2_FORCE_PATH_STYLE=true",
+        "STORAGE_URL=http://localhost:9000/photos",
+        "NEXT_PUBLIC_STORAGE_URL=http://localhost:9000/photos",
+        "next",
+        "dev",
+        "-p",
+        "3100"
+      ],
+      "port": 3100
     }
   ]
 }

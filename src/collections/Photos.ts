@@ -70,6 +70,25 @@ export const Photos: CollectionConfig = {
   upload: {
     // Upload to the public/photos directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/photos'),
+    // Accept any raster photo format. AVIF/HEIC/HEIF decode is supported by the bundled
+    // sharp binary (libvips + libheif). SVG is intentionally excluded (rasterizing untrusted
+    // SVG is a security risk). Payload still sniffs magic bytes, so a spoofed extension is rejected.
+    mimeTypes: [
+      'image/jpeg',
+      'image/pjpeg',
+      'image/png',
+      'image/webp',
+      'image/avif',
+      'image/gif',
+      'image/tiff',
+      'image/heic',
+      'image/heif',
+    ],
+    // The max upload size is set globally via `config.upload.limits.fileSize` in payload.config.ts.
+    // The pristine upload is stored untouched (no top-level formatOptions) so the original
+    // format/quality is preserved for archival and the separate "download other formats" task.
+    // Only the generated `imageSizes` below are converted to an optimized web format.
+    // Payload calls sharp().rotate() internally, so EXIF orientation is already normalized.
     // Use a function when R2 is enabled: string adminThumbnail causes Payload to fall back to /api/...
     // URLs which don't work with disablePayloadAccessControl. See payloadcms/payload#12659
     adminThumbnail:
@@ -86,37 +105,57 @@ export const Photos: CollectionConfig = {
           }
         : 'thumbnail',
     focalPoint: true,
+    // Never upscale a size past the source resolution. Payload also skips a size entirely
+    // when the original is smaller in both dimensions, so the frontend must tolerate
+    // missing entries in `sizes` (see buildImageSrcSet).
+    resizeOptions: {
+      withoutEnlargement: true,
+    },
+    // Every generated size is re-encoded to WebP for delivery. WebP is chosen over AVIF for
+    // the conversion step because encode is ~10x faster (matters for bulk photo uploads and
+    // the backfill), while still ~25-35% smaller than JPEG at equivalent quality. Serving AVIF
+    // as an additional <picture> source is a tracked follow-up. `quality` climbs with size
+    // since compression artifacts are more visible on larger renders.
     imageSizes: [
       {
         name: 'thumbnail',
         width: 300,
+        formatOptions: { format: 'webp', options: { quality: 70 } },
       },
       {
         name: 'square',
         width: 500,
         height: 500,
+        formatOptions: { format: 'webp', options: { quality: 72 } },
       },
       {
         name: 'small',
         width: 600,
+        formatOptions: { format: 'webp', options: { quality: 74 } },
       },
       {
         name: 'medium',
         width: 900,
+        formatOptions: { format: 'webp', options: { quality: 78 } },
       },
       {
         name: 'large',
         width: 1400,
+        formatOptions: { format: 'webp', options: { quality: 80 } },
       },
       {
         name: 'xlarge',
         width: 1920,
+        formatOptions: { format: 'webp', options: { quality: 82 } },
       },
       {
+        // Social/OG card. Kept as JPEG: some link-unfurlers (iMessage, older crawlers) still
+        // choke on WebP/AVIF, and the source here may itself be AVIF/HEIC.
         name: 'og',
         width: 1200,
         height: 630,
         crop: 'center',
+        formatOptions: { format: 'jpeg', options: { quality: 82, progressive: true } },
       },
     ],
   },
