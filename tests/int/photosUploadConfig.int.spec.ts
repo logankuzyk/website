@@ -19,8 +19,12 @@ describe('Photos upload config', () => {
     expect(upload.mimeTypes).not.toContain('image/svg+xml')
   })
 
-  it('never upscales a rendition past the source', () => {
-    expect(upload.resizeOptions?.withoutEnlargement).toBe(true)
+  it('sets neither top-level resizeOptions nor formatOptions, so the stored original stays pristine', () => {
+    // Both apply to the *original*, not the imageSizes ladder; either one present makes
+    // Payload re-run the upload through sharp (re-encode + EXIF strip). Sparse renditions
+    // are already Payload's per-size default.
+    expect(upload.resizeOptions).toBeUndefined()
+    expect(upload.formatOptions).toBeUndefined()
   })
 
   it('converts every aspect-preserving rendition to WebP', () => {
@@ -31,10 +35,6 @@ describe('Photos upload config', () => {
 
   it('keeps the social/OG card as JPEG for maximum unfurler compatibility', () => {
     expect(sizeByName.og?.formatOptions?.format).toBe('jpeg')
-  })
-
-  it('does not set a top-level formatOptions, so the stored original stays pristine', () => {
-    expect(upload.formatOptions).toBeUndefined()
   })
 })
 
