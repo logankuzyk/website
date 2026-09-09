@@ -12,6 +12,7 @@ import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { appendPrefixToCollectionBeforeChangeHook } from '../hooks/uploadPrefixed'
 import { revalidateDelete, revalidatePhoto } from './Photos/hooks/revalidatePhoto'
+import { transcodeHeicUpload } from './Photos/hooks/transcodeHeicUpload'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,6 +25,7 @@ export const Photos: CollectionConfig = {
   },
   folders: true,
   hooks: {
+    beforeOperation: [transcodeHeicUpload],
     beforeChange: [appendPrefixToCollectionBeforeChangeHook('photos')],
     afterChange: [revalidatePhoto],
     afterDelete: [revalidateDelete],
@@ -70,9 +72,12 @@ export const Photos: CollectionConfig = {
   upload: {
     // Upload to the public/photos directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/photos'),
-    // Accept any raster photo format. AVIF/HEIC/HEIF decode is supported by the bundled
-    // sharp binary (libvips + libheif). SVG is intentionally excluded (rasterizing untrusted
-    // SVG is a security risk). Payload still sniffs magic bytes, so a spoofed extension is rejected.
+    // Accept any raster photo format. Decode relies on the *system* libvips in the Docker
+    // image (see Dockerfile) — the npm-bundled sharp binary can't decode 10-bit/HDR AVIF
+    // (no high-bit-depth AV1) or HEVC HEIC (no libde265). HEIC/HEIF is transcoded to JPEG on
+    // ingest by the `transcodeHeicUpload` beforeOperation hook so it gets renditions. SVG is
+    // intentionally excluded (rasterizing untrusted SVG is a security risk). Payload still
+    // sniffs magic bytes, so a spoofed extension is rejected.
     mimeTypes: [
       'image/jpeg',
       'image/pjpeg',
