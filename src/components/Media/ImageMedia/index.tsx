@@ -87,9 +87,15 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
       })(),
   )
 
+  // Only `priority` (LCP / above-the-fold) images are allowed to fall back to the raw original;
+  // everything else is capped at the largest generated size so a missing/inaccurate `size`
+  // prop can never silently serve a multi-MB file.
   const candidates = useMemo(
-    () => (resourceObject ? collectImageCandidates(resourceObject) : []),
-    [resourceObject],
+    () =>
+      resourceObject
+        ? collectImageCandidates(resourceObject, { includeOriginal: Boolean(priority) })
+        : [],
+    [resourceObject, priority],
   )
 
   const cacheTag = resourceObject?.updatedAt

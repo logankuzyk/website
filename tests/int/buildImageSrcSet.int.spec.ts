@@ -13,7 +13,7 @@ const photo = (overrides: Partial<Photo>): Photo =>
   }) as Photo
 
 describe('collectImageCandidates', () => {
-  it('returns width-preserving renditions plus the original, sorted ascending', () => {
+  it('caps at the largest generated size — the raw original is not a candidate by default', () => {
     const result = collectImageCandidates(
       photo({
         url: '/photos/pic.webp',
@@ -35,6 +35,25 @@ describe('collectImageCandidates', () => {
       { width: 900, url: '/photos/pic-900.webp' },
       { width: 1400, url: '/photos/pic-1400.webp' },
       { width: 1920, url: '/photos/pic-1920.webp' },
+    ])
+  })
+
+  it('includes the original as the widest candidate when includeOriginal is set (priority images)', () => {
+    const result = collectImageCandidates(
+      photo({
+        url: '/photos/pic.webp',
+        width: 4000,
+        sizes: {
+          thumbnail: { url: '/photos/pic-300.webp', width: 300 },
+          xlarge: { url: '/photos/pic-1920.webp', width: 1920 },
+        },
+      }),
+      { includeOriginal: true },
+    )
+
+    expect(result).toEqual([
+      { width: 300, url: '/photos/pic-300.webp' },
+      { width: 1920, url: '/photos/pic-1920.webp' },
       { width: 4000, url: '/photos/pic.webp' },
     ])
   })
@@ -52,7 +71,7 @@ describe('collectImageCandidates', () => {
       }),
     )
 
-    expect(result.map((c) => c.url)).toEqual(['/photos/pic-300.webp', '/photos/pic.webp'])
+    expect(result.map((c) => c.url)).toEqual(['/photos/pic-300.webp'])
   })
 
   it('tolerates a sparse ladder (Payload skips sizes larger than the source)', () => {
@@ -68,10 +87,19 @@ describe('collectImageCandidates', () => {
       }),
     )
 
-    expect(result).toEqual([
-      { width: 300, url: '/photos/small-300.webp' },
-      { width: 500, url: '/photos/small.webp' },
-    ])
+    expect(result).toEqual([{ width: 300, url: '/photos/small-300.webp' }])
+  })
+
+  it('falls back to the original only when Payload generated no sizes at all', () => {
+    const result = collectImageCandidates(
+      photo({
+        url: '/photos/tiny.webp',
+        width: 220,
+        sizes: {},
+      }),
+    )
+
+    expect(result).toEqual([{ width: 220, url: '/photos/tiny.webp' }])
   })
 
   it('does not duplicate a width when a rendition matches the original', () => {
@@ -81,6 +109,7 @@ describe('collectImageCandidates', () => {
         width: 1920,
         sizes: { xlarge: { url: '/photos/pic-1920.webp', width: 1920 } },
       }),
+      { includeOriginal: true },
     )
 
     expect(result).toEqual([{ width: 1920, url: '/photos/pic-1920.webp' }])
