@@ -9,6 +9,7 @@
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "dev:db": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up mongo -d",
+    "dev:r2": "docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile r2 up minio minio-setup -d",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && npm run build && npm run start",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",

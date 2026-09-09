@@ -52,6 +52,9 @@ export const plugins: Plugin[] = [
             },
             endpoint: process.env.R2_ENDPOINT,
             region: process.env.R2_REGION ?? 'auto',
+            // Path-style addressing (bucket in the URL path, not the hostname). Real R2 works
+            // either way; a local S3-compatible mock like MinIO needs this. Off by default.
+            forcePathStyle: process.env.R2_FORCE_PATH_STYLE === 'true',
           },
         }),
       ]

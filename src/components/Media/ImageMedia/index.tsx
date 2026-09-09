@@ -96,8 +96,16 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
 
   const storageLoader = useMemo<ImageLoader | undefined>(() => {
     if (!isStorageUrl || candidates.length < 2) return undefined
-    return ({ width: requestedWidth }) =>
-      getMediaUrl(pickImageCandidate(candidates, requestedWidth) ?? candidates[candidates.length - 1].url, cacheTag)
+    return ({ width: requestedWidth }) => {
+      const picked =
+        pickImageCandidate(candidates, requestedWidth) ?? candidates[candidates.length - 1].url
+      const url = getMediaUrl(picked, cacheTag)
+      // We map to a fixed set of pre-generated renditions rather than resizing on demand, so
+      // the URL wouldn't otherwise contain the requested width. Append it as an inert query
+      // param: it satisfies Next's loader contract (silences next-image-missing-loader-width)
+      // and R2/S3 ignore unknown params.
+      return `${url}${url.includes('?') ? '&' : '?'}w=${requestedWidth}`
+    }
   }, [isStorageUrl, candidates, cacheTag])
 
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)

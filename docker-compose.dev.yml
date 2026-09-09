@@ -5,6 +5,14 @@
 #   admin / devpassword
 # Use the same in DATABASE_URL for npm run dev, e.g.:
   # DATABASE_URL=mongodb://admin:devpassword@127.0.0.1:27017/logankuzyk?authSource=admin
+#
+# MinIO (below) is a local, S3-compatible stand-in for the Cloudflare R2 bucket, so the
+# CDN/direct-from-storage image path can be exercised in dev. Start it with: npm run dev:r2
+# Then run the app with these vars set (see .env.example "Local R2 mock"):
+#   R2_BUCKET=photos R2_ENDPOINT=http://localhost:9000 R2_ACCESS_KEY_ID=minioadmin
+#   R2_SECRET_ACCESS_KEY=minioadmin R2_REGION=auto R2_FORCE_PATH_STYLE=true
+#   STORAGE_URL=http://localhost:9000/photos NEXT_PUBLIC_STORAGE_URL=http://localhost:9000/photos
+# Console: http://localhost:9001  (minioadmin / minioadmin)
 
 services:
   mongo:
@@ -13,3 +21,40 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+
+  minio:
+    image: minio/minio:latest
+    profiles: ["r2"]
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${R2_ACCESS_KEY_ID:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${R2_SECRET_ACCESS_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    networks:
+      - app
+
+  # One-shot: wait for MinIO, create the bucket, make it publicly downloadable (real R2
+  # buckets are fronted by a public domain / disablePayloadAccessControl; this reproduces that).
+  minio-setup:
+    image: minio/mc:latest
+    profiles: ["r2"]
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 '${R2_ACCESS_KEY_ID:-minioadmin}' '${R2_SECRET_ACCESS_KEY:-minioadmin}'; do
+        echo 'waiting for minio...'; sleep 1;
+      done &&
+      mc mb --ignore-existing local/'${R2_BUCKET:-photos}' &&
+      mc anonymous set download local/'${R2_BUCKET:-photos}' &&
+      echo 'MinIO bucket ${R2_BUCKET:-photos} ready (public download).'
+      "
+    networks:
+      - app
+
+volumes:
+  minio-data:

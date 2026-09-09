@@ -6,6 +6,13 @@
  *
  * Runs standalone (outside Next.js), same pattern as scripts/seed.ts.
  *
+ * ⚠️ KNOWN ISSUE (verified against the local MinIO mock, @payloadcms/storage-s3 3.76.1):
+ * when several upload documents are written from a single Node process via the Local API,
+ * only the FIRST document's file(s) actually land in the bucket — later ones update the DB
+ * (sizes metadata) but silently skip the S3 PutObject. Until this is root-caused / fixed,
+ * do NOT trust a bulk run against R2: verify object counts in the bucket afterwards, or run
+ * one photo per invocation (e.g. `--limit 1` in a shell loop). See the PR discussion.
+ *
  * Usage:
  *   npm run reprocess:photos -- --dry-run           # list what would change, touch nothing
  *   npm run reprocess:photos -- --limit 25          # process at most 25 photos
