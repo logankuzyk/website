@@ -15,6 +15,8 @@ export const revalidatePhotoCollection: CollectionAfterChangeHook<PhotoCollectio
 
     revalidatePath(path)
     revalidateTag('photography-sitemap')
+    // Collection membership and order decide each new tab photo's pageUrl.
+    revalidateTag('new-tab-photos')
   }
   return doc
 }
@@ -28,6 +30,8 @@ export const revalidateDelete: CollectionAfterDeleteHook<PhotoCollection> = ({
 
     revalidatePath(path)
     revalidateTag('photography-sitemap')
+    // Collection membership and order decide each new tab photo's pageUrl.
+    revalidateTag('new-tab-photos')
   }
 
   return doc
