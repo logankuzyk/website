@@ -5,7 +5,10 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import { buildNewTabManifest } from '@/utilities/buildNewTabManifest'
-import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
+import {
+  getPhotoCollectionFetchLimit,
+  getPhotoCollectionWhere,
+} from '@/utilities/getPhotoCollectionWhere'
 import { getPhotographyBasePath } from '@/utilities/getPhotographyBasePath'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -38,6 +41,10 @@ const getNewTabManifest = unstable_cache(
         sort: 'createdAt',
         select: {
           alt: true,
+          // The storage plugin builds `url` and every `sizes.*.url` from filename + prefix, so
+          // both must be selected or the renditions lose their `photos/{objectID}` path.
+          filename: true,
+          prefix: true,
           url: true,
           width: true,
           height: true,
@@ -59,24 +66,32 @@ const getNewTabManifest = unstable_cache(
       payload.findGlobal({ slug: 'site', depth: 0 }),
     ])
 
-    // Link each photo to the first visible collection (by displayOrder) that contains it.
+    // Link each photo to the first visible collection (by displayOrder) whose page can open it
+    // from `?photo=`. That rules out collection sets (they render child tiles, not photos),
+    // collections with fullscreen off, and photos past the page's fetch limit.
+    const parentIds = new Set(
+      collections.docs.map((c) => (typeof c.parent === 'object' ? c.parent?.id : c.parent)),
+    )
     const collectionSlugByPhotoId = new Map<string, string>()
-    let unassigned = photos.docs.map((photo) => photo.id)
+    let unassigned = new Set(photos.docs.map((photo) => photo.id))
     for (const collection of collections.docs) {
-      if (unassigned.length === 0) break
-      if (!collection.slug) continue
-      const matches = await payload.find({
+      if (unassigned.size === 0) break
+      if (!collection.slug || parentIds.has(collection.id)) continue
+      if (collection.displayEnableFullScreen === false) continue
+      // Same query as the collection page, so these are exactly the photos it renders.
+      const rendered = await payload.find({
         collection: 'photos',
         overrideAccess: false,
-        where: { and: [getPhotoCollectionWhere(collection), { id: { in: unassigned } }] },
+        where: getPhotoCollectionWhere(collection),
+        sort: 'createdAt',
+        limit: getPhotoCollectionFetchLimit(collection),
         depth: 0,
-        pagination: false,
         select: {},
       })
-      for (const match of matches.docs) {
-        collectionSlugByPhotoId.set(match.id, collection.slug)
+      for (const { id } of rendered.docs) {
+        if (unassigned.has(id)) collectionSlugByPhotoId.set(id, collection.slug)
       }
-      unassigned = unassigned.filter((id) => !collectionSlugByPhotoId.has(id))
+      unassigned = new Set([...unassigned].filter((id) => !collectionSlugByPhotoId.has(id)))
     }
 
     const body = JSON.stringify(
@@ -95,6 +110,8 @@ const getNewTabManifest = unstable_cache(
   {
     // global_site: the photography index page (and so every pageUrl) comes from the site global.
     tags: ['new-tab-photos', 'global_site'],
+    // Backstop for anything that feeds the manifest without revalidating the tag.
+    revalidate: 86400,
   },
 )
 
