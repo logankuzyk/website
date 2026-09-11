@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
+// Like every other frontend page: the layout's Header/Footer query Payload, which isn't
+// reachable when the Docker image is built.
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Privacy policy: Photography New Tab',
   description: 'Privacy policy for the Photography New Tab browser extension.',
