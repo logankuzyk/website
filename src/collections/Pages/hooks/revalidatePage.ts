@@ -17,6 +17,11 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
 
       revalidatePath(path)
       revalidateTag('pages-sitemap')
+
+      // The photography index page's slug is the base of every new tab photo's pageUrl.
+      if (previousDoc?.slug !== doc.slug) {
+        revalidateTag('new-tab-photos')
+      }
     }
 
     // If the page was previously published, we need to revalidate the old path

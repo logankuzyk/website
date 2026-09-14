@@ -62,6 +62,16 @@ function conditionToWhere(condition: FilterCondition): Where | null {
 }
 
 /**
+ * How many photos a collection page loads (oldest first by createdAt); photos past this are
+ * never rendered there.
+ */
+export function getPhotoCollectionFetchLimit(collection: PhotoCollection): number {
+  return collection.displayLimit != null && collection.displayLimit > 0
+    ? collection.displayLimit
+    : 200
+}
+
+/**
  * Returns the where clause for querying photos in a collection.
  * Merges base (mimeType: image) with collection.filter conditions.
  * Empty or invalid filter returns a no-match clause (no photos).

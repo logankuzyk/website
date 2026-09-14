@@ -11,7 +11,10 @@ import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import React from 'react'
 
-import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
+import {
+  getPhotoCollectionFetchLimit,
+  getPhotoCollectionWhere,
+} from '@/utilities/getPhotoCollectionWhere'
 import { getPageUrl } from '@/utilities/getPageUrl'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -135,8 +138,7 @@ export default async function PhotographyCollectionPage({ params: paramsPromise 
 
   const where = getPhotoCollectionWhere(collection)
 
-  const fetchLimit =
-    collection.displayLimit != null && collection.displayLimit > 0 ? collection.displayLimit : 200
+  const fetchLimit = getPhotoCollectionFetchLimit(collection)
   const photosResult = await payload.find({
     collection: 'photos',
     depth: 3,

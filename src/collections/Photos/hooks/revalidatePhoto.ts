@@ -17,6 +17,7 @@ const safeRevalidateTag = (tag: string, req: { payload: { logger: { warn: (msg: 
 export const revalidatePhoto: CollectionAfterChangeHook = (args) => {
   if (!args.req.context.disableRevalidate) {
     safeRevalidateTag('photos-sitemap', args.req)
+    safeRevalidateTag('new-tab-photos', args.req)
   }
   return args.doc
 }
@@ -24,6 +25,7 @@ export const revalidatePhoto: CollectionAfterChangeHook = (args) => {
 export const revalidateDelete: CollectionAfterDeleteHook = (args) => {
   if (!args.req.context.disableRevalidate) {
     safeRevalidateTag('photos-sitemap', args.req)
+    safeRevalidateTag('new-tab-photos', args.req)
   }
   return args.doc
 }

@@ -283,6 +283,10 @@ export interface Photo {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Include in the browser new tab rotation
+   */
+  showInNewTab?: boolean | null;
   exif?: {
     Make?: string | null;
     Model?: string | null;
@@ -1773,6 +1777,7 @@ export interface PhotosSelect<T extends boolean = true> {
   location?: T;
   alt?: T;
   caption?: T;
+  showInNewTab?: T;
   exif?:
     | T
     | {

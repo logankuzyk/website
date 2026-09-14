@@ -68,6 +68,16 @@ export const Photos: CollectionConfig = {
         },
       }),
     },
+    {
+      name: 'showInNewTab',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Include in the browser new tab rotation',
+      },
+    },
   ],
   upload: {
     // Upload to the public/photos directory in Next.js making them publicly accessible even outside of Payload

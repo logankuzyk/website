@@ -6,6 +6,7 @@ import { Separator } from '@/components/Separator/Separator'
 import { getRepresentativePhoto } from '@/utilities/getRepresentativePhoto'
 import { getPhotoCollectionWhere } from '@/utilities/getPhotoCollectionWhere'
 import { getPageUrl } from '@/utilities/getPageUrl'
+import { getPhotographyBasePath } from '@/utilities/getPhotographyBasePath'
 import { Button } from '@/components/ui/button'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -72,18 +73,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
       ? photoCollections.map((c) => (typeof c === 'object' && c ? c.id : c)).filter(Boolean)
       : []
 
-    const indexPage =
-      typeof photographyIndexPage === 'object' && photographyIndexPage
-        ? photographyIndexPage
-        : photographyIndexPage
-          ? await payload.findByID({
-              collection: 'pages',
-              id: photographyIndexPage as string,
-              depth: 0,
-            })
-          : null
-    const baseUrl = getPageUrl(indexPage)
-    const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+    const basePath = await getPhotographyBasePath(photographyIndexPage, payload)
 
     for (const collectionId of collectionIds) {
       const collection = (await payload.findByID({
@@ -188,18 +178,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
             })
       if (collection?.slug) {
         const site = await payload.findGlobal({ slug: 'site', depth: 1 })
-        const indexPage =
-          typeof site.photographyIndexPage === 'object' && site.photographyIndexPage
-            ? site.photographyIndexPage
-            : site.photographyIndexPage
-              ? await payload.findByID({
-                  collection: 'pages',
-                  id: site.photographyIndexPage as string,
-                  depth: 0,
-                })
-              : null
-        const baseUrl = getPageUrl(indexPage)
-        const basePath = !indexPage || baseUrl === '/' ? '/photography' : baseUrl
+        const basePath = await getPhotographyBasePath(site.photographyIndexPage, payload)
         viewMoreHref = `${basePath}/${collection.slug}`
         if (!linkLabel && collection.name) {
           viewMoreLabel = collection.name
