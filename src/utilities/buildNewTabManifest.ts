@@ -1,4 +1,4 @@
-import type { Photo } from '@/payload-types'
+import type { Photo, PhotoTag } from '@/payload-types'
 
 import { collectImageCandidates } from './buildImageSrcSet'
 import {
@@ -26,6 +26,11 @@ export type NewTabExif = {
   dateTaken?: string
 }
 
+export type NewTabTag = {
+  slug: string
+  name: string
+}
+
 export type NewTabPhoto = {
   id: string
   alt: string | null
@@ -37,6 +42,8 @@ export type NewTabPhoto = {
   sizes: { url: string; width: number }[]
   exif: NewTabExif
   location: string | null
+  /** Added after v1 shipped: extensions from before it ignore the field. */
+  tags: NewTabTag[]
   pageUrl: string
   printUrl: string | null
 }
@@ -94,6 +101,19 @@ function buildExif(exif: Photo['exif']): NewTabExif {
   return Object.fromEntries(entries.filter(([, value]) => Boolean(value))) as NewTabExif
 }
 
+/** Populated tags only, once each. Ids the query didn't populate can't be named, so they go. */
+function buildTags(tags: Photo['tags']): NewTabTag[] {
+  const bySlug = new Map<string, NewTabTag>()
+  for (const tag of tags ?? []) {
+    if (typeof tag !== 'object' || tag === null) continue
+    const { slug, name } = tag as PhotoTag
+    const trimmed = name?.trim()
+    if (!slug || !trimmed || bySlug.has(slug)) continue
+    bySlug.set(slug, { slug, name: trimmed })
+  }
+  return [...bySlug.values()]
+}
+
 function buildPhoto(
   photo: Photo,
   { collectionSlugByPhotoId, siteUrl, basePath }: BuildNewTabManifestArgs,
@@ -117,6 +137,7 @@ function buildPhoto(
     sizes,
     exif: buildExif(photo.exif),
     location: formatLocation(photo.location),
+    tags: buildTags(photo.tags),
     pageUrl: slug
       ? `${siteUrl}${basePath}/${slug}?photo=${encodeURIComponent(photo.id)}`
       : `${siteUrl}${basePath}`,

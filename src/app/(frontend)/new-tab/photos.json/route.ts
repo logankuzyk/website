@@ -53,6 +53,7 @@ const getNewTabManifest = unstable_cache(
           sizes: true,
           exif: true,
           location: true,
+          tags: true,
         },
       }),
       payload.find({

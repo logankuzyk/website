@@ -4,6 +4,8 @@ import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { slugField } from 'payload'
 
+import { revalidatePhotoTag, revalidatePhotoTagDelete } from './hooks/revalidateTag'
+
 export const Tags: CollectionConfig = {
   slug: 'photo-tags',
   access: {
@@ -30,4 +32,8 @@ export const Tags: CollectionConfig = {
       fieldToUse: 'name',
     }),
   ],
+  hooks: {
+    afterChange: [revalidatePhotoTag],
+    afterDelete: [revalidatePhotoTagDelete],
+  },
 }

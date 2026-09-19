@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { Location, Photo } from '@/payload-types'
+import type { Location, Photo, PhotoTag } from '@/payload-types'
 
 import { buildNewTabManifest, toIsoDate } from '@/utilities/buildNewTabManifest'
 
@@ -9,6 +9,9 @@ const MEDIA = 'https://media.logankuzyk.com/photos/abc'
 
 const location = (name: string, parent?: Location): Location =>
   ({ id: name, name, slug: name, parent, updatedAt: '', createdAt: '' }) as Location
+
+const tag = (slug: string, name: string): PhotoTag =>
+  ({ id: `tag-${slug}`, slug, name, updatedAt: '', createdAt: '' }) as PhotoTag
 
 const photo = (overrides: Partial<Photo> = {}): Photo =>
   ({
@@ -81,6 +84,7 @@ describe('buildNewTabManifest', () => {
             dateTaken: '2025-06-30T12:26:01.000Z',
           },
           location: 'Victoria, British Columbia, Canada',
+          tags: [],
           pageUrl: 'https://logankuzyk.com/photography/coast?photo=p1',
           printUrl: null,
         },
@@ -142,6 +146,30 @@ describe('buildNewTabManifest', () => {
       'https://logankuzyk.com/photography/coast?photo=a',
       'https://logankuzyk.com/photography',
     ])
+  })
+
+  it('includes each populated tag once, by slug and name', () => {
+    const [entry] = build([
+      photo({
+        tags: [
+          tag('mountains', 'Mountains'),
+          tag('film', ' Film '),
+          tag('mountains', 'Mountains'),
+          'tag-unpopulated',
+          tag('', 'No slug'),
+          tag('blank', '  '),
+        ],
+      }),
+    ]).photos
+
+    expect(entry?.tags).toEqual([
+      { slug: 'mountains', name: 'Mountains' },
+      { slug: 'film', name: 'Film' },
+    ])
+  })
+
+  it('gives photos without tags an empty list', () => {
+    expect(build([photo({ tags: null })]).photos[0]?.tags).toEqual([])
   })
 
   it('always sets printUrl to null', () => {
