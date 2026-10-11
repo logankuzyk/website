@@ -105,6 +105,9 @@ export default buildConfig({
     limits: {
       fileSize: 75 * 1024 * 1024, // 75 MB
     },
+    // Whole-request cap (file + fields + multipart framing). Payload >= 3.90 defaults this
+    // to 50 MB, which would undercut `fileSize` above; keep it just over the file limit.
+    requestSizeLimit: 80 * 1024 * 1024, // 80 MB
   },
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
