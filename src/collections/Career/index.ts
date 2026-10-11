@@ -8,6 +8,7 @@ import {
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { listGallery } from '../../components/ListGallery/config'
 
 export const Career: CollectionConfig<'career'> = {
   slug: 'career',
@@ -19,6 +20,7 @@ export const Career: CollectionConfig<'career'> = {
   },
   admin: {
     defaultColumns: ['company', 'jobTitle', 'startDate', 'updatedAt'],
+    components: listGallery('logo'),
     useAsTitle: 'company',
   },
   fields: [

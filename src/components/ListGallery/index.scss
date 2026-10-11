@@ -1,0 +1,108 @@
+@import '~@payloadcms/ui/scss';
+
+// The table stays mounted (Payload renders it as a sibling of this component) so column,
+// sort and selection state carry over when switching back; it's just hidden in gallery layout.
+.collection-list__wrap:has(.list-gallery) .collection-list__tables {
+  display: none;
+}
+
+// The switch, rendered among the search bar's actions (next to Columns and Filters).
+.btn.list-gallery-toggle {
+  padding: 0;
+  background-color: transparent;
+
+  &.is-active {
+    background-color: var(--theme-elevation-150);
+  }
+
+  .btn__icon {
+    border: none;
+    padding: 0;
+  }
+}
+
+.list-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: base(0.6);
+  margin-top: 0;
+  padding: 0;
+  list-style: none;
+
+  &__card {
+    position: relative;
+    min-width: 0;
+    background: var(--theme-elevation-50);
+    border: 1px solid var(--theme-border-color);
+    border-radius: var(--style-radius-m);
+    overflow: hidden;
+    transition: border-color 100ms cubic-bezier(0, 0.2, 0.2, 1);
+
+    &:hover,
+    &:focus-within {
+      border-color: var(--theme-elevation-350);
+    }
+
+    &.is-selected {
+      border-color: var(--theme-success-500);
+      box-shadow: 0 0 0 1px var(--theme-success-500);
+    }
+  }
+
+  &__link {
+    @include btn-reset;
+    display: block;
+    width: 100%;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  &__preview {
+    display: block;
+    aspect-ratio: 1;
+    background: var(--theme-elevation-100);
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__title {
+    display: block;
+    padding: base(0.4) base(0.5);
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Like Notion: the checkbox appears on hover and stays once the card is selected.
+  &__select {
+    position: absolute;
+    top: base(0.4);
+    left: base(0.4);
+    opacity: 0;
+    transition: opacity 100ms cubic-bezier(0, 0.2, 0.2, 1);
+  }
+
+  &__card:hover &__select,
+  &__card:focus-within &__select,
+  &__card.is-selected &__select {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    &__select {
+      opacity: 1;
+    }
+  }
+
+  @include small-break {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+}
