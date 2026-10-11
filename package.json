@@ -90,6 +90,11 @@
     "vite-tsconfig-paths": "6.0.5",
     "vitest": "4.1.11"
   },
+  "overrides": {
+    "payload-plugin-llms-txt": {
+      "next": "$next"
+    }
+  },
   "engines": {
     "node": "^18.20.2 || >=20.9.0"
   }
