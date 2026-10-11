@@ -1,90 +1,64 @@
-'use client'
+import type { ListViewClientProps, ListViewServerProps, ListViewServerPropsOnly } from 'payload'
 
-import type { ListViewClientProps } from 'payload'
+import React from 'react'
 
-import {
-  Button,
-  DefaultListView,
-  GridViewIcon,
-  ListViewIcon,
-  useListQuery,
-  usePreferences,
-} from '@payloadcms/ui'
-import React, { createContext, use, useState } from 'react'
+import type { ListLayout } from './layout'
 
-import './index.scss'
+import { listLayoutPreferenceKey } from './layout'
+import { GalleryListViewClient } from './ListView.client'
 
-export type ListLayout = 'gallery' | 'table'
+// What Payload adds for server components on top of a list view's client props. Most of it
+// (payload, i18n, the collection config) can't cross to the client view.
+const serverOnlyProps = new Set<string>([
+  'collectionConfig',
+  'data',
+  'i18n',
+  'limit',
+  'listSearchableFields',
+  'locale',
+  'params',
+  'payload',
+  'permissions',
+  'searchParams',
+  'user',
+] satisfies (keyof ListViewServerPropsOnly)[])
 
-const ListLayoutContext = createContext<ListLayout>('table')
+const getListLayout = async ({
+  collectionSlug,
+  payload,
+  user,
+}: Pick<ListViewServerProps, 'collectionSlug' | 'payload' | 'user'>): Promise<ListLayout> => {
+  if (!user) return 'table'
 
-export const useListLayout = () => use(ListLayoutContext)
+  // Same lookup as Payload's own preference reads: access is bypassed, the query is scoped
+  // to the current user instead.
+  const { docs } = await payload.find({
+    collection: 'payload-preferences',
+    depth: 0,
+    limit: 1,
+    pagination: false,
+    where: {
+      and: [
+        { key: { equals: listLayoutPreferenceKey(collectionSlug) } },
+        { 'user.relationTo': { equals: user.collection } },
+        { 'user.value': { equals: user.id } },
+      ],
+    },
+  })
 
-const baseClass = 'list-gallery-toggle'
-
-const LayoutToggle: React.FC<{ layout: ListLayout; onChange: (layout: ListLayout) => void }> = ({
-  layout,
-  onChange,
-}) => {
-  const { isGroupingBy } = useListQuery()
-
-  // Grouped lists render one table per group; the gallery only knows the ungrouped page.
-  if (isGroupingBy) return null
-
-  return (
-    <React.Fragment>
-      <Button
-        aria-label="Table view"
-        buttonStyle="pill"
-        className={[baseClass, layout === 'table' && 'is-active'].filter(Boolean).join(' ')}
-        icon={<ListViewIcon />}
-        margin={false}
-        onClick={() => onChange('table')}
-        tooltip="Table"
-      />
-      <Button
-        aria-label="Gallery view"
-        buttonStyle="pill"
-        className={[baseClass, layout === 'gallery' && 'is-active'].filter(Boolean).join(' ')}
-        icon={<GridViewIcon />}
-        margin={false}
-        onClick={() => onChange('gallery')}
-        tooltip="Gallery"
-      />
-    </React.Fragment>
-  )
+  return docs[0]?.value === 'gallery' ? 'gallery' : 'table'
 }
 
 /**
- * Payload's default list view with a Table/Gallery switch in the search bar. The gallery
- * itself is the `ListGallery` server component in the `beforeListTable` slot, which reads the
- * layout from this component's context.
+ * List view for collections registered with `listGallery` in `./config`: Payload's default
+ * list view plus a Table/Gallery switch, opened in the layout the user last chose for this
+ * collection.
  */
-export const GalleryListView: React.FC<ListViewClientProps> = (props) => {
-  const { beforeActions, collectionSlug, listPreferences } = props
-  const { setPreference } = usePreferences()
-  const [layout, setLayout] = useState<ListLayout>(
-    (listPreferences as { listLayout?: ListLayout } | undefined)?.listLayout === 'gallery'
-      ? 'gallery'
-      : 'table',
-  )
+export const GalleryListView = async (props: ListViewServerProps) => {
+  const initialLayout = await getListLayout(props)
+  const clientProps = Object.fromEntries(
+    Object.entries(props).filter(([key]) => !serverOnlyProps.has(key)),
+  ) as ListViewClientProps
 
-  const changeLayout = (next: ListLayout) => {
-    setLayout(next)
-    // Stored alongside Payload's own list preferences (columns, sort, limit) for this
-    // collection, which come back as `listPreferences` on the next render.
-    void setPreference(`collection-${collectionSlug}`, { listLayout: next }, true)
-  }
-
-  return (
-    <ListLayoutContext value={layout}>
-      <DefaultListView
-        {...props}
-        beforeActions={[
-          ...(beforeActions ?? []),
-          <LayoutToggle key="list-layout" layout={layout} onChange={changeLayout} />,
-        ]}
-      />
-    </ListLayoutContext>
-  )
+  return <GalleryListViewClient {...clientProps} initialLayout={initialLayout} />
 }

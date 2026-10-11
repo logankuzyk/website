@@ -81,11 +81,25 @@ export const ListGallery = async ({
       : { docs: [] }
     const byID = new Map((related.docs as ImageDoc[]).map((image) => [image.id, image]))
 
+    // A preview is decoration: a fallback that throws (e.g. a photo collection whose filter
+    // isn't queryable on photos) costs that card its image, not the whole list view.
+    const resolveFallback = async (doc: ListDoc) => {
+      try {
+        return await fallbackImage?.(doc, { payload, user })
+      } catch (err) {
+        payload.logger.warn({
+          err,
+          msg: `ListGallery: could not resolve a fallback image for ${collectionSlug} "${doc.id}"`,
+        })
+        return null
+      }
+    }
+
     await Promise.all(
       docs.map(async (doc) => {
         const imageID = doc[imageField]
         const image = isID(imageID) ? byID.get(imageID) : undefined
-        images.set(doc.id, image ?? (await fallbackImage?.(doc, { payload, user })) ?? null)
+        images.set(doc.id, image ?? (await resolveFallback(doc)) ?? null)
       }),
     )
   } else {

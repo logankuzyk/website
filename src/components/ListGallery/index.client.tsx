@@ -13,7 +13,7 @@ import {
 import { formatAdminURL } from 'payload/shared'
 import React from 'react'
 
-import { useListLayout } from './ListView'
+import { useListLayout } from './ListView.client'
 import './index.scss'
 
 export type GalleryItem = {
