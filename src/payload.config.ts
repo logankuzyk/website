@@ -8,6 +8,7 @@ import { Career } from './collections/Career'
 import { Categories } from './collections/Categories'
 import { Locations } from './collections/Locations'
 import { Photos } from './collections/Photos'
+import { ALT_TEXT_QUEUE, generateAltTextTask } from './collections/Photos/altText/task'
 import { PhotoCollections } from './collections/PhotoCollections'
 import { Tags } from './collections/Tags'
 import { Pages } from './collections/Pages'
@@ -125,6 +126,9 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    tasks: [generateAltTextTask],
+    // Drains only the alt text retry queue. Runs in-process, which suits the long-lived
+    // Docker server (and is skipped during `next build`).
+    autoRun: [{ cron: '*/2 * * * *', limit: 10, queue: ALT_TEXT_QUEUE }],
   },
 })

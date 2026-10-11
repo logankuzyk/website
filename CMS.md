@@ -18,6 +18,8 @@ This document describes the environment variables and Payload CMS data structure
 | `R2_REGION` | No | Typically `auto` for R2. |
 | `STORAGE_URL` | No | Public URL for R2 (e.g. `https://media.example.com`). No trailing slash. |
 | `NEXT_PUBLIC_STORAGE_URL` | No | Same as `STORAGE_URL`. Exposed to the browser so images load directly from the CDN instead of proxying through Next.js. |
+| `CLOUDFLARE_ACCOUNT_ID` | No | Cloudflare account ID for Workers AI. With `WORKERS_AI_API_TOKEN`, enables AI-generated photo alt text; if either is unset the feature is off entirely. |
+| `WORKERS_AI_API_TOKEN` | No | Cloudflare API token used to call Workers AI over REST. A custom token needs the "Workers AI - Read" and "Workers AI - Edit" permissions. |
 
 ### Storage Behavior
 
@@ -75,7 +77,8 @@ Slug: `media` · Folders: Yes
 |-------|------|-------------|
 | tags | relationship → tags | Tags for photo gallery filtering |
 | displayOrder | number | Order in photos gallery (lower = earlier) |
-| alt | text | Alt text for accessibility |
+| alt | text | Alt text for accessibility. Left blank on upload, it is written by a vision model when Workers AI is configured (see **Alt text** below) |
+| altSource | select | `ai`, `manual` or unset: who wrote `alt`. Read-only, maintained by a hook |
 | caption | richText | Image caption |
 | (upload) | — | File upload with focal point, image sizes: thumbnail, square, small, medium, large, xlarge, og |
 
@@ -91,6 +94,15 @@ Slug: `media` · Folders: Yes
 - **Undecodable uploads**: a `sharp` decode failure surfaces in the admin as a per-file error (drawer stays open) rather than a false "Successfully saved" — `config.hooks.afterError` (`fileUploadErrorResponse`) re-shapes Payload's bare `FileUploadError` into the field-error shape `@payloadcms/ui` BulkUpload counts.
 - **Delivery**: `ImageMedia` builds a real `srcSet` from `sizes.*` even when images are served straight from the CDN (`NEXT_PUBLIC_STORAGE_URL`), via a Next.js image `loader` that maps each requested width to the closest rendition. Callers that render into a known box (e.g. `PhotoGrid` tiles) pass an explicit `size`. The rendition ladder is capped at `xlarge` (1920px WebP); only `priority` (LCP) images may fall back to the raw original, so a missing/inaccurate `size` can never silently serve a multi-MB file.
 - **Backfill**: existing photos are reprocessed with `npm run reprocess:photos` (`-- --dry-run` / `-- --limit N` / `-- --force` / `-- --continue-on-error`). It re-downloads each original, has Payload rebuild `sizes.*`, then verifies every object resolves from storage before moving on and stops on the first failure. AVIF/HEIC sources decode slowly, so large batches take time. Run it against the local MinIO mock (`npm run dev:r2`) first and confirm bucket object counts before pointing it at R2.
+
+**Alt text** (`src/collections/Photos/altText/`): optional, enabled by setting both `CLOUDFLARE_ACCOUNT_ID` and `WORKERS_AI_API_TOKEN`. Descriptions come from the Workers AI vision model `@cf/moondream/moondream3.1-9B-A2B`, called over REST; the photo's tags and location are passed along as hints.
+
+- **On upload**: a photo created with a blank `alt` is described during the upload itself, so the edit form already holds the text. Text typed at upload is kept as is. Existing photos are never changed by an ordinary save.
+- **`altSource`**: `ai` when the model wrote `alt`, `manual` once it is typed or edited by hand, unset while `alt` is blank and on photos whose text predates the feature (those count as hand-written). It is what lets a regeneration pass replace machine-written text without touching hand-written text.
+- **Regenerate**: the edit view has a "Regenerate alt text" button under the alt field (hidden when Workers AI is not configured). It POSTs to `/api/photos/:id/alt-text` (authenticated), which replaces whatever is there and saves it immediately; the button asks first when the current text is hand-written.
+- **Retry queue**: if the model call fails during an upload, the upload still succeeds with a blank `alt` and a `generateAltText` job is queued on the `alt-text` queue. `jobs.autoRun` in `payload.config.ts` drains that queue every 2 minutes inside the server process; the job only ever fills a blank `alt` and retries with exponential backoff.
+- **Backfill**: `npm run generate:alt-text` (`-- --dry-run` / `-- --limit N` / `-- --regenerate` / `-- --continue-on-error`) fills photos whose `alt` is blank; `--regenerate` also redoes `ai` text. Hand-written text is never touched. It makes one billed model call per photo and stops on the first failure.
+- **Caches**: writes made outside a Next.js request (the backfill script, the retry job) cannot revalidate the photos sitemap or the new-tab manifest. Those pick the text up on the next photo change in the admin, or the manifest's 24h backstop.
 
 ### Categories
 
