@@ -14,9 +14,9 @@ export const revalidatePhotoCollection: CollectionAfterChangeHook<PhotoCollectio
     payload.logger.info(`Revalidating photo collection at path: ${path}`)
 
     revalidatePath(path)
-    revalidateTag('photography-sitemap')
+    revalidateTag('photography-sitemap', { expire: 0 })
     // Collection membership and order decide each new tab photo's pageUrl.
-    revalidateTag('new-tab-photos')
+    revalidateTag('new-tab-photos', { expire: 0 })
   }
   return doc
 }
@@ -29,9 +29,9 @@ export const revalidateDelete: CollectionAfterDeleteHook<PhotoCollection> = ({
     const path = `/photography/${doc?.slug}`
 
     revalidatePath(path)
-    revalidateTag('photography-sitemap')
+    revalidateTag('photography-sitemap', { expire: 0 })
     // Collection membership and order decide each new tab photo's pageUrl.
-    revalidateTag('new-tab-photos')
+    revalidateTag('new-tab-photos', { expire: 0 })
   }
 
   return doc

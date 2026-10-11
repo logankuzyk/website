@@ -16,7 +16,7 @@ export const revalidateProject: CollectionAfterChangeHook<Project> = ({
       payload.logger.info(`Revalidating project at path: ${path}`)
 
       revalidatePath(path)
-      revalidateTag('projects-sitemap')
+      revalidateTag('projects-sitemap', { expire: 0 })
     }
 
     // If the project was previously published, we need to revalidate the old path
@@ -26,7 +26,7 @@ export const revalidateProject: CollectionAfterChangeHook<Project> = ({
       payload.logger.info(`Revalidating old project at path: ${oldPath}`)
 
       revalidatePath(oldPath)
-      revalidateTag('projects-sitemap')
+      revalidateTag('projects-sitemap', { expire: 0 })
     }
   }
   return doc
@@ -37,7 +37,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Project> = ({ doc, req:
     const path = `/projects/${doc?.slug}`
 
     revalidatePath(path)
-    revalidateTag('projects-sitemap')
+    revalidateTag('projects-sitemap', { expire: 0 })
   }
 
   return doc

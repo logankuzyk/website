@@ -10,6 +10,9 @@ tsconfig.tsbuildinfo
 # Payload auto-generated import map
 src/app/(payload)/admin/importMap.js
 
+# Rewritten by Next.js on every dev/build run (the two write different contents)
+next-env.d.ts
+
 # Payload upload directories (local storage)
 public/photos/
 
