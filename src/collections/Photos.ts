@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { listGallery } from '../components/ListGallery/config'
 import { appendPrefixToCollectionBeforeChangeHook } from '../hooks/uploadPrefixed'
 import { revalidateDelete, revalidatePhoto } from './Photos/hooks/revalidatePhoto'
 import { transcodeHeicUpload } from './Photos/hooks/transcodeHeicUpload'
@@ -22,6 +23,7 @@ export const Photos: CollectionConfig = {
   admin: {
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'tags', 'updatedAt'],
+    components: listGallery(),
   },
   folders: true,
   hooks: {

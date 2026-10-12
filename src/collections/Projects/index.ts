@@ -9,6 +9,7 @@ import {
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { listGallery } from '../../components/ListGallery/config'
 import { slugField } from 'payload'
 import { revalidateDelete, revalidateProject } from './hooks/revalidateProject'
 
@@ -22,6 +23,7 @@ export const Projects: CollectionConfig<'projects'> = {
   },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],
+    components: listGallery('featuredImage'),
     useAsTitle: 'title',
   },
   fields: [
