@@ -138,6 +138,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      generateAltText: TaskGenerateAltText;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -270,7 +271,14 @@ export interface Photo {
    * Location where the photo was taken. Used for filtering in collections.
    */
   location?: (string | null) | Location;
+  /**
+   * Left blank on upload, this is written by a vision model (when Workers AI is configured).
+   */
   alt?: string | null;
+  /**
+   * Who wrote the alt text. Editing the alt text marks it hand-written.
+   */
+  altSource?: ('ai' | 'manual') | null;
   caption?: {
     root: {
       type: string;
@@ -1393,7 +1401,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'generateAltText' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1426,7 +1434,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'generateAltText' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1771,6 +1779,7 @@ export interface PhotosSelect<T extends boolean = true> {
   tags?: T;
   location?: T;
   alt?: T;
+  altSource?: T;
   caption?: T;
   showInNewTab?: T;
   exif?:
@@ -2480,6 +2489,18 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskGenerateAltText".
+ */
+export interface TaskGenerateAltText {
+  input: {
+    photoId: string;
+  };
+  output: {
+    status?: string | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

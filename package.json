@@ -11,6 +11,7 @@
     "dev:db": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up mongo -d",
     "dev:r2": "docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile r2 up minio minio-setup -d",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && npm run build && npm run start",
+    "generate:alt-text": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/generate-alt-text.ts",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "ii": "cross-env NODE_OPTIONS=--no-deprecation npm install",
