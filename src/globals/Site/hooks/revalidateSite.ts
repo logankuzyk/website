@@ -6,7 +6,7 @@ export const revalidateSite: GlobalAfterChangeHook = ({ doc, req: { payload, con
   if (!context.disableRevalidate) {
     payload.logger.info(`Revalidating site`)
 
-    revalidateTag('global_site')
+    revalidateTag('global_site', { expire: 0 })
   }
 
   return doc

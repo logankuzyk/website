@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { listGallery } from '../components/ListGallery/config'
 import { appendPrefixToCollectionBeforeChangeHook } from '../hooks/uploadPrefixed'
 import { generateAltTextEndpoint } from './Photos/altText/endpoint'
 import { generateAltTextOnUpload, queueAltTextRetry } from './Photos/altText/hooks'
@@ -25,6 +26,7 @@ export const Photos: CollectionConfig = {
   admin: {
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'tags', 'updatedAt'],
+    components: listGallery(),
   },
   folders: true,
   endpoints: [generateAltTextEndpoint],

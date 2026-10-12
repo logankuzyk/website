@@ -16,11 +16,11 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
       payload.logger.info(`Revalidating page at path: ${path}`)
 
       revalidatePath(path)
-      revalidateTag('pages-sitemap')
+      revalidateTag('pages-sitemap', { expire: 0 })
 
       // The photography index page's slug is the base of every new tab photo's pageUrl.
       if (previousDoc?.slug !== doc.slug) {
-        revalidateTag('new-tab-photos')
+        revalidateTag('new-tab-photos', { expire: 0 })
       }
     }
 
@@ -31,7 +31,7 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
       payload.logger.info(`Revalidating old page at path: ${oldPath}`)
 
       revalidatePath(oldPath)
-      revalidateTag('pages-sitemap')
+      revalidateTag('pages-sitemap', { expire: 0 })
     }
   }
   return doc
@@ -41,7 +41,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({ doc, req: { 
   if (!context.disableRevalidate) {
     const path = doc?.slug === 'home' ? '/' : `/${doc?.slug}`
     revalidatePath(path)
-    revalidateTag('pages-sitemap')
+    revalidateTag('pages-sitemap', { expire: 0 })
   }
 
   return doc

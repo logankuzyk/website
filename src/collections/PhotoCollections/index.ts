@@ -10,6 +10,7 @@ import { slugField } from 'payload'
 import { anyone } from '../../access/anyone'
 import { revalidateDelete, revalidatePhotoCollection } from './hooks/revalidatePhotoCollection'
 import { authenticated } from '../../access/authenticated'
+import { listGallery } from '../../components/ListGallery/config'
 
 export const PhotoCollections: CollectionConfig = {
   slug: 'photo-collections',
@@ -26,6 +27,10 @@ export const PhotoCollections: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'parent', 'displayOrder', 'hiddenFromIndex', 'updatedAt'],
+    components: listGallery(
+      'coverImage',
+      '@/components/ListGallery/PhotoCollectionsGallery#PhotoCollectionsGallery',
+    ),
   },
   fields: [
     {
