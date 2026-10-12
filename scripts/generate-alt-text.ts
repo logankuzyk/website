@@ -3,7 +3,7 @@
  * src/collections/Photos/altText). New uploads get theirs during the upload itself; this
  * covers everything uploaded before that existed, or while Workers AI was not configured.
  *
- * Each photo is one request to Cloudflare Workers AI (`@cf/moondream/moondream3.1-9B-A2B`),
+ * Each photo is one request to Cloudflare Workers AI (`@cf/google/gemma-4-26b-a4b-it`),
  * so it needs CLOUDFLARE_ACCOUNT_ID and WORKERS_AI_API_TOKEN (see .env.example).
  *
  * Runs standalone (outside Next.js), same pattern as scripts/reprocess-photos.ts.
@@ -25,7 +25,7 @@
  * out several hundred requests later.
  *
  * COST: every generated alt text is a billed model call. Cloudflare's model page lists
- * $0.30 per million input tokens and $1.00 per million output tokens; `--dry-run` shows how
+ * $0.10 per million input tokens and $0.30 per million output tokens (about $0.00003 a photo); `--dry-run` shows how
  * many photos a run would send, and `--limit` lets you try a handful and read the real usage
  * off the Workers AI dashboard before committing to the lot.
  * ─────────────────────────────────────────────────────────────────────────────────────────

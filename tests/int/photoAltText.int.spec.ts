@@ -44,21 +44,38 @@ const json = (body: unknown, status = 200) =>
     headers: { 'Content-Type': 'application/json' },
   })
 
+const completion = (content: null | string) => ({
+  result: { choices: [{ finish_reason: 'stop', message: { content, role: 'assistant' } }] },
+  success: true,
+})
+
 const modelAnswers = (answer: null | string) =>
-  fetchMock.mockImplementation(async () => json({ result: { answer }, success: true }))
+  fetchMock.mockImplementation(async () => json(completion(answer)))
 
 const modelFails = (status = 500, message = 'upstream exploded') =>
   fetchMock.mockImplementation(async () =>
     json({ errors: [{ code: 5000, message }], result: null, success: false }, status),
   )
 
+type ChatPart = { image_url?: { url: string }; text?: string; type: string }
+
 const sent = (call = 0) => {
   const [url, init] = fetchMock.mock.calls[call] ?? []
-  return { body: JSON.parse(String(init?.body)) as Record<string, unknown>, init, url }
+  const body = JSON.parse(String(init?.body)) as Record<string, unknown> & {
+    messages?: { content: ChatPart[] }[]
+  }
+  const parts = body.messages?.[0]?.content ?? []
+  return {
+    body,
+    image: parts.find((p) => p.type === 'image_url')?.image_url?.url,
+    init,
+    question: parts.find((p) => p.type === 'text')?.text,
+    url,
+  }
 }
 
 const sentImage = (call = 0) =>
-  Buffer.from(String(sent(call).body.image).replace(/^data:image\/jpeg;base64,/, ''), 'base64')
+  Buffer.from(String(sent(call).image).replace(/^data:image\/jpeg;base64,/, ''), 'base64')
 
 const describeBuffer = async (image: Buffer) => {
   const { format, height, width } = await sharp(image).metadata()
@@ -392,15 +409,30 @@ describe('queryImage', () => {
     expect(url).toBe(
       `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/ai/run/${ALT_TEXT_MODEL}`,
     )
-    expect(ALT_TEXT_MODEL).toMatch(/^@cf\/moondream\//)
+    expect(ALT_TEXT_MODEL).toMatch(/^@cf\/google\/gemma-/)
     expect(init?.method).toBe('POST')
 
     const headers = new Headers(init?.headers)
     expect(headers.get('Authorization')).toBe(`Bearer ${TOKEN}`)
     expect(headers.get('Content-Type')).toBe('application/json')
 
-    expect(body).toMatchObject({ question: 'What is this?', reasoning: false, task: 'query' })
-    expect(body.image).toBe(`data:image/jpeg;base64,${jpeg.toString('base64')}`)
+    expect(body).toMatchObject({
+      chat_template_kwargs: { enable_thinking: false },
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'What is this?' },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${jpeg.toString('base64')}` },
+            },
+          ],
+        },
+      ],
+    })
+    // Not the (billed) streaming/Moondream shape.
+    expect(body).not.toHaveProperty('stream')
     // A hung request must not hang the upload it is part of.
     expect(init?.signal).toBeInstanceOf(AbortSignal)
   })
@@ -414,9 +446,7 @@ describe('queryImage', () => {
 
   it.each([401, 429, 500])('throws on HTTP %i', async (status) => {
     configure()
-    fetchMock.mockImplementation(async () =>
-      json({ result: { answer: 'ignored' }, success: true }, status),
-    )
+    fetchMock.mockImplementation(async () => json(completion('ignored'), status))
 
     await expect(queryImage({ jpeg, question: 'q' })).rejects.toThrow(String(status))
   })
@@ -455,10 +485,24 @@ describe('queryImage', () => {
   })
 
   it.each([
-    ['an empty answer', { result: { answer: '' }, success: true }],
-    ['a whitespace answer', { result: { answer: ' \n ' }, success: true }],
-    ['a null answer', { result: { answer: null }, success: true }],
-    ['a missing answer', { result: {}, success: true }],
+    ['an empty answer', completion('')],
+    ['a whitespace answer', completion(' \n ')],
+    ['a null answer', completion(null)],
+    [
+      'a reasoning-only answer cut off by max_tokens',
+      {
+        result: {
+          choices: [
+            { finish_reason: 'length', message: { content: '', reasoning_content: 'hmm' } },
+          ],
+        },
+        success: true,
+      },
+    ],
+    [
+      'an empty result (what a non-streaming Moondream call returns)',
+      { result: {}, success: true },
+    ],
     ['a missing result', { success: true }],
   ])('throws on %s', async (_name, body) => {
     configure()
@@ -987,7 +1031,7 @@ describe('generateAltTextOnUpload', () => {
 
       await run({ data: { location: 'loc-1', tags: ['tag-1', 'tag-2'] }, req })
 
-      const question = String(sent().body.question)
+      const question = String(sent().question)
       expect(question).toContain('Tofino')
       expect(question).toContain('Surfing')
       expect(question).toContain('Winter')
@@ -1464,7 +1508,7 @@ describe('generatePhotoAltText', () => {
 
     await generatePhotoAltText({ id: 'p1', overwrite: 'empty', req })
 
-    const question = String(sent().body.question)
+    const question = String(sent().question)
     expect(question).toContain('Ucluelet')
     expect(question).toContain('Storm')
     expect(payload.find).not.toHaveBeenCalled()

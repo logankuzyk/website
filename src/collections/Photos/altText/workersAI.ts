@@ -1,12 +1,16 @@
 // Workers AI over REST: the site runs in Docker, not on Workers, so there is no `env.AI` binding.
-// https://developers.cloudflare.com/workers-ai/models/moondream3.1-9B-A2B/
-export const ALT_TEXT_MODEL = '@cf/moondream/moondream3.1-9B-A2B'
+// https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/
+//
+// Chosen over `@cf/moondream/moondream3.1-9B-A2B`, which over REST returns `result: {}` unless
+// `stream: true` is set, and which costs roughly 7x more per photo (740 vs ~300 input tokens,
+// $0.30 vs $0.10 per M). Gemma is a chat model: image in an OpenAI-style `image_url` part.
+export const ALT_TEXT_MODEL = '@cf/google/gemma-4-26b-a4b-it'
 
 const REQUEST_TIMEOUT_MS = 20_000
 
 type WorkersAIResponse = {
   errors?: { code?: number; message?: string }[]
-  result?: { answer?: string | null; finish_reason?: string }
+  result?: { choices?: { finish_reason?: string; message?: { content?: string | null } }[] }
   success?: boolean
 }
 
@@ -40,11 +44,21 @@ export async function queryImage({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          task: 'query',
-          image: `data:image/jpeg;base64,${jpeg.toString('base64')}`,
-          question,
-          // The reasoning trace defaults to on; it costs output tokens and latency we don't need.
-          reasoning: false,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: question },
+                {
+                  type: 'image_url',
+                  image_url: { url: `data:image/jpeg;base64,${jpeg.toString('base64')}` },
+                },
+              ],
+            },
+          ],
+          // Thinking defaults to on: the reasoning trace is billed as output, takes ~20s, and with
+          // a small `max_tokens` eats the whole budget and leaves `content` empty.
+          chat_template_kwargs: { enable_thinking: false },
           temperature: 0.2,
           max_tokens: 120,
         }),
@@ -74,7 +88,7 @@ export async function queryImage({
       : new Error(message)
   }
 
-  const answer = body.result?.answer?.trim()
+  const answer = body.result?.choices?.[0]?.message?.content?.trim()
   if (!answer) throw new Error('Workers AI returned no answer')
   return answer
 }
