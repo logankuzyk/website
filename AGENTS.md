@@ -768,7 +768,7 @@ export function MyComponent() {
 }
 
 // Import Payload's SCSS library
-@import '~@payloadcms/ui/scss';
+@import '@payloadcms/ui/scss';
 
 .my-component {
   @include mid-break {

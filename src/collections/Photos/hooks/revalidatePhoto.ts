@@ -8,7 +8,7 @@ import { revalidateTag } from 'next/cache'
 // afterChange hook *after* this one, a throw here also skips the upload entirely.
 const safeRevalidateTag = (tag: string, req: { payload: { logger: { warn: (msg: string) => void } } }) => {
   try {
-    revalidateTag(tag)
+    revalidateTag(tag, { expire: 0 })
   } catch (err) {
     req.payload.logger.warn(`revalidatePhoto: revalidateTag(${tag}) failed: ${String(err)}`)
   }

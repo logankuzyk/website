@@ -7,7 +7,7 @@ import { revalidateTag } from 'next/cache'
 const revalidateNewTab = (req: PayloadRequest) => {
   if (req.context.disableRevalidate) return
   try {
-    revalidateTag('new-tab-photos')
+    revalidateTag('new-tab-photos', { expire: 0 })
   } catch (err) {
     req.payload.logger.warn(
       `revalidatePhotoTag: revalidateTag(new-tab-photos) failed: ${String(err)}`,
