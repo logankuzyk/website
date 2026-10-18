@@ -1,16 +1,9 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextVitals,
+  ...nextTs,
   {
     rules: {
       '@typescript-eslint/ban-ts-comment': 'warn',
@@ -31,7 +24,22 @@ const eslintConfig = [
     },
   },
   {
-    ignores: ['.next/'],
+    // New in eslint-plugin-react-hooks 7 (ships with eslint-config-next 16). Existing code
+    // trips these; keep them visible as warnings until the components are reworked.
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      'react-hooks/refs': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+    },
+  },
+  {
+    ignores: [
+      '.next/',
+      'playwright-report/',
+      'test-results/',
+      'src/payload-types.ts',
+      'src/app/(payload)/admin/importMap.js',
+    ],
   },
 ]
 

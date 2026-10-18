@@ -8,6 +8,7 @@ import { Career } from './collections/Career'
 import { Categories } from './collections/Categories'
 import { Locations } from './collections/Locations'
 import { Photos } from './collections/Photos'
+import { ALT_TEXT_QUEUE, generateAltTextTask } from './collections/Photos/altText/task'
 import { PhotoCollections } from './collections/PhotoCollections'
 import { Tags } from './collections/Tags'
 import { Pages } from './collections/Pages'
@@ -105,6 +106,9 @@ export default buildConfig({
     limits: {
       fileSize: 75 * 1024 * 1024, // 75 MB
     },
+    // Whole-request cap (file + fields + multipart framing). Payload >= 3.90 defaults this
+    // to 50 MB, which would undercut `fileSize` above; keep it just over the file limit.
+    requestSizeLimit: 80 * 1024 * 1024, // 80 MB
   },
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -125,6 +129,9 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    tasks: [generateAltTextTask],
+    // Drains only the alt text retry queue. Runs in-process, which suits the long-lived
+    // Docker server (and is skipped during `next build`).
+    autoRun: [{ cron: '*/2 * * * *', limit: 10, queue: ALT_TEXT_QUEUE }],
   },
 })

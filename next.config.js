@@ -19,6 +19,14 @@ const nextConfig = {
     },
   },
   images: {
+    // Locally stored uploads are requested as relative URLs with an `?updatedAt` cache tag.
+    localPatterns: [
+      {
+        pathname: '/api/photos/file/**',
+      },
+    ],
+    // ImageMedia requests quality={100}; Next 16 only honours qualities listed here.
+    qualities: [100],
     remotePatterns: [
       ...[serverUrl].filter(Boolean).map((item) => {
         const url = new URL(item)

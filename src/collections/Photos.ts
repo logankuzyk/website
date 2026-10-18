@@ -12,6 +12,9 @@ import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { listGallery } from '../components/ListGallery/config'
 import { appendPrefixToCollectionBeforeChangeHook } from '../hooks/uploadPrefixed'
+import { generateAltTextEndpoint } from './Photos/altText/endpoint'
+import { generateAltTextOnUpload, queueAltTextRetry } from './Photos/altText/hooks'
+import { isAltTextConfigured } from './Photos/altText/workersAI'
 import { revalidateDelete, revalidatePhoto } from './Photos/hooks/revalidatePhoto'
 import { transcodeHeicUpload } from './Photos/hooks/transcodeHeicUpload'
 
@@ -26,10 +29,11 @@ export const Photos: CollectionConfig = {
     components: listGallery(),
   },
   folders: true,
+  endpoints: [generateAltTextEndpoint],
   hooks: {
     beforeOperation: [transcodeHeicUpload],
-    beforeChange: [appendPrefixToCollectionBeforeChangeHook('photos')],
-    afterChange: [revalidatePhoto],
+    beforeChange: [appendPrefixToCollectionBeforeChangeHook('photos'), generateAltTextOnUpload],
+    afterChange: [revalidatePhoto, queueAltTextRetry],
     afterDelete: [revalidateDelete],
   },
   access: {
@@ -60,6 +64,44 @@ export const Photos: CollectionConfig = {
       name: 'alt',
       type: 'text',
       //required: true,
+      admin: {
+        description:
+          'Left blank on upload, this is written by a vision model (when Workers AI is configured).',
+      },
+    },
+    {
+      name: 'generateAltText',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: {
+            // Env vars never reach the browser, so the server decides whether to show the button.
+            clientProps: { enabled: isAltTextConfigured() },
+            path: '@/collections/Photos/altText/GenerateAltTextButton#GenerateAltTextButton',
+          },
+        },
+        // A `ui` field would otherwise be offered as an (empty) list column.
+        disableListColumn: true,
+      },
+    },
+    {
+      // Maintained by the `generateAltTextOnUpload` hook, never by the client: it is what lets
+      // a regeneration pass replace machine-written text without touching hand-written text.
+      name: 'altSource',
+      type: 'select',
+      options: [
+        { label: 'AI-generated', value: 'ai' },
+        { label: 'Hand-written', value: 'manual' },
+      ],
+      access: {
+        create: () => false,
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Who wrote the alt text. Editing the alt text marks it hand-written.',
+      },
     },
     {
       name: 'caption',
