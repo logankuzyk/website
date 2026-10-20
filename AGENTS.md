@@ -1147,6 +1147,10 @@ For deeper exploration of specific topics, refer to the context files located in
 - Examples: https://github.com/payloadcms/payload/tree/main/examples
 - Templates: https://github.com/payloadcms/payload/tree/main/templates
 
+## Pull requests
+
+Capitalize the first word of a PR title after any prefix, e.g. `docs: Add agent skills setup`, `feat(admin): Gallery layout for list views`.
+
 ## Agent skills
 
 ### Issue tracker
