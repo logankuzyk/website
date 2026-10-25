@@ -15,7 +15,8 @@ const dirname = path.dirname(filename)
 /**
  * SVG backgrounds (patterns, gradients) for banner heroes. Kept apart from `photos`, which
  * excludes SVG on purpose: SVGs here are never rasterised or resized, and are only ever
- * rendered through `<img>` (scripts in an SVG don't run there).
+ * rendered through `<img>`, where scripts don't run. Opened directly they could, so `headers.js`
+ * serves these files with a sandboxing CSP.
  */
 export const Assets: CollectionConfig = {
   slug: 'assets',

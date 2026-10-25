@@ -1,5 +1,6 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 
+import { getAssetHeaders } from './headers.js'
 import redirects from './redirects.js'
 
 // Base URL for the app. Must match NEXT_PUBLIC_SERVER_URL in production so Image remotePatterns allow the same host.
@@ -58,6 +59,7 @@ const nextConfig = {
 
     return webpackConfig
   },
+  headers: getAssetHeaders,
   output: 'standalone',
   reactStrictMode: true,
   redirects,

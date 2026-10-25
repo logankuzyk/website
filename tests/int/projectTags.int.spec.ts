@@ -20,6 +20,11 @@ describe('Projects fields', () => {
     expect(repoUrl.validate).toBe(validate)
   })
 
+  it('validates externalUrl, which drives the View live link', () => {
+    const externalUrl = field('externalUrl') as { validate?: unknown }
+    expect(externalUrl.validate).toBe(validate)
+  })
+
   it('keeps featuredImage required', () => {
     expect(field('featuredImage')).toMatchObject({ required: true })
   })

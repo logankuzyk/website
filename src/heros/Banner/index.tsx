@@ -11,12 +11,14 @@ const isResolved = <T,>(value: T | string | number | null | undefined): value is
   Boolean(value) && typeof value === 'object'
 
 export const BannerHero: React.FC<Page['hero']> = ({
-  backgroundType = 'image',
+  backgroundType: storedBackgroundType,
   colour,
   heading,
   media,
   vectorMedia,
 }) => {
+  // Same default as `heroShowsMedia`: unset (undefined or null) means image.
+  const backgroundType = storedBackgroundType ?? 'image'
   const isColour = backgroundType === 'colour'
   const background = isResolved(vectorMedia) && backgroundType === 'vector' ? vectorMedia : null
   const photo = isResolved(media) && backgroundType === 'image' ? media : null

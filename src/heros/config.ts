@@ -1,4 +1,4 @@
-import type { Field, UploadFieldSingleValidation } from 'payload'
+import type { Field } from 'payload'
 
 import {
   FixedToolbarFeature,
@@ -9,7 +9,7 @@ import {
 
 import { linkGroup } from '@/fields/linkGroup'
 import { bannerColourOptions } from '@/heros/Banner/colours'
-import { type HeroData, heroMediaRequired, heroShowsMedia } from '@/heros/rules'
+import { heroShowsMedia } from '@/heros/rules'
 
 export const hero: Field = {
   name: 'hero',
@@ -145,11 +145,9 @@ export const hero: Field = {
         condition: (_, siblingData) => heroShowsMedia(siblingData),
       },
       relationTo: 'photos',
-      // Not `required: true`: the banner only needs a photo in its image mode.
-      validate: ((value, { siblingData }) =>
-        heroMediaRequired(siblingData as HeroData) && !value
-          ? 'This field is required.'
-          : true) satisfies UploadFieldSingleValidation,
+      // Payload skips validation of a field whose `admin.condition` is false, so this only
+      // bites where the photo is shown (impact heroes, banner image mode).
+      required: true,
     },
   ],
   label: false,

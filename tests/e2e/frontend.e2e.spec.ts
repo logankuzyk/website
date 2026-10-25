@@ -62,6 +62,17 @@ test.describe('Projects page', () => {
     )
   })
 
+  test('clicking anywhere on the card, even under the overlay, opens the project', async ({ page }) => {
+    await page.goto('http://localhost:3000/projects')
+    const card = page.getByTestId('project-card').first()
+    const box = (await card.boundingBox())!
+    // Top-left corner of the thumbnail: under the overlay, away from its buttons.
+    await page.mouse.move(box.x + 12, box.y + 12)
+    await overlayShown(card)
+    await page.mouse.click(box.x + 12, box.y + 12)
+    await expect(page).toHaveURL(/\/projects\/sample-project$/)
+  })
+
   test('keyboard focus within the card reveals the overlay', async ({ page }) => {
     await page.goto('http://localhost:3000/projects')
     const card = page.getByTestId('project-card').first()

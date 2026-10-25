@@ -6,17 +6,29 @@ const MESSAGE = 'SVG needs a viewBox or width/height'
 
 // Attribute values may legitimately contain `>`, so match quoted values as a unit.
 const SVG_ROOT = /<svg\b((?:[^>"']|"[^"]*"|'[^']*')*)>/i
-const ABSOLUTE_LENGTH = /^\s*\d+(\.\d+)?\s*(px|pt|pc|mm|cm|in|em|rem|ex)?\s*$/i
+// Unitless or an absolute unit. Font-relative (`em`, `ex`) and percentage lengths carry no size.
+const ABSOLUTE_LENGTH = /^\s*(\d+(?:\.\d+)?|\.\d+)\s*(?:px|pt|pc|mm|cm|in)?\s*$/i
 
 const readAttribute = (attributes: string, name: string): string | undefined => {
   const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i').exec(attributes)
   return match ? (match[1] ?? match[2]) : undefined
 }
 
+const isPositiveLength = (value: string | undefined): boolean => {
+  const match = value === undefined ? null : ABSOLUTE_LENGTH.exec(value)
+  return match !== null && Number(match[1]) > 0
+}
+
+/** `min-x min-y width height`: four numbers, with a positive width and height. */
+const isUsableViewBox = (value: string): boolean => {
+  const parts = value.trim().split(/[\s,]+/).map(Number)
+  return parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0
+}
+
 /**
  * An SVG used as a `object-cover` background needs an intrinsic aspect ratio, which comes from
- * either a `viewBox` or an absolute `width` *and* `height` on the root element. Relative
- * lengths (`100%`) carry no ratio on their own.
+ * either a `viewBox` or an absolute `width` *and* `height` on the root element, each with a
+ * positive size. Relative lengths (`100%`, `em`) carry no ratio on their own.
  */
 export const svgHasDimensions = (svg: string): boolean => {
   const stripped = svg.replace(/<!--[\s\S]*?-->/g, '').replace(/<\?[\s\S]*?\?>/g, '')
@@ -24,11 +36,10 @@ export const svgHasDimensions = (svg: string): boolean => {
   if (!root) return false
 
   const attributes = root[1]
-  if (readAttribute(attributes, 'viewBox')?.trim()) return true
+  const viewBox = readAttribute(attributes, 'viewBox')
+  if (viewBox !== undefined) return isUsableViewBox(viewBox)
 
-  const width = readAttribute(attributes, 'width')
-  const height = readAttribute(attributes, 'height')
-  return Boolean(width && height && ABSOLUTE_LENGTH.test(width) && ABSOLUTE_LENGTH.test(height))
+  return isPositiveLength(readAttribute(attributes, 'width')) && isPositiveLength(readAttribute(attributes, 'height'))
 }
 
 /**
@@ -37,7 +48,8 @@ export const svgHasDimensions = (svg: string): boolean => {
  * photo-specific "HDR/RAW" message, and a field error is what BulkUpload counts as a failure.
  */
 export const validateSvgDimensions: CollectionBeforeOperationHook = async ({ operation, req }) => {
-  if (operation !== 'create' || !req.file?.data?.length) return
+  // Replacing the file of an existing asset goes through `update` and must be checked too.
+  if ((operation !== 'create' && operation !== 'update') || !req.file?.data?.length) return
   if (req.file.mimetype.toLowerCase() !== 'image/svg+xml') return
 
   if (!svgHasDimensions(req.file.data.toString('utf8'))) {

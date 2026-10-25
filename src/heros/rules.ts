@@ -1,4 +1,4 @@
-export type HeroData = {
+type HeroData = {
   type?: string | null
   backgroundType?: string | null
 }
@@ -13,5 +13,3 @@ export const heroShowsMedia = (data: HeroData | undefined): boolean => {
   return data.type === 'banner' && bannerBackground(data) === 'image'
 }
 
-/** A photo is required wherever it is shown; the other banner modes need none. */
-export const heroMediaRequired = heroShowsMedia

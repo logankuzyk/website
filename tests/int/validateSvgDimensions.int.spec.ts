@@ -13,7 +13,19 @@ describe('svgHasDimensions', () => {
 
   it('accepts absolute width and height', () => {
     expect(svgHasDimensions(`<svg ${ns} width="100" height="50"></svg>`)).toBe(true)
-    expect(svgHasDimensions(`<svg ${ns} width="100px" height='5.5em'></svg>`)).toBe(true)
+    expect(svgHasDimensions(`<svg ${ns} width="100px" height='5.5in'></svg>`)).toBe(true)
+  })
+
+  it('rejects zero or font-relative sizes', () => {
+    expect(svgHasDimensions(`<svg ${ns} width="0" height="0"></svg>`)).toBe(false)
+    expect(svgHasDimensions(`<svg ${ns} width="10em" height="5rem"></svg>`)).toBe(false)
+  })
+
+  it('rejects an unusable viewBox, even when width/height are present', () => {
+    for (const viewBox of ['', 'foo', '0 0 0 0', '0 0 10', '0 0 -5 5', '0 0 10 0']) {
+      expect(svgHasDimensions(`<svg ${ns} viewBox="${viewBox}"></svg>`), viewBox).toBe(false)
+    }
+    expect(svgHasDimensions(`<svg ${ns} viewBox="0,0,10.5,5"></svg>`)).toBe(true)
   })
 
   it('rejects an SVG with neither', () => {
@@ -63,9 +75,16 @@ describe('validateSvgDimensions hook', () => {
     })
   })
 
-  it('ignores updates and requests without a file', async () => {
-    await expect(run(svgFile(`<svg ${ns}/>`), 'update')).resolves.toBeUndefined()
+  it('also checks a replacement file on update', async () => {
+    const err = await run(svgFile(`<svg ${ns}/>`), 'update').catch((e) => e)
+    expect(err).toBeInstanceOf(ValidationError)
+    await expect(run(svgFile(`<svg ${ns} viewBox="0 0 1 1"/>`), 'update')).resolves.toBeUndefined()
+  })
+
+  it('ignores requests without a file, and other operations', async () => {
     await expect(run(undefined)).resolves.toBeUndefined()
+    await expect(run(undefined, 'update')).resolves.toBeUndefined()
+    await expect(run(svgFile(`<svg ${ns}/>`), 'delete')).resolves.toBeUndefined()
   })
 
   it('leaves non-SVG files to the mimeTypes check', async () => {
