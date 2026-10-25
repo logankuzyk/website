@@ -70,6 +70,7 @@ export interface Config {
     pages: Page;
     posts: Post;
     photos: Photo;
+    assets: Asset;
     categories: Category;
     users: User;
     projects: Project;
@@ -90,13 +91,14 @@ export interface Config {
   };
   collectionsJoins: {
     'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'photos';
+      documentsAndFolders: 'payload-folders' | 'photos' | 'assets';
     };
   };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     photos: PhotosSelect<false> | PhotosSelect<true>;
+    assets: AssetsSelect<false> | AssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
@@ -174,7 +176,7 @@ export interface Page {
   id: string;
   title: string;
   hero: {
-    type: 'none' | 'landing' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: 'none' | 'landing' | 'banner' | 'highImpact' | 'mediumImpact' | 'lowImpact';
     richText?: {
       root: {
         type: string;
@@ -190,6 +192,10 @@ export interface Page {
       };
       [k: string]: unknown;
     } | null;
+    heading?: string | null;
+    backgroundType?: ('image' | 'colour' | 'vector') | null;
+    colour?: ('primary' | 'secondary' | 'accent' | 'muted' | 'card' | 'inverse') | null;
+    vectorMedia?: (string | null) | Asset;
     name?: string | null;
     role?: string | null;
     bio?: string | null;
@@ -256,6 +262,55 @@ export interface Page {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assets".
+ */
+export interface Asset {
+  id: string;
+  folder?: (string | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: string;
+  name: string;
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: string | FolderInterface;
+        }
+      | {
+          relationTo?: 'photos';
+          value: string | Photo;
+        }
+      | {
+          relationTo?: 'assets';
+          value: string | Asset;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: ('photos' | 'assets')[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -443,32 +498,6 @@ export interface Location {
    * Child locations. You can also set the parent on each child.
    */
   children?: (string | Location)[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-folders".
- */
-export interface FolderInterface {
-  id: string;
-  name: string;
-  folder?: (string | null) | FolderInterface;
-  documentsAndFolders?: {
-    docs?: (
-      | {
-          relationTo?: 'payload-folders';
-          value: string | FolderInterface;
-        }
-      | {
-          relationTo?: 'photos';
-          value: string | Photo;
-        }
-    )[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  folderType?: 'photos'[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1190,20 +1219,19 @@ export interface Project {
     [k: string]: unknown;
   };
   /**
-   * Tags or skills used
+   * Tags or skills used; the first three show on the project card
    */
-  technologies?:
-    | {
-        technology: string;
-        id?: string | null;
-      }[]
-    | null;
+  tags?: string[] | null;
   startDate?: string | null;
   endDate?: string | null;
   /**
-   * Optional link to external project
+   * Optional link to external project; shown as the View live button
    */
   externalUrl?: string | null;
+  /**
+   * Repo link; shown as the GitHub button
+   */
+  repoUrl?: string | null;
   /**
    * Lower numbers appear first
    */
@@ -1461,6 +1489,10 @@ export interface PayloadLockedDocument {
         value: string | Photo;
       } | null)
     | ({
+        relationTo: 'assets';
+        value: string | Asset;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: string | Category;
       } | null)
@@ -1561,6 +1593,10 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         type?: T;
         richText?: T;
+        heading?: T;
+        backgroundType?: T;
+        colour?: T;
+        vectorMedia?: T;
         name?: T;
         role?: T;
         bio?: T;
@@ -1910,6 +1946,24 @@ export interface PhotosSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assets_select".
+ */
+export interface AssetsSelect<T extends boolean = true> {
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -1961,15 +2015,11 @@ export interface ProjectsSelect<T extends boolean = true> {
   description?: T;
   featuredImage?: T;
   content?: T;
-  technologies?:
-    | T
-    | {
-        technology?: T;
-        id?: T;
-      };
+  tags?: T;
   startDate?: T;
   endDate?: T;
   externalUrl?: T;
+  repoUrl?: T;
   displayOrder?: T;
   generateSlug?: T;
   slug?: T;

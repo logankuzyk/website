@@ -27,22 +27,29 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
   return doc?.slug ? `${url}/${doc.slug}` : url
 }
 
+// Serve files straight from the CDN (`STORAGE_URL`) rather than through Payload's access-controlled
+// file route; every upload collection stored in the bucket gets its own key prefix.
+const storageCollection = (prefix: string) => ({
+  prefix,
+  disablePayloadAccessControl: true as const,
+  ...(process.env.STORAGE_URL && {
+    generateFileURL: ({ filename, prefix }: { filename: string; prefix?: string }) => {
+      const baseUrl = process.env.STORAGE_URL!.replace(/\/$/, '')
+      return [baseUrl, prefix, encodeURIComponent(filename)].filter(Boolean).join('/')
+    },
+  }),
+})
+
+export const storageCollections = {
+  photos: storageCollection('photos'),
+  assets: storageCollection('assets'),
+}
+
 export const plugins: Plugin[] = [
   ...(process.env.R2_BUCKET
     ? [
         s3Storage({
-          collections: {
-            photos: {
-              prefix: 'photos',
-              disablePayloadAccessControl: true,
-              ...(process.env.STORAGE_URL && {
-                generateFileURL: ({ filename, prefix }) => {
-                  const baseUrl = process.env.STORAGE_URL!.replace(/\/$/, '')
-                  return [baseUrl, prefix, encodeURIComponent(filename)].filter(Boolean).join('/')
-                },
-              }),
-            },
-          },
+          collections: storageCollections,
           bucket: process.env.R2_BUCKET,
           disableLocalStorage: true,
           config: {
