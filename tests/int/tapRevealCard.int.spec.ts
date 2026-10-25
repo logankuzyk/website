@@ -11,12 +11,16 @@ let container: HTMLDivElement
 let root: Root
 
 const card = (id: string) =>
-  createElement(
-    TapRevealCard,
-    { overlay: createElement('a', { href: `#${id}-overlay`, id: `${id}-overlay` }, 'Read more') },
-    createElement('a', { href: `#${id}`, id }, 'Title'),
-    createElement('p', { id: `${id}-text` }, 'text'),
-  )
+  createElement(TapRevealCard, {
+    overlay: createElement('a', { href: `#${id}-overlay`, id: `${id}-overlay` }, 'Read more'),
+    // eslint-disable-next-line react/no-children-prop -- the component requires `children` in its props type
+    children: createElement(
+      Fragment,
+      null,
+      createElement('a', { href: `#${id}`, id }, 'Title'),
+      createElement('p', { id: `${id}-text` }, 'text'),
+    ),
+  })
 
 beforeEach(() => {
   container = document.createElement('div')

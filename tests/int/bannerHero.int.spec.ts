@@ -141,7 +141,7 @@ describe('hero media rules', () => {
   })
 
   it('the media field is required, and only applies where shown (Payload skips validation otherwise)', () => {
-    const media = (hero as { fields: { name?: string; required?: boolean; validate?: unknown; admin?: { condition?: (...args: never[]) => unknown } }[] }).fields.find(
+    const media = (hero as { fields: { name?: string; required?: boolean; validate?: unknown; admin?: { condition?: (...args: unknown[]) => unknown } }[] }).fields.find(
       (f) => f.name === 'media',
     )!
     expect(media.required).toBe(true)
