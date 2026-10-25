@@ -85,6 +85,7 @@ export const Projects: CollectionConfig<'projects'> = {
     {
       name: 'externalUrl',
       type: 'text',
+      validate: validateOptionalUrl,
       admin: {
         description: 'Optional link to external project; shown as the View live button',
       },

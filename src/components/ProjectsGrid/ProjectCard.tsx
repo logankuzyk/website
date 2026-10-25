@@ -19,14 +19,19 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
       overlay={
         <div
           data-testid="project-card-overlay"
+          // Never intercepts clicks itself: the empty area falls through to the title's
+          // stretched link, so the whole card still opens the project.
           className={
             'pointer-events-none absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity duration-200 ' +
-            'group-hover:pointer-events-auto group-hover:opacity-100 ' +
-            'group-focus-within:pointer-events-auto group-focus-within:opacity-100 ' +
-            'group-data-[open]:pointer-events-auto group-data-[open]:opacity-100'
+            'group-hover:opacity-100 group-focus-within:opacity-100 group-data-[open]:opacity-100'
           }
         >
-          <div className="flex w-40 flex-col gap-2">
+          <div
+            className={
+              'pointer-events-none flex w-40 flex-col gap-2 ' +
+              'group-hover:pointer-events-auto group-focus-within:pointer-events-auto group-data-[open]:pointer-events-auto'
+            }
+          >
             {getProjectActions(project).map(({ label, href, external }) =>
               external ? (
                 <a
@@ -61,7 +66,13 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
       <div className="flex flex-1 flex-col gap-2 p-5">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="font-serif text-lg tracking-tight">
-            <Link href={`/projects/${project.slug}`}>{project.title}</Link>
+            {/* The ::after stretches this link over the whole card (below the overlay buttons). */}
+            <Link
+              className="after:absolute after:inset-0 after:content-['']"
+              href={`/projects/${project.slug}`}
+            >
+              {project.title}
+            </Link>
           </h2>
           {shown.length > 0 && (
             <span className="flex flex-wrap gap-1">

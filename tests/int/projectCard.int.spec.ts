@@ -111,6 +111,14 @@ describe('ProjectCard', () => {
     expect(html).toContain('Read more')
   })
 
+  it('stretches the title link over the card and lets overlay clicks fall through to it', () => {
+    const html = render(project())
+    expect(html).toMatch(/<a[^>]*class="[^"]*after:absolute after:inset-0[^"]*"[^>]*>Tabula<\/a>/)
+    const overlay = /data-testid="project-card-overlay" class="([^"]*)"/.exec(html)?.[1] ?? ''
+    expect(overlay).toContain('pointer-events-none')
+    expect(overlay).not.toContain('pointer-events-auto')
+  })
+
   it('reveals the overlay on hover, focus-within and tap', () => {
     const html = render(project())
     expect(html).toContain('group-hover:opacity-100')

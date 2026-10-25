@@ -8,7 +8,7 @@ import type { Asset, Page, Photo } from '@/payload-types'
 import { BannerHero } from '@/heros/Banner'
 import { bannerColours } from '@/heros/Banner/colours'
 import { hero } from '@/heros/config'
-import { heroMediaRequired, heroShowsMedia } from '@/heros/rules'
+import { heroShowsMedia } from '@/heros/rules'
 
 type HeroProps = Page['hero']
 
@@ -57,6 +57,10 @@ describe('BannerHero', () => {
 
   it('treats a missing backgroundType as image', () => {
     expect(render({ type: 'banner', heading: 'Projects', media: photo })).toContain('<img')
+  })
+
+  it('treats a null backgroundType as image', () => {
+    expect(render({ type: 'banner', heading: 'Projects', backgroundType: null, media: photo })).toContain('<img')
   })
 
   it('vector mode: renders the SVG with empty alt, unoptimised, behind a scrim', () => {
@@ -136,22 +140,16 @@ describe('hero media rules', () => {
     expect(heroShowsMedia({ type: 'lowImpact' })).toBe(false)
   })
 
-  it('requires media wherever it is shown, and nowhere else', () => {
-    expect(heroMediaRequired({ type: 'highImpact' })).toBe(true)
-    expect(heroMediaRequired({ type: 'banner', backgroundType: 'image' })).toBe(true)
-    expect(heroMediaRequired({ type: 'banner', backgroundType: 'colour' })).toBe(false)
-    expect(heroMediaRequired({ type: 'banner', backgroundType: 'vector' })).toBe(false)
-    expect(heroMediaRequired({ type: 'landing' })).toBe(false)
-  })
-
-  it('the media field validates conditionally', () => {
-    const media = (hero as { fields: { name?: string; validate?: Function }[] }).fields.find(
+  it('the media field is required, and only applies where shown (Payload skips validation otherwise)', () => {
+    const media = (hero as { fields: { name?: string; required?: boolean; validate?: unknown; admin?: { condition?: Function } }[] }).fields.find(
       (f) => f.name === 'media',
     )!
-    const run = (value: unknown, siblingData: object) => media.validate!(value, { siblingData })
-    expect(run(undefined, { type: 'banner', backgroundType: 'colour' })).toBe(true)
-    expect(run(undefined, { type: 'banner', backgroundType: 'image' })).toEqual(expect.any(String))
-    expect(run('abc', { type: 'banner', backgroundType: 'image' })).toBe(true)
-    expect(run(undefined, { type: 'highImpact' })).toEqual(expect.any(String))
+    expect(media.required).toBe(true)
+    expect(media.validate).toBeUndefined()
+    const shows = (siblingData: object) => media.admin!.condition!({}, siblingData)
+    expect(shows({ type: 'banner', backgroundType: 'vector' })).toBe(false)
+    expect(shows({ type: 'banner', backgroundType: 'colour' })).toBe(false)
+    expect(shows({ type: 'banner' })).toBe(true)
+    expect(shows({ type: 'highImpact' })).toBe(true)
   })
 })
