@@ -2,12 +2,14 @@ import React from 'react'
 
 import type { Page } from '@/payload-types'
 
+import { BannerHero } from '@/heros/Banner'
 import { HighImpactHero } from '@/heros/HighImpact'
 import { LandingHero } from '@/heros/Landing'
 import { LowImpactHero } from '@/heros/LowImpact'
 import { MediumImpactHero } from '@/heros/MediumImpact'
 
 const heroes = {
+  banner: BannerHero,
   highImpact: HighImpactHero,
   landing: LandingHero,
   lowImpact: LowImpactHero,

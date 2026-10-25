@@ -7,6 +7,8 @@ import { cn } from '@/utilities/ui'
 import NextImage from 'next/image'
 import React, { useMemo, useState } from 'react'
 
+import type { Photo } from '@/payload-types'
+
 import type { Props as MediaProps } from '../types'
 
 import { collectImageCandidates, pickImageCandidate } from '@/utilities/buildImageSrcSet'
@@ -67,7 +69,8 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
   if (resourceObject) {
     width = resourceObject.width ?? undefined
     height = resourceObject.height ?? undefined
-    alt = resourceObject.alt || ''
+    // Assets (SVG) have no alt text; only photos do.
+    alt = (resourceObject as Partial<Photo>).alt || altFromProps || ''
     src = getMediaUrl(resourceObject.url, resourceObject.updatedAt)
   }
 
@@ -92,13 +95,17 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
   // prop can never silently serve a multi-MB file.
   const candidates = useMemo(
     () =>
-      resourceObject
-        ? collectImageCandidates(resourceObject, { includeOriginal: Boolean(priority) })
+      resourceObject && resourceObject.mimeType !== 'image/svg+xml'
+        ? collectImageCandidates(resourceObject as Photo, { includeOriginal: Boolean(priority) })
         : [],
     [resourceObject, priority],
   )
 
   const cacheTag = resourceObject?.updatedAt
+
+  // SVGs (the `assets` collection) are vector: nothing to resize, and the Next.js optimizer
+  // refuses them. Serve the file as-is.
+  const isSvg = resourceObject?.mimeType === 'image/svg+xml'
 
   const storageLoader = useMemo<ImageLoader | undefined>(() => {
     if (!isStorageUrl || candidates.length < 2) return undefined
@@ -161,7 +168,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         src={src}
         // Only bypass optimization entirely when we have no rendition ladder to build a
         // srcSet from (single candidate); otherwise `storageLoader` handles CDN delivery.
-        unoptimized={isStorageUrl && !storageLoader}
+        unoptimized={isSvg || (isStorageUrl && !storageLoader)}
         width={!fill ? width : undefined}
       />
     </picture>

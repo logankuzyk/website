@@ -11,6 +11,7 @@ import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { listGallery } from '../../components/ListGallery/config'
 import { slugField } from 'payload'
+import { validateOptionalUrl } from './validateOptionalUrl'
 import { revalidateDelete, revalidateProject } from './hooks/revalidateProject'
 
 export const Projects: CollectionConfig<'projects'> = {
@@ -66,17 +67,11 @@ export const Projects: CollectionConfig<'projects'> = {
       },
     },
     {
-      name: 'technologies',
-      type: 'array',
-      fields: [
-        {
-          name: 'technology',
-          type: 'text',
-          required: true,
-        },
-      ],
+      name: 'tags',
+      type: 'text',
+      hasMany: true,
       admin: {
-        description: 'Tags or skills used',
+        description: 'Tags or skills used; the first three show on the project card',
       },
     },
     {
@@ -91,7 +86,15 @@ export const Projects: CollectionConfig<'projects'> = {
       name: 'externalUrl',
       type: 'text',
       admin: {
-        description: 'Optional link to external project',
+        description: 'Optional link to external project; shown as the View live button',
+      },
+    },
+    {
+      name: 'repoUrl',
+      type: 'text',
+      validate: validateOptionalUrl,
+      admin: {
+        description: 'Repo link; shown as the GitHub button',
       },
     },
     {
