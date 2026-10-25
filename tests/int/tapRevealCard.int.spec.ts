@@ -11,9 +11,9 @@ let container: HTMLDivElement
 let root: Root
 
 const card = (id: string) =>
+  // eslint-disable-next-line react/no-children-prop -- the component requires `children` in its props type
   createElement(TapRevealCard, {
     overlay: createElement('a', { href: `#${id}-overlay`, id: `${id}-overlay` }, 'Read more'),
-    // eslint-disable-next-line react/no-children-prop -- the component requires `children` in its props type
     children: createElement(
       Fragment,
       null,
