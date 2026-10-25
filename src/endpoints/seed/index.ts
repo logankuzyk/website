@@ -318,6 +318,9 @@ export const seed = async ({
       title: 'Sample Project',
       slug: 'sample-project',
       description: 'A sample project. Add your own projects in the admin.',
+      tags: ['Next.js', 'Payload', 'TypeScript', 'MongoDB', 'Tailwind'],
+      externalUrl: 'https://example.com',
+      repoUrl: 'https://github.com/logankuzyk/website',
       featuredImage: image1Doc.id,
       content: {
         root: {
@@ -449,9 +452,9 @@ export const seed = async ({
         slug: 'projects',
         title: 'Projects',
         template: 'default',
-        hero: { type: 'none' },
+        hero: { type: 'banner', heading: 'Projects', backgroundType: 'colour', colour: 'primary' },
         _status: 'published',
-        layout: [{ blockType: 'projectsGrid', title: 'Projects' }],
+        layout: [{ blockType: 'projectsGrid' }],
         meta: { title: 'Projects', description: 'A selection of projects and work' },
       },
       req,
