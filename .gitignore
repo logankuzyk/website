@@ -15,6 +15,7 @@ next-env.d.ts
 
 # Payload upload directories (local storage)
 public/photos/
+public/assets/
 
 public/robots.txt
 public/sitemap*.xml

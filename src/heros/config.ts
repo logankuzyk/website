@@ -8,6 +8,8 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { linkGroup } from '@/fields/linkGroup'
+import { bannerColourOptions } from '@/heros/Banner/colours'
+import { heroShowsMedia } from '@/heros/rules'
 
 export const hero: Field = {
   name: 'hero',
@@ -28,6 +30,10 @@ export const hero: Field = {
           value: 'landing',
         },
         {
+          label: 'Banner',
+          value: 'banner',
+        },
+        {
           label: 'High Impact',
           value: 'highImpact',
         },
@@ -46,7 +52,7 @@ export const hero: Field = {
       name: 'richText',
       type: 'richText',
       admin: {
-        condition: (_, { type } = {}) => type !== 'landing',
+        condition: (_, { type } = {}) => !['landing', 'banner'].includes(type ?? ''),
       },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
@@ -59,6 +65,45 @@ export const hero: Field = {
         },
       }),
       label: false,
+    },
+    {
+      name: 'heading',
+      type: 'text',
+      admin: { condition: (_, { type } = {}) => type === 'banner' },
+      label: 'Heading',
+    },
+    {
+      name: 'backgroundType',
+      type: 'select',
+      defaultValue: 'image',
+      label: 'Background',
+      options: [
+        { label: 'Image', value: 'image' },
+        { label: 'Colour', value: 'colour' },
+        { label: 'Vector', value: 'vector' },
+      ],
+      admin: { condition: (_, { type } = {}) => type === 'banner' },
+    },
+    {
+      name: 'colour',
+      type: 'select',
+      defaultValue: 'primary',
+      label: 'Colour',
+      options: bannerColourOptions,
+      admin: {
+        condition: (_, { type, backgroundType } = {}) =>
+          type === 'banner' && backgroundType === 'colour',
+      },
+    },
+    {
+      name: 'vectorMedia',
+      type: 'upload',
+      label: 'Vector background',
+      relationTo: 'assets',
+      admin: {
+        condition: (_, { type, backgroundType } = {}) =>
+          type === 'banner' && backgroundType === 'vector',
+      },
     },
     {
       name: 'name',
@@ -89,7 +134,7 @@ export const hero: Field = {
       overrides: {
         maxRows: 2,
         admin: {
-          condition: (_, { type } = {}) => type !== 'landing',
+          condition: (_, { type } = {}) => !['landing', 'banner'].includes(type ?? ''),
         },
       },
     }),
@@ -97,10 +142,11 @@ export const hero: Field = {
       name: 'media',
       type: 'upload',
       admin: {
-        condition: (_, { type } = {}) =>
-          ['highImpact', 'mediumImpact'].includes(type ?? ''),
+        condition: (_, siblingData) => heroShowsMedia(siblingData),
       },
       relationTo: 'photos',
+      // Payload skips validation of a field whose `admin.condition` is false, so this only
+      // bites where the photo is shown (impact heroes, banner image mode).
       required: true,
     },
   ],
