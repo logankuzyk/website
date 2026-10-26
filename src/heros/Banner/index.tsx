@@ -31,7 +31,7 @@ export const BannerHero: React.FC<Page['hero']> = ({
     <div className="container">
       <div
         className={cn(
-          'relative aspect-[3/2] w-full overflow-hidden bg-muted md:aspect-[21/6]',
+          'relative aspect-[16/9] min-h-60 w-full overflow-hidden bg-muted md:aspect-[4/1]',
           isColour && bannerColours[colour ?? 'primary'].className,
         )}
       >
