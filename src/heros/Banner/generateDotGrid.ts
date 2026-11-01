@@ -50,19 +50,19 @@ export type DotGridOptions = {
 const LATTICE_SIZE = 256
 
 const mulberry32 = (seed: number) => {
-  let a = seed
+  let state = seed
   return () => {
-    a |= 0
-    a = (a + 0x6d2b79f5) | 0
-    let t = Math.imul(a ^ (a >>> 15), 1 | a)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    state |= 0
+    state = (state + 0x6d2b79f5) | 0
+    let mixed = Math.imul(state ^ (state >>> 15), 1 | state)
+    mixed = (mixed + Math.imul(mixed ^ (mixed >>> 7), 61 | mixed)) ^ mixed
+    return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296
   }
 }
 
-const smooth = (t: number) => t * t * (3 - 2 * t)
+const smooth = (ratio: number) => ratio * ratio * (3 - 2 * ratio)
 
-const round1 = (n: number) => Math.round(n * 10) / 10
+const round1 = (value: number) => Math.round(value * 10) / 10
 
 /**
  * Dots grouped by colour (so the SVG can set `fill` once per group), in ramp order. Colours
@@ -80,28 +80,29 @@ export const generateDotGrid = ({
   const rand = mulberry32(seed)
   const lattice = Array.from({ length: LATTICE_SIZE * LATTICE_SIZE }, () => rand())
 
-  const at = (i: number, j: number) =>
+  const latticeAt = (col: number, row: number) =>
     lattice[
-      (((j % LATTICE_SIZE) + LATTICE_SIZE) % LATTICE_SIZE) * LATTICE_SIZE +
-        (((i % LATTICE_SIZE) + LATTICE_SIZE) % LATTICE_SIZE)
+      (((row % LATTICE_SIZE) + LATTICE_SIZE) % LATTICE_SIZE) * LATTICE_SIZE +
+        (((col % LATTICE_SIZE) + LATTICE_SIZE) % LATTICE_SIZE)
     ]!
 
-  const valueNoise = (x: number, y: number) => {
-    const xi = Math.floor(x)
-    const yi = Math.floor(y)
-    const xf = smooth(x - xi)
-    const yf = smooth(y - yi)
-    const top = at(xi, yi) * (1 - xf) + at(xi + 1, yi) * xf
-    const bottom = at(xi, yi + 1) * (1 - xf) + at(xi + 1, yi + 1) * xf
-    return top * (1 - yf) + bottom * yf
+  const valueNoise = (posX: number, posY: number) => {
+    const cellX = Math.floor(posX)
+    const cellY = Math.floor(posY)
+    const fracX = smooth(posX - cellX)
+    const fracY = smooth(posY - cellY)
+    const top = latticeAt(cellX, cellY) * (1 - fracX) + latticeAt(cellX + 1, cellY) * fracX
+    const bottom =
+      latticeAt(cellX, cellY + 1) * (1 - fracX) + latticeAt(cellX + 1, cellY + 1) * fracX
+    return top * (1 - fracY) + bottom * fracY
   }
 
-  const fbm = (x: number, y: number, octaves = 4) => {
+  const fbm = (posX: number, posY: number, octaves = 4) => {
     let sum = 0
     let amplitude = 0.5
     let frequency = 1
-    for (let o = 0; o < octaves; o++) {
-      sum += amplitude * valueNoise(x * frequency, y * frequency)
+    for (let octave = 0; octave < octaves; octave++) {
+      sum += amplitude * valueNoise(posX * frequency, posY * frequency)
       amplitude /= 2
       frequency *= 2
     }
@@ -110,31 +111,31 @@ export const generateDotGrid = ({
 
   // Raw field, roughly 0 (dark) to 1 (colourful). Coordinates are normalised so the same seed
   // gives the same composition at any size or aspect ratio.
-  const field = (px: number, py: number) => {
-    const u = px / width
-    const v = py / height
+  const field = (pixelX: number, pixelY: number) => {
+    const unitX = pixelX / width
+    const unitY = pixelY / height
     // Domain warp so the gradient flows rather than running in a straight line.
-    const warpX = fbm(u * 2.2 + 11, v * 2.2 + 3) - 0.5
-    const warpY = fbm(u * 2.2 + 41, v * 2.2 + 17) - 0.5
-    const x = u + warpX * 0.9
-    const y = v + warpY * 1.3
+    const warpX = fbm(unitX * 2.2 + 11, unitY * 2.2 + 3) - 0.5
+    const warpY = fbm(unitX * 2.2 + 41, unitY * 2.2 + 17) - 0.5
+    const warpedX = unitX + warpX * 0.9
+    const warpedY = unitY + warpY * 1.3
     // Diagonal sweep: dark at the top-left, bright toward the bottom-right.
-    const sweep = x * 0.7 + y * 0.55
-    const detail = fbm(u * 5 + 90, v * 5 + 60) - 0.5
+    const sweep = warpedX * 0.7 + warpedY * 0.55
+    const detail = fbm(unitX * 5 + 90, unitY * 5 + 60) - 0.5
     return sweep + detail * 0.12
   }
 
   // Rescale the raw field so it spans the whole ramp (2nd to 98th percentile).
   const samples: number[] = []
   const step = Math.max(width, height) / 120
-  for (let py = 0; py <= height; py += step) {
-    for (let px = 0; px <= width; px += step) samples.push(field(px, py))
+  for (let pixelY = 0; pixelY <= height; pixelY += step) {
+    for (let pixelX = 0; pixelX <= width; pixelX += step) samples.push(field(pixelX, pixelY))
   }
-  samples.sort((a, b) => a - b)
+  samples.sort((first, second) => first - second)
   const low = samples[Math.floor(samples.length * 0.02)]!
   const high = samples[Math.floor(samples.length * 0.98)]!
-  const normalised = (px: number, py: number) =>
-    Math.min(1, Math.max(0, (field(px, py) - low) / (high - low)))
+  const normalised = (pixelX: number, pixelY: number) =>
+    Math.min(1, Math.max(0, (field(pixelX, pixelY) - low) / (high - low)))
 
   const margin = spacing / 2
   const cols = Math.floor((width - margin) / spacing) + 1
@@ -143,17 +144,17 @@ export const generateDotGrid = ({
   const offsetY = (height - (rows - 1) * spacing) / 2
 
   const byColour = new Map<string, Dot[]>()
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const cx = offsetX + c * spacing
-      const cy = offsetY + r * spacing
-      const t = normalised(cx, cy)
-      const index = t * (DOT_GRID_RAMP.length - 1) + (rand() - 0.5) * 2 * dither
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const centreX = offsetX + col * spacing
+      const centreY = offsetY + row * spacing
+      const level = normalised(centreX, centreY)
+      const index = level * (DOT_GRID_RAMP.length - 1) + (rand() - 0.5) * 2 * dither
       const colour =
         DOT_GRID_RAMP[Math.min(DOT_GRID_RAMP.length - 1, Math.max(0, Math.round(index)))]!
-      const radius = minRadius + (maxRadius - minRadius) * Math.pow(t, 0.9)
+      const radius = minRadius + (maxRadius - minRadius) * Math.pow(level, 0.9)
       const dots = byColour.get(colour) ?? []
-      dots.push({ cx: round1(cx), cy: round1(cy), r: round1(radius) })
+      dots.push({ cx: round1(centreX), cy: round1(centreY), r: round1(radius) })
       byColour.set(colour, dots)
     }
   }

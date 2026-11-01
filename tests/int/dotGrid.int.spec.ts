@@ -35,8 +35,8 @@ describe('generateDotGrid', () => {
   it('only uses ramp colours, in ramp order, and keeps every dot inside the canvas', () => {
     const groups = generateDotGrid({ seed: 7, ...size })
     const order = groups.map(({ colour }) => DOT_GRID_RAMP.indexOf(colour as never))
-    expect(order.every((i) => i >= 0)).toBe(true)
-    expect(order).toEqual([...order].sort((a, b) => a - b))
+    expect(order.every((index) => index >= 0)).toBe(true)
+    expect(order).toEqual([...order].sort((first, second) => first - second))
     for (const { dots } of groups) {
       for (const { cx, cy, r } of dots) {
         expect(cx).toBeGreaterThanOrEqual(0)
@@ -159,10 +159,11 @@ describe('dot grid hero fields', () => {
     admin?: { condition?: (d: object, s: object) => boolean }
   }
   const field = (name: string) =>
-    (hero as { fields: F[] }).fields.find((f) => f.name === name) as F
+    (hero as { fields: F[] }).fields.find((candidate) => candidate.name === name) as F
 
   it('shows the seed only for a banner with the dot grid background', () => {
-    const shows = (s: object) => field('dotGridSeed').admin!.condition!({}, s)
+    const shows = (siblingData: object) =>
+      field('dotGridSeed').admin!.condition!({}, siblingData)
     expect(shows({ type: 'banner', backgroundType: 'dotGrid' })).toBe(true)
     expect(shows({ type: 'banner', backgroundType: 'vector' })).toBe(false)
     expect(shows({ type: 'highImpact', backgroundType: 'dotGrid' })).toBe(false)
@@ -177,12 +178,12 @@ describe('dot grid hero fields', () => {
   })
 
   it('shows opacity for vector and dot grid banners, as a 0-100 percentage', () => {
-    const f = field('backgroundOpacity')
-    const shows = (s: object) => f.admin!.condition!({}, s)
+    const opacity = field('backgroundOpacity')
+    const shows = (siblingData: object) => opacity.admin!.condition!({}, siblingData)
     expect(shows({ type: 'banner', backgroundType: 'dotGrid' })).toBe(true)
     expect(shows({ type: 'banner', backgroundType: 'vector' })).toBe(true)
     expect(shows({ type: 'banner', backgroundType: 'colour' })).toBe(false)
     expect(shows({ type: 'banner', backgroundType: 'image' })).toBe(false)
-    expect([f.min, f.max]).toEqual([0, 100])
+    expect([opacity.min, opacity.max]).toEqual([0, 100])
   })
 })
