@@ -81,8 +81,37 @@ export const hero: Field = {
         { label: 'Image', value: 'image' },
         { label: 'Colour', value: 'colour' },
         { label: 'Vector', value: 'vector' },
+        { label: 'Dot grid', value: 'dotGrid' },
       ],
       admin: { condition: (_, { type } = {}) => type === 'banner' },
+    },
+    {
+      name: 'dotGridSeed',
+      type: 'number',
+      defaultValue: 7,
+      label: 'Dot grid seed',
+      min: 0,
+      max: 999999,
+      validate: (value: number | null | undefined) =>
+        value == null || Number.isInteger(value) || 'Seed must be a whole number',
+      admin: {
+        description: 'Each number gives a different, repeatable pattern. Try a few.',
+        condition: (_, { type, backgroundType } = {}) =>
+          type === 'banner' && backgroundType === 'dotGrid',
+      },
+    },
+    {
+      name: 'backgroundOpacity',
+      type: 'number',
+      label: 'Background opacity (%)',
+      min: 0,
+      max: 100,
+      admin: {
+        description:
+          'Lower it so the heading stays readable. Leave empty for the default: 60 for the dot grid, 100 for a vector.',
+        condition: (_, { type, backgroundType } = {}) =>
+          type === 'banner' && (backgroundType === 'vector' || backgroundType === 'dotGrid'),
+      },
     },
     {
       name: 'colour',
