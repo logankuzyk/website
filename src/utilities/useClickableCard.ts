@@ -32,14 +32,14 @@ function useClickableCard<T extends HTMLElement>({
   const pressedButton = useRef<number>(0)
 
   const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
-      if (e.target) {
-        const target = e.target as Element
+    (event: MouseEvent) => {
+      if (event.target) {
+        const target = event.target as Element
 
         const timeNow = +new Date()
         const parent = target?.closest('a')
 
-        pressedButton.current = e.button
+        pressedButton.current = event.button
 
         if (!parent) {
           hasActiveParent.current = false
@@ -54,13 +54,13 @@ function useClickableCard<T extends HTMLElement>({
   )
 
   const handleMouseUp = useCallback(
-    (e: MouseEvent) => {
+    (event: MouseEvent) => {
       if (link.current?.href) {
         const timeNow = +new Date()
         const difference = timeNow - timeDown.current
 
         if (link.current?.href && difference <= 250) {
-          if (!hasActiveParent.current && pressedButton.current === 0 && !e.ctrlKey) {
+          if (!hasActiveParent.current && pressedButton.current === 0 && !event.ctrlKey) {
             if (external) {
               const target = newTab ? '_blank' : '_self'
               window.open(link.current.href, target)

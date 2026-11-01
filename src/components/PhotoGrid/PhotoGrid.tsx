@@ -17,21 +17,21 @@ export type PhotoGridItem =
 
 /** Mulberry32 seeded PRNG for deterministic shuffle (SSR/hydration safe). */
 function createSeededRandom(seed: string): () => number {
-  let s = (Number(seed) || 0) >>> 0
-  if (s === 0) s = 1
+  let state = (Number(seed) || 0) >>> 0
+  if (state === 0) state = 1
   return () => {
-    s = Math.imul(s ^ (s >>> 15), s | 1)
-    s ^= s + Math.imul(s ^ (s >>> 7), s | 61)
-    return ((s ^ (s >>> 14)) >>> 0) / 4294967296
+    state = Math.imul(state ^ (state >>> 15), state | 1)
+    state ^= state + Math.imul(state ^ (state >>> 7), state | 61)
+    return ((state ^ (state >>> 14)) >>> 0) / 4294967296
   }
 }
 
 function shuffleWithSeed<T>(array: T[], seed: string): T[] {
   const result = [...array]
   const random = createSeededRandom(seed)
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
+  for (let index = result.length - 1; index > 0; index--) {
+    const swapIndex = Math.floor(random() * (index + 1))
+    ;[result[index], result[swapIndex]] = [result[swapIndex], result[index]]
   }
   return result
 }
@@ -51,8 +51,8 @@ function parseDateTaken(value: string | null | undefined): number {
 }
 
 function comparePhotos(
-  a: Extract<PhotoGridItem, { type: 'photo' }>,
-  b: Extract<PhotoGridItem, { type: 'photo' }>,
+  left: Extract<PhotoGridItem, { type: 'photo' }>,
+  right: Extract<PhotoGridItem, { type: 'photo' }>,
   sort: string,
   order: 'asc' | 'desc',
 ): number {
@@ -60,15 +60,15 @@ function comparePhotos(
   switch (sort) {
     case 'dateTaken':
       diff =
-        parseDateTaken(a.photo.exif?.DateTimeOriginal) -
-        parseDateTaken(b.photo.exif?.DateTimeOriginal)
+        parseDateTaken(left.photo.exif?.DateTimeOriginal) -
+        parseDateTaken(right.photo.exif?.DateTimeOriginal)
       break
     case 'filename':
-      diff = (a.photo.filename ?? '').localeCompare(b.photo.filename ?? '')
+      diff = (left.photo.filename ?? '').localeCompare(right.photo.filename ?? '')
       break
     default:
       diff =
-        new Date(a.photo.createdAt).getTime() - new Date(b.photo.createdAt).getTime()
+        new Date(left.photo.createdAt).getTime() - new Date(right.photo.createdAt).getTime()
   }
   return order === 'asc' ? diff : -diff
 }
@@ -134,24 +134,24 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   const sortedItems = useMemo(() => {
     const photoItems = items.filter(
-      (i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo',
+      (item): item is Extract<PhotoGridItem, { type: 'photo' }> => item.type === 'photo',
     )
     const collectionItems = items.filter(
-      (i): i is Extract<PhotoGridItem, { type: 'collection' }> => i.type === 'collection',
+      (item): item is Extract<PhotoGridItem, { type: 'collection' }> => item.type === 'collection',
     )
     if (photoItems.length === 0) return items
     const sorted =
       sort === 'random'
         ? shuffleWithSeed(photoItems, seed)
-        : [...photoItems].sort((a, b) => comparePhotos(a, b, sort, order))
+        : [...photoItems].sort((left, right) => comparePhotos(left, right, sort, order))
     return [...sorted, ...collectionItems]
   }, [items, sort, order, seed])
 
   const limitedItems = limit != null && limit > 0 ? sortedItems.slice(0, limit) : sortedItems
   const photoItems = limitedItems.filter(
-    (i): i is Extract<PhotoGridItem, { type: 'photo' }> => i.type === 'photo',
+    (item): item is Extract<PhotoGridItem, { type: 'photo' }> => item.type === 'photo',
   )
-  const photosForCarousel = photoItems.map((i) => i.photo)
+  const photosForCarousel = photoItems.map((item) => item.photo)
 
   const shouldVirtualize = cropToSquare || !masonry
 
@@ -162,7 +162,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   // smallest rendition that covers the tile (scaled by DPR) instead of a full-width image.
   const photoTileSizes = `${Math.max(1, Math.round(itemWidth))}px`
   const hasCollectionTitles =
-    showCollectionNames && limitedItems.some((i) => i.type === 'collection')
+    showCollectionNames && limitedItems.some((item) => item.type === 'collection')
   const baseRowHeight = cropToSquare ? itemWidth : itemWidth / (16 / 9)
   const rowHeight = baseRowHeight + (hasCollectionTitles ? COLLECTION_TITLE_HEIGHT : 0)
 
@@ -177,24 +177,24 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   useLayoutEffect(() => {
     if (!gridRef.current) return
-    const el = gridRef.current
+    const element = gridRef.current
     const updateScrollMargin = () => {
-      setScrollMargin(el.getBoundingClientRect().top + window.scrollY)
+      setScrollMargin(element.getBoundingClientRect().top + window.scrollY)
     }
     updateScrollMargin()
-    const ro = new ResizeObserver(updateScrollMargin)
-    ro.observe(el)
-    return () => ro.disconnect()
+    const observer = new ResizeObserver(updateScrollMargin)
+    observer.observe(element)
+    return () => observer.disconnect()
   }, [mounted])
 
   useLayoutEffect(() => {
     if (!gridRef.current) return
-    const el = gridRef.current
-    const updateWidth = () => setContainerWidth(el.offsetWidth)
+    const element = gridRef.current
+    const updateWidth = () => setContainerWidth(element.offsetWidth)
     updateWidth()
-    const ro = new ResizeObserver(updateWidth)
-    ro.observe(el)
-    return () => ro.disconnect()
+    const observer = new ResizeObserver(updateWidth)
+    observer.observe(element)
+    return () => observer.disconnect()
   }, [mounted])
 
   useEffect(() => {
@@ -203,11 +203,11 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   const setPhotoParam = useCallback(
     (photoId: string | null) => {
-      safeQueryReplace((sp) => {
+      safeQueryReplace((params) => {
         if (photoId) {
-          sp.set('photo', photoId)
+          params.set('photo', photoId)
         } else {
-          sp.delete('photo')
+          params.delete('photo')
         }
       }, false)
     },
@@ -226,7 +226,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
     const photoId = searchParams.get('photo')
     if (!photoId) return
-    const index = photoItems.findIndex((p) => p.photo.id === photoId)
+    const index = photoItems.findIndex((item) => item.photo.id === photoId)
     if (index >= 0) {
       setCarouselIndex(index)
       if (shouldVirtualize && virtualizer) {

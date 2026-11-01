@@ -71,7 +71,9 @@ const getNewTabManifest = unstable_cache(
     // from `?photo=`. That rules out collection sets (they render child tiles, not photos),
     // collections with fullscreen off, and photos past the page's fetch limit.
     const parentIds = new Set(
-      collections.docs.map((c) => (typeof c.parent === 'object' ? c.parent?.id : c.parent)),
+      collections.docs.map((collection) =>
+        typeof collection.parent === 'object' ? collection.parent?.id : collection.parent,
+      ),
     )
     const collectionSlugByPhotoId = new Map<string, string>()
     let unassigned = new Set(photos.docs.map((photo) => photo.id))

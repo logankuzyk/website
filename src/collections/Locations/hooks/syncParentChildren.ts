@@ -66,7 +66,7 @@ export const preventCircularReference: CollectionBeforeChangeHook = async ({
   const docId = operation === 'create' ? null : (originalDoc?.id ?? data?.id)
   const newParentId = resolveId(data?.parent)
   const newChildIds = (data?.children as (string | LocationDoc)[] | undefined)
-    ?.map((c) => resolveId(c))
+    ?.map((child) => resolveId(child))
     .filter((id): id is string => Boolean(id)) ?? []
 
   if (newParentId && docId) {
@@ -118,10 +118,10 @@ export const syncParentChildren: CollectionAfterChangeHook = async ({
   const prevParentId = resolveId(previousDoc?.parent)
   const currParentId = resolveId(doc.parent)
   const prevChildIds = (previousDoc?.children as (string | LocationDoc)[] | undefined)
-    ?.map((c) => resolveId(c))
+    ?.map((child) => resolveId(child))
     .filter((id): id is string => Boolean(id)) ?? []
   const currChildIds = (doc.children as (string | LocationDoc)[] | undefined)
-    ?.map((c) => resolveId(c))
+    ?.map((child) => resolveId(child))
     .filter((id): id is string => Boolean(id)) ?? []
 
   const prevChildSet = new Set(prevChildIds)
@@ -161,7 +161,7 @@ export const syncParentChildren: CollectionAfterChangeHook = async ({
         depth: 0,
       })) as { children?: (string | LocationDoc)[] }
       const prevChildren = (prevParent?.children ?? [])
-        .map((c) => resolveId(c))
+        .map((child) => resolveId(child))
         .filter((id): id is string => Boolean(id) && id !== docId)
       await req.payload.update({
         collection,
@@ -179,7 +179,7 @@ export const syncParentChildren: CollectionAfterChangeHook = async ({
         depth: 0,
       })) as { children?: (string | LocationDoc)[] }
       const currChildren = (currParent?.children ?? [])
-        .map((c) => resolveId(c))
+        .map((child) => resolveId(child))
         .filter((id): id is string => Boolean(id))
       if (!currChildren.includes(docId)) {
         currChildren.push(docId)

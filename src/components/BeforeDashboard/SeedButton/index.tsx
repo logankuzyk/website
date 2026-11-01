@@ -22,8 +22,8 @@ export const SeedButton: React.FC = () => {
   const [error, setError] = useState<null | string>(null)
 
   const handleClick = useCallback(
-    async (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault()
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault()
 
       if (seeded) {
         toast.info('Database already seeded.')

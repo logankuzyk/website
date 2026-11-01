@@ -34,8 +34,8 @@ afterEach(() => {
   container.remove()
 })
 
-const el = (id: string) => container.querySelector<HTMLElement>(`#${id}`)!
-const cardOf = (id: string) => el(id).closest<HTMLElement>('[data-testid="project-card"]')!
+const element = (id: string) => container.querySelector<HTMLElement>(`#${id}`)!
+const cardOf = (id: string) => element(id).closest<HTMLElement>('[data-testid="project-card"]')!
 
 const pointerdown = (target: Element, pointerType: string) =>
   act(() => {
@@ -60,25 +60,25 @@ const tap = (target: Element) => {
 
 describe('TapRevealCard', () => {
   it('swallows the first touch tap and opens the card', () => {
-    expect(tap(el('a'))).toBe(false)
+    expect(tap(element('a'))).toBe(false)
     expect(cardOf('a').dataset.open).toBe('true')
   })
 
   it('lets a second tap on a link through', () => {
-    tap(el('a'))
-    expect(tap(el('a-overlay'))).toBe(true)
+    tap(element('a'))
+    expect(tap(element('a-overlay'))).toBe(true)
     expect(cardOf('a').dataset.open).toBe('true')
   })
 
   it('closes on a tap off a link', () => {
-    tap(el('a'))
-    expect(tap(el('a-text'))).toBe(true)
+    tap(element('a'))
+    expect(tap(element('a-text'))).toBe(true)
     expect(cardOf('a').dataset.open).toBeUndefined()
   })
 
   it('closes when another card, or anywhere else, is touched', () => {
-    tap(el('a'))
-    tap(el('b'))
+    tap(element('a'))
+    tap(element('b'))
     expect(cardOf('a').dataset.open).toBeUndefined()
     expect(cardOf('b').dataset.open).toBe('true')
 
@@ -87,20 +87,20 @@ describe('TapRevealCard', () => {
   })
 
   it('never treats a mouse click as a tap', () => {
-    pointerdown(el('a'), 'mouse')
-    expect(click(el('a'))).toBe(true)
+    pointerdown(element('a'), 'mouse')
+    expect(click(element('a'))).toBe(true)
     expect(cardOf('a').dataset.open).toBeUndefined()
   })
 
   it('does not swallow keyboard activation after an earlier touch (stale pointer type)', () => {
-    pointerdown(el('b'), 'touch') // a touch scroll: pointerdown, no click
-    expect(click(el('b'), 0)).toBe(true) // Enter on a focused link: detail 0
+    pointerdown(element('b'), 'touch') // a touch scroll: pointerdown, no click
+    expect(click(element('b'), 0)).toBe(true) // Enter on a focused link: detail 0
     expect(cardOf('b').dataset.open).toBeUndefined()
   })
 
   it('forgets the touch pointer after the click it belonged to', () => {
-    tap(el('a')) // opens
+    tap(element('a')) // opens
     // Keyboard click with no new pointerdown must go through even though the last pointer was touch.
-    expect(click(el('a-overlay'), 0)).toBe(true)
+    expect(click(element('a-overlay'), 0)).toBe(true)
   })
 })

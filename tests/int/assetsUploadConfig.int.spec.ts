@@ -31,7 +31,7 @@ describe('Assets collection', () => {
   })
 
   it('has no alt field', () => {
-    expect(Assets.fields.some((f) => 'name' in f && f.name === 'alt')).toBe(false)
+    expect(Assets.fields.some((field) => 'name' in field && field.name === 'alt')).toBe(false)
   })
 })
 

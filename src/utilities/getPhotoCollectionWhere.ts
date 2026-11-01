@@ -29,14 +29,14 @@ function conditionToWhere(condition: FilterCondition): Where | null {
     return { [field]: { exists: true } } as Where
   }
   if (field === 'tags' && condition.valueTags) {
-    const ids = condition.valueTags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
+    const ids = condition.valueTags.map((tag) => (typeof tag === 'object' && tag ? tag.id : tag)).filter(Boolean)
     if (ids.length === 0) return null
     value = ids
   } else if (field === 'folder' && condition.valueFolder) {
     value = typeof condition.valueFolder === 'object' ? condition.valueFolder.id : condition.valueFolder
   } else if (field === 'location' && condition.valueLocation) {
     const ids = condition.valueLocation
-      .map((l) => (typeof l === 'object' && l ? l.id : l))
+      .map((entry) => (typeof entry === 'object' && entry ? entry.id : entry))
       .filter(Boolean)
     if (ids.length === 0) return null
     if (operator === 'equals' && ids.length > 1) {
@@ -50,7 +50,7 @@ function conditionToWhere(condition: FilterCondition): Where | null {
     value = condition.valueNumber
   } else if (condition.valueText != null && condition.valueText !== '') {
     if (operator === 'in' || operator === 'not_in') {
-      value = condition.valueText.split(',').map((s) => s.trim()).filter(Boolean)
+      value = condition.valueText.split(',').map((part) => part.trim()).filter(Boolean)
     } else {
       value = condition.valueText
     }
@@ -84,7 +84,7 @@ export function getPhotoCollectionWhere(collection: PhotoCollection): Where {
 
   const conditions = filter
     .map(conditionToWhere)
-    .filter((w): w is Where => w !== null)
+    .filter((clause): clause is Where => clause !== null)
 
   if (conditions.length === 0) {
     return NO_MATCH_WHERE

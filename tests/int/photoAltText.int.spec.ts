@@ -67,9 +67,9 @@ const sent = (call = 0) => {
   const parts = body.messages?.[0]?.content ?? []
   return {
     body,
-    image: parts.find((p) => p.type === 'image_url')?.image_url?.url,
+    image: parts.find((part) => part.type === 'image_url')?.image_url?.url,
     init,
-    question: parts.find((p) => p.type === 'text')?.text,
+    question: parts.find((part) => part.type === 'text')?.text,
     url,
   }
 }
@@ -79,14 +79,17 @@ const sentImage = (call = 0) =>
 
 const describeBuffer = async (image: Buffer) => {
   const { format, height, width } = await sharp(image).metadata()
-  const [r, g, b] = (await sharp(image).stats()).channels.map((c) => Math.round(c.mean))
-  return { b, format, g, height, r, width }
+  const [red, green, blue] = (await sharp(image).stats()).channels.map((channel) =>
+    Math.round(channel.mean),
+  )
+  return { b: blue, format, g: green, height, r: red, width }
 }
 
 const solid = (width: number, height: number, background: string) =>
   sharp({ create: { width, height, background, channels: 3 } })
 
-const words = (count: number) => Array.from({ length: count }, (_, i) => `word${i}`).join(' ')
+const words = (count: number) =>
+  Array.from({ length: count }, (_, index) => `word${index}`).join(' ')
 
 /** A single "sentence" of exactly `length` characters, ending in a full stop. */
 const sentenceOfLength = (length: number) =>

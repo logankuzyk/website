@@ -53,11 +53,11 @@ const limitArg = args.indexOf('--limit')
 const LIMIT = limitArg >= 0 ? Number(args[limitArg + 1]) : Infinity
 const DELAY_MS = 500 // be polite: one model call per photo, strictly one at a time
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+const sleep = (millis: number) => new Promise((resolve) => setTimeout(resolve, millis))
 
 // A mistyped `--dry-run` must not turn into a real, billed run.
 const unknown = args.filter(
-  (arg, i) => !FLAGS.includes(arg) && !(limitArg >= 0 && i === limitArg + 1),
+  (arg, index) => !FLAGS.includes(arg) && !(limitArg >= 0 && index === limitArg + 1),
 )
 if (unknown.length) {
   console.error(`Unknown argument(s): ${unknown.join(' ')}\nKnown flags: ${FLAGS.join(' ')}`)
