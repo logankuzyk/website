@@ -78,7 +78,7 @@ export async function queryImage({
   const body = (await res.json().catch(() => null)) as WorkersAIResponse | null
   if (!res.ok || !body?.success) {
     const detail = body?.errors
-      ?.map((e) => e.message)
+      ?.map((issue) => issue.message)
       .filter(Boolean)
       .join('; ')
     const message = `Workers AI request failed (HTTP ${res.status})${detail ? `: ${detail}` : ''}`

@@ -58,16 +58,16 @@ const limitArg = args.indexOf('--limit')
 const LIMIT = limitArg >= 0 ? Number(args[limitArg + 1]) : Infinity
 const DELAY_MS = 250 // be gentle: AVIF/HEIC decode is CPU-heavy
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+const sleep = (millis: number) => new Promise((resolve) => setTimeout(resolve, millis))
 
 /** A photo whose every generated size is already .webp (or .jpg for `og`) is considered done. */
 const alreadyConverted = (sizes: Record<string, { filename?: string | null } | undefined> | null | undefined) => {
   if (!sizes) return false
-  const entries = Object.entries(sizes).filter(([, v]) => v?.filename)
+  const entries = Object.entries(sizes).filter(([, entry]) => entry?.filename)
   if (entries.length === 0) return false
-  return entries.every(([name, v]) => {
-    const f = v!.filename!.toLowerCase()
-    return name === 'og' ? f.endsWith('.jpg') || f.endsWith('.jpeg') : f.endsWith('.webp')
+  return entries.every(([name, entry]) => {
+    const filename = entry!.filename!.toLowerCase()
+    return name === 'og' ? filename.endsWith('.jpg') || filename.endsWith('.jpeg') : filename.endsWith('.webp')
   })
 }
 
@@ -107,8 +107,8 @@ const ASSET_HEADERS = { 'User-Agent': 'reprocess-photos/1.0' }
  */
 async function objectResolves(url: string, attempts = 4): Promise<string | null> {
   let last = ''
-  for (let i = 0; i < attempts; i++) {
-    if (i > 0) await sleep(500 * 2 ** (i - 1)) // 0.5s, 1s, 2s
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt > 0) await sleep(500 * 2 ** (attempt - 1)) // 0.5s, 1s, 2s
     try {
       // Ranged GET, not HEAD: the CDN rejects HEAD but answers a range request with 206.
       const res = await fetch(toAbsolute(url), { headers: { ...ASSET_HEADERS, Range: 'bytes=0-0' } })
@@ -128,8 +128,8 @@ async function verifyStored(photo: {
 }): Promise<void> {
   const urls = [
     photo.url,
-    ...Object.values(photo.sizes ?? {}).map((s) => s?.url),
-  ].filter((u): u is string => typeof u === 'string' && u.length > 0)
+    ...Object.values(photo.sizes ?? {}).map((size) => size?.url),
+  ].filter((url): url is string => typeof url === 'string' && url.length > 0)
 
   const missing: string[] = []
   for (const url of urls) {

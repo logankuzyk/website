@@ -71,7 +71,7 @@ describe('collectImageCandidates', () => {
       }),
     )
 
-    expect(result.map((c) => c.url)).toEqual(['/photos/pic-300.webp'])
+    expect(result.map((candidate) => candidate.url)).toEqual(['/photos/pic-300.webp'])
   })
 
   it('tolerates a sparse ladder (Payload skips sizes larger than the source)', () => {

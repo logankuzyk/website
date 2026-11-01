@@ -6,7 +6,7 @@ import { validateOptionalUrl as validate } from '@/collections/Projects/validate
 import { buildTagsUpdate } from '../../scripts/migrate-project-tags'
 
 describe('Projects fields', () => {
-  const field = (name: string) => Projects.fields.find((f) => 'name' in f && f.name === name)
+  const field = (name: string) => Projects.fields.find((entry) => 'name' in entry && entry.name === name)
 
   it('replaces `technologies` with a hasMany text `tags` field', () => {
     expect(field('technologies')).toBeUndefined()

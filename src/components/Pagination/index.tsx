@@ -34,8 +34,8 @@ export const Pagination: React.FC<{
   const hasExtraPrevPages = page - 1 > 1
   const hasExtraNextPages = page + 1 < totalPages
 
-  const goToPage = (p: number) => {
-    router.push(buildPageUrl(pathname, p))
+  const goToPage = (targetPage: number) => {
+    router.push(buildPageUrl(pathname, targetPage))
   }
 
   return (

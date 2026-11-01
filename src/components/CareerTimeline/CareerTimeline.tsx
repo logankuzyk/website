@@ -7,8 +7,8 @@ import React from 'react'
 
 function formatDate(date: string | null | undefined): string {
   if (!date) return 'now'
-  const d = new Date(date)
-  return d.getFullYear().toString()
+  const parsed = new Date(date)
+  return parsed.getFullYear().toString()
 }
 
 type CareerTimelineProps = {

@@ -32,12 +32,12 @@ export function PhotoSortToolbar({
 
   const setSort = useCallback(
     (value: SortValue) => {
-      safeQueryReplace((sp) => {
-        sp.set('sort', value)
+      safeQueryReplace((params) => {
+        params.set('sort', value)
         if (value === 'random') {
-          sp.set('seed', String(Date.now()))
+          params.set('seed', String(Date.now()))
         } else {
-          sp.delete('seed')
+          params.delete('seed')
         }
       })
     },
@@ -46,8 +46,8 @@ export function PhotoSortToolbar({
 
   const setOrder = useCallback(
     (value: OrderValue) => {
-      safeQueryReplace((sp) => {
-        sp.set('order', value)
+      safeQueryReplace((params) => {
+        params.set('order', value)
       })
     },
     [safeQueryReplace],
@@ -58,8 +58,8 @@ export function PhotoSortToolbar({
   }, [order, setOrder])
 
   const shuffle = useCallback(() => {
-    safeQueryReplace((sp) => {
-      sp.set('seed', String(Date.now()))
+    safeQueryReplace((params) => {
+      params.set('seed', String(Date.now()))
     })
   }, [safeQueryReplace])
 
@@ -72,7 +72,7 @@ export function PhotoSortToolbar({
         <div className="flex items-center gap-0">
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortValue)}
+            onChange={(event) => setSort(event.target.value as SortValue)}
             className="font-mono text-xs text-foreground bg-transparent border-none cursor-pointer appearance-none focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent-frost rounded-none hover:opacity-80 [&>option]:bg-background [&>option]:text-foreground"
             aria-label="Sort by"
           >

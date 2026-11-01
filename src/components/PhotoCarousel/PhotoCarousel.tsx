@@ -48,10 +48,10 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   }, [index, onIndexChange])
 
   const prev = useCallback(() => {
-    setIndex((i) => (i <= 0 ? photos.length - 1 : i - 1))
+    setIndex((current) => (current <= 0 ? photos.length - 1 : current - 1))
   }, [photos.length])
   const next = useCallback(() => {
-    setIndex((i) => (i >= photos.length - 1 ? 0 : i + 1))
+    setIndex((current) => (current >= photos.length - 1 ? 0 : current + 1))
   }, [photos.length])
 
   const resetHideTimer = useCallback(() => {
@@ -67,15 +67,15 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   }, [])
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+    (event: KeyboardEvent) => {
       resetHideTimer()
-      if (e.key === 'Escape') {
+      if (event.key === 'Escape') {
         if (drawerOpen) setDrawerOpen(false)
         else onClose()
       }
       if (carouselEnabled) {
-        if (e.key === 'ArrowLeft') prev()
-        if (e.key === 'ArrowRight') next()
+        if (event.key === 'ArrowLeft') prev()
+        if (event.key === 'ArrowRight') next()
       }
     },
     [onClose, drawerOpen, resetHideTimer, prev, next, carouselEnabled],
@@ -90,13 +90,13 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
     resetHideTimer()
   }, [resetHideTimer])
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
+  const handleTouchStart = (event: React.TouchEvent) => {
+    touchStartX.current = event.touches[0].clientX
     resetHideTimer()
   }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX
+  const handleTouchMove = (event: React.TouchEvent) => {
+    touchEndX.current = event.touches[0].clientX
   }
 
   const handleTouchEnd = () => {
@@ -121,7 +121,7 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   }, [resetHideTimer])
 
   const toggleDrawer = useCallback(() => {
-    setDrawerOpen((o) => !o)
+    setDrawerOpen((open) => !open)
     resetHideTimer()
   }, [resetHideTimer])
 
@@ -153,10 +153,10 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
       {/* Image strip - absolute inset-0 to guarantee viewport fill, object-cover, touch swipe */}
       <div
         className="absolute inset-0 z-1 overflow-hidden"
-        onClick={(e) => {
+        onClick={(event) => {
           if (drawerOpen) {
             setDrawerOpen(false)
-          } else if ((e.target as HTMLElement).closest('img')) {
+          } else if ((event.target as HTMLElement).closest('img')) {
             onClose()
           }
         }}
@@ -169,18 +169,18 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
           className="flex h-full w-full transition-transform duration-300 ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {photos.map((p, i) => {
-            if (!p || typeof p !== 'object') return null
+          {photos.map((photo, photoIndex) => {
+            if (!photo || typeof photo !== 'object') return null
 
             return (
-              <div key={p.id} className="relative h-full min-w-full shrink-0">
+              <div key={photo.id} className="relative h-full min-w-full shrink-0">
                 <MediaComponent
-                  resource={p}
+                  resource={photo}
                   fill
                   className="relative block size-full"
                   imgClassName="object-contain"
-                  priority={i === index}
-                  loading={i === index ? 'eager' : 'lazy'}
+                  priority={photoIndex === index}
+                  loading={photoIndex === index ? 'eager' : 'lazy'}
                 />
               </div>
             )
@@ -205,8 +205,8 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
         {/* Previous - only when carousel enabled */}
         {carouselEnabled && (
           <IconButton
-            onClick={(e) => {
-              e.stopPropagation()
+            onClick={(event) => {
+              event.stopPropagation()
               prev()
             }}
             className="pointer-events-auto absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:bg-white/10 hover:text-white"
@@ -219,8 +219,8 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
         {/* Next - only when carousel enabled */}
         {carouselEnabled && (
           <IconButton
-            onClick={(e) => {
-              e.stopPropagation()
+            onClick={(event) => {
+              event.stopPropagation()
               next()
             }}
             className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:bg-white/10 hover:text-white"

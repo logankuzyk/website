@@ -23,7 +23,7 @@ const project = (overrides: Partial<Project> = {}): Project =>
     ...overrides,
   }) as Project
 
-const render = (p: Project) => renderToStaticMarkup(createElement(ProjectCard, { project: p }))
+const render = (item: Project) => renderToStaticMarkup(createElement(ProjectCard, { project: item }))
 
 describe('getVisibleTags', () => {
   it('shows up to three tags with no overflow chip', () => {
@@ -43,15 +43,15 @@ describe('getVisibleTags', () => {
 
 describe('getProjectActions', () => {
   it('orders View live, GitHub, Read more', () => {
-    expect(getProjectActions(project()).map((a) => a.label)).toEqual(['View live', 'GitHub', 'Read more'])
+    expect(getProjectActions(project()).map((action) => action.label)).toEqual(['View live', 'GitHub', 'Read more'])
   })
 
   it('omits buttons whose link is missing', () => {
-    expect(getProjectActions(project({ externalUrl: null })).map((a) => a.label)).toEqual([
+    expect(getProjectActions(project({ externalUrl: null })).map((action) => action.label)).toEqual([
       'GitHub',
       'Read more',
     ])
-    expect(getProjectActions(project({ externalUrl: '', repoUrl: undefined })).map((a) => a.label)).toEqual([
+    expect(getProjectActions(project({ externalUrl: '', repoUrl: undefined })).map((action) => action.label)).toEqual([
       'Read more',
     ])
   })
@@ -75,7 +75,7 @@ describe('ProjectCard', () => {
 
   it('renders at most 3 tag chips plus a +N chip', () => {
     const html = render(project({ tags: ['a', 'b', 'c', 'd', 'e'] }))
-    for (const t of ['>a<', '>b<', '>c<']) expect(html).toContain(t)
+    for (const tag of ['>a<', '>b<', '>c<']) expect(html).toContain(tag)
     expect(html).not.toContain('>d<')
     expect(html).toContain('+2')
   })

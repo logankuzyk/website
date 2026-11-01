@@ -77,8 +77,8 @@ export function toIsoDate(value: string | null | undefined): string | undefined 
   if (/^\d{9,11}$/.test(str)) {
     date = new Date(Number(str) * 1000)
   } else if (exif) {
-    const [, y, m, d, h, min, s] = exif
-    date = new Date(`${y}-${m}-${d}T${h}:${min}:${s}Z`)
+    const [, year, month, day, hour, min, second] = exif
+    date = new Date(`${year}-${month}-${day}T${hour}:${min}:${second}Z`)
   } else {
     date = new Date(str)
   }

@@ -16,8 +16,8 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
     <>
       {/* Desktop nav - hidden on mobile */}
       <nav className="hidden md:flex gap-6 items-center">
-        {navItems.map(({ link }, i) => (
-          <CMSLink key={i} {...link} appearance="link" />
+        {navItems.map(({ link }, index) => (
+          <CMSLink key={index} {...link} appearance="link" />
         ))}
       </nav>
 
@@ -42,8 +42,8 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         )}
       >
         <nav className="container pb-8 flex flex-col gap-4 items-start text-left text-lg [&_a]:text-lg">
-          {navItems.map(({ link }, i) => (
-            <div key={i} onClick={() => setMobileMenuOpen(false)}>
+          {navItems.map(({ link }, index) => (
+            <div key={index} onClick={() => setMobileMenuOpen(false)}>
               <CMSLink {...link} appearance="link" className="block" />
             </div>
           ))}

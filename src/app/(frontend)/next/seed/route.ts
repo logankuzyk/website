@@ -49,7 +49,7 @@ export async function POST(): Promise<Response> {
       })
 
       let stderr = ''
-      child.stderr?.on('data', (d) => { stderr += d.toString() })
+      child.stderr?.on('data', (chunk) => { stderr += chunk.toString() })
       child.on('close', (code) => {
         resolve(code === 0 ? { success: true } : { success: false, error: stderr })
       })
@@ -63,8 +63,8 @@ export async function POST(): Promise<Response> {
     }
     payload.logger.error({ err: result.error, message: 'Error seeding data' })
     return new Response('Error seeding data.', { status: 500 })
-  } catch (e) {
-    payload.logger.error({ err: e, message: 'Error seeding data' })
+  } catch (error) {
+    payload.logger.error({ err: error, message: 'Error seeding data' })
     return new Response('Error seeding data.', { status: 500 })
   }
 }
