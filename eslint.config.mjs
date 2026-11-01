@@ -33,6 +33,20 @@ const eslintConfig = [
     },
   },
   {
+    // `properties: 'never'` leaves object keys alone (`cx`, `cy`, ...); only declared names
+    // (variables, parameters, functions, imports) must be at least 3 characters.
+    // Exceptions: `_` is the unused-placeholder convention (see `argsIgnorePattern` above),
+    // `id` is the Payload document field, `fs`/`os` are Node module names, `cn` is shadcn's
+    // class-name helper.
+    files: ['src/**/*.{ts,tsx,js,mjs}', 'tests/**/*.{ts,tsx}', 'scripts/**/*.{ts,mjs}'],
+    rules: {
+      'id-length': [
+        'error',
+        { min: 3, properties: 'never', exceptions: ['_', 'id', 'fs', 'os', 'cn'] },
+      ],
+    },
+  },
+  {
     ignores: [
       '.next/',
       'playwright-report/',

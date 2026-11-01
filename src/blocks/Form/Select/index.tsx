@@ -36,7 +36,7 @@ export const Select: React.FC<
         defaultValue={defaultValue}
         name={name}
         render={({ field: { onChange, value } }) => {
-          const controlledValue = options.find((t) => t.value === value)
+          const controlledValue = options.find((option) => option.value === value)
 
           return (
             <SelectComponent onValueChange={(val) => onChange(val)} value={controlledValue?.value}>

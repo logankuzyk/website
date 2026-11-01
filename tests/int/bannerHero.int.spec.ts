@@ -120,23 +120,23 @@ describe('bannerColours', () => {
 
 describe('hero config', () => {
   const fields = (hero as { fields: { name?: string; options?: unknown[]; validate?: unknown }[] }).fields
-  const field = (name: string) => fields.find((f) => f.name === name)
+  const field = (name: string) => fields.find((entry) => entry.name === name)
 
   it('offers a banner type and no photo type', () => {
-    const values = (field('type')!.options as { value: string }[]).map((o) => o.value)
+    const values = (field('type')!.options as { value: string }[]).map((option) => option.value)
     expect(values).toContain('banner')
     expect(values).not.toContain('photo')
   })
 
   it('offers image, colour, vector and dot grid backgrounds, defaulting to image', () => {
-    const bg = field('backgroundType') as { defaultValue: string; options: { value: string }[] }
-    expect(bg.options.map((o) => o.value)).toEqual(['image', 'colour', 'vector', 'dotGrid'])
-    expect(bg.defaultValue).toBe('image')
+    const background = field('backgroundType') as { defaultValue: string; options: { value: string }[] }
+    expect(background.options.map((option) => option.value)).toEqual(['image', 'colour', 'vector', 'dotGrid'])
+    expect(background.defaultValue).toBe('image')
   })
 
   it('lists exactly the colour tokens the component can render', () => {
     const colour = field('colour') as { options: { value: string }[] }
-    expect(colour.options.map((o) => o.value).sort()).toEqual(Object.keys(bannerColours).sort())
+    expect(colour.options.map((option) => option.value).sort()).toEqual(Object.keys(bannerColours).sort())
   })
 
   it('uploads vectors from the assets collection', () => {
@@ -157,7 +157,7 @@ describe('hero media rules', () => {
 
   it('the media field is required, and only applies where shown (Payload skips validation otherwise)', () => {
     const media = (hero as { fields: { name?: string; required?: boolean; validate?: unknown; admin?: { condition?: (...args: unknown[]) => unknown } }[] }).fields.find(
-      (f) => f.name === 'media',
+      (entry) => entry.name === 'media',
     )!
     expect(media.required).toBe(true)
     expect(media.validate).toBeUndefined()

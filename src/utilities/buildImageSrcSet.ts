@@ -52,7 +52,7 @@ export const collectImageCandidates = (
     byWidth.set(resource.width, resource.url)
   }
 
-  return [...byWidth.entries()].map(([width, url]) => ({ width, url })).sort((a, b) => a.width - b.width)
+  return [...byWidth.entries()].map(([width, url]) => ({ width, url })).sort((first, second) => first.width - second.width)
 }
 
 /**
@@ -65,6 +65,6 @@ export const pickImageCandidate = (
   requestedWidth: number,
 ): string | undefined => {
   if (candidates.length === 0) return undefined
-  const covering = candidates.find((c) => c.width >= requestedWidth)
+  const covering = candidates.find((candidate) => candidate.width >= requestedWidth)
   return (covering ?? candidates[candidates.length - 1]).url
 }
