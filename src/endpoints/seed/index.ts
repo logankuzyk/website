@@ -71,7 +71,7 @@ export const seed = async ({
 
   await Promise.all(
     collections
-      .filter((c) => payload.collections[c])
+      .filter((collection) => payload.collections[collection])
       .map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
   )
 

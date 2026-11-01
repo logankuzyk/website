@@ -12,7 +12,7 @@ import { decodeProbeFixtures, probeImageDecoders } from '@/utilities/imageDecode
 
 const upload = Photos.upload as Exclude<typeof Photos.upload, boolean | undefined>
 const sizes = (upload.imageSizes ?? []) as ImageSize[]
-const sizeByName = Object.fromEntries(sizes.map((s) => [s.name, s]))
+const sizeByName = Object.fromEntries(sizes.map((size) => [size.name, size]))
 const ftyp = (buf: Buffer) => buf.toString('latin1', 4, 12)
 
 describe('Photos upload config', () => {
@@ -79,10 +79,10 @@ describe('sharp binary capability', () => {
 
   it('probeImageDecoders returns one well-formed result per fixture and never throws', async () => {
     const results = await probeImageDecoders()
-    expect(results.map((r) => r.format).sort()).toEqual(['AVIF (10-bit)', 'HEIC'])
-    for (const r of results) {
-      expect(typeof r.ok).toBe('boolean')
-      if (!r.ok) expect(r.error).toBeTruthy()
+    expect(results.map((result) => result.format).sort()).toEqual(['AVIF (10-bit)', 'HEIC'])
+    for (const result of results) {
+      expect(typeof result.ok).toBe('boolean')
+      if (!result.ok) expect(result.error).toBeTruthy()
     }
   })
 })

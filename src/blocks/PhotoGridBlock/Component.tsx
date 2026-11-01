@@ -70,7 +70,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
 
   if (source === 'collections') {
     const collectionIds = Array.isArray(photoCollections)
-      ? photoCollections.map((c) => (typeof c === 'object' && c ? c.id : c)).filter(Boolean)
+      ? photoCollections.map((collection) => (typeof collection === 'object' && collection ? collection.id : collection)).filter(Boolean)
       : []
 
     const basePath = await getPhotographyBasePath(photographyIndexPage, payload)
@@ -114,7 +114,7 @@ export const PhotoGridBlock: React.FC<PhotoGridBlockProps> = async (props) => {
       const folderId =
         typeof photosFolder === 'object' && photosFolder ? photosFolder.id : photosFolder
       const tagIds = Array.isArray(photosTags)
-        ? photosTags.map((t) => (typeof t === 'object' && t ? t.id : t)).filter(Boolean)
+        ? photosTags.map((tag) => (typeof tag === 'object' && tag ? tag.id : tag)).filter(Boolean)
         : []
 
       const hasFolder = Boolean(folderId)

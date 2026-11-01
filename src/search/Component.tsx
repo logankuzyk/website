@@ -19,8 +19,8 @@ export const Search: React.FC = () => {
   return (
     <div>
       <form
-        onSubmit={(e) => {
-          e.preventDefault()
+        onSubmit={(event) => {
+          event.preventDefault()
         }}
       >
         <Label htmlFor="search" className="sr-only">

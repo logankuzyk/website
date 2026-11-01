@@ -38,7 +38,7 @@ export const Country: React.FC<
         defaultValue=""
         name={name}
         render={({ field: { onChange, value } }) => {
-          const controlledValue = countryOptions.find((t) => t.value === value)
+          const controlledValue = countryOptions.find((option) => option.value === value)
 
           return (
             <Select onValueChange={(val) => onChange(val)} value={controlledValue?.value}>

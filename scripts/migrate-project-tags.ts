@@ -23,7 +23,7 @@ export type TagsUpdate = {
 
 const toStrings = (value: unknown): string[] =>
   Array.isArray(value)
-    ? value.filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
     : []
 
 /**
@@ -35,7 +35,7 @@ export const buildTagsUpdate = (source: Source, prefix = ''): TagsUpdate | null 
 
   const migrated = toStrings(
     source.technologies.map((entry) => (entry as { technology?: unknown } | null)?.technology),
-  ).map((v) => v.trim())
+  ).map((item) => item.trim())
 
   const tags = [...new Set([...toStrings(source.tags), ...migrated])]
 
@@ -56,12 +56,12 @@ async function main() {
   const versions = payload.db.versions['projects']
 
   const targets: { label: string; model: typeof projects; prefix: string; field: (d: any) => Source }[] = [
-    { label: 'projects', model: projects, prefix: '', field: (d: Source) => d },
+    { label: 'projects', model: projects, prefix: '', field: (doc: Source) => doc },
     {
       label: '_projects_versions',
       model: versions,
       prefix: 'version.',
-      field: (d: { version?: Source }) => d.version ?? {},
+      field: (doc: { version?: Source }) => doc.version ?? {},
     },
   ]
 

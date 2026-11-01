@@ -126,7 +126,7 @@ describe('buildNewTabManifest', () => {
       photo({ id: 'ok' }),
     ])
 
-    expect(manifest.photos.map((p) => p.id)).toEqual(['ok'])
+    expect(manifest.photos.map((photo) => photo.id)).toEqual(['ok'])
   })
 
   it('returns empty EXIF when there is none', () => {
@@ -142,7 +142,7 @@ describe('buildNewTabManifest', () => {
   it('falls back to the photography index when no visible collection contains the photo', () => {
     const manifest = build([photo({ id: 'a' }), photo({ id: 'b' })], [['a', 'coast']])
 
-    expect(manifest.photos.map((p) => p.pageUrl)).toEqual([
+    expect(manifest.photos.map((photo) => photo.pageUrl)).toEqual([
       'https://logankuzyk.com/photography/coast?photo=a',
       'https://logankuzyk.com/photography',
     ])
