@@ -48,11 +48,11 @@ describe('BannerHero', () => {
     expect(html).not.toContain('<img')
   })
 
-  it('image mode: renders the photo behind a dark scrim with a white heading', () => {
+  it('image mode: renders the photo with no scrim and no forced heading colour', () => {
     const html = render({ type: 'banner', heading: 'Projects', backgroundType: 'image', media: photo })
     expect(html).toContain('<img')
-    expect(html).toContain('bg-black/')
-    expect(html).toContain('text-white')
+    expect(html).not.toContain('bg-black/')
+    expect(html).not.toContain('text-white')
   })
 
   it('treats a missing backgroundType as image', () => {
@@ -63,29 +63,44 @@ describe('BannerHero', () => {
     expect(render({ type: 'banner', heading: 'Projects', backgroundType: null, media: photo })).toContain('<img')
   })
 
-  it('vector mode: renders the SVG with empty alt, unoptimised, behind a scrim', () => {
+  it('vector mode: renders the SVG with empty alt, unoptimised, at full opacity by default', () => {
     const html = render({ type: 'banner', heading: 'Projects', backgroundType: 'vector', vectorMedia: svg })
     expect(html).toMatch(/<img[^>]*alt=""/)
     expect(html).toContain('assets/bg.svg')
     expect(html).not.toContain('/_next/image')
-    expect(html).toContain('bg-black/')
+    expect(html).not.toContain('bg-black/')
+    expect(html).toContain('style="opacity:1"')
   })
 
-  it('image/vector mode with nothing chosen: no scrim and no white heading', () => {
+  it('vector mode: applies the chosen opacity', () => {
+    const html = render({
+      type: 'banner',
+      heading: 'Projects',
+      backgroundType: 'vector',
+      vectorMedia: svg,
+      backgroundOpacity: 40,
+    })
+    expect(html).toContain('style="opacity:0.4"')
+  })
+
+  it('has no surface of its own: no muted background, scrim or forced heading colour', () => {
     for (const props of [
       { backgroundType: 'image' as const },
       { backgroundType: 'vector' as const },
+      { backgroundType: 'dotGrid' as const },
     ]) {
       const html = render({ type: 'banner', heading: 'Projects', ...props })
+      expect(html).not.toContain('bg-muted')
       expect(html).not.toContain('bg-black/')
       expect(html).not.toContain('text-white')
     }
   })
 
-  it('is ~21:6 on md+ and taller on mobile', () => {
+  it('is 4:1 on md+ and 16:9 (at least 240px tall) on mobile', () => {
     const html = render({ type: 'banner', heading: 'x', backgroundType: 'colour', colour: 'primary' })
-    expect(html).toContain('md:aspect-[21/6]')
-    expect(html).toMatch(/(?<![:\w-])aspect-\[(3\/2|4\/3|16\/9)\]/)
+    expect(html).toContain('md:aspect-[4/1]')
+    expect(html).toMatch(/(?<![:\w-])aspect-\[16\/9\]/)
+    expect(html).toContain('min-h-60')
   })
 
   it('renders nothing but the frame when no heading is set', () => {
@@ -113,9 +128,9 @@ describe('hero config', () => {
     expect(values).not.toContain('photo')
   })
 
-  it('offers image, colour and vector backgrounds, defaulting to image', () => {
+  it('offers image, colour, vector and dot grid backgrounds, defaulting to image', () => {
     const background = field('backgroundType') as { defaultValue: string; options: { value: string }[] }
-    expect(background.options.map((option) => option.value)).toEqual(['image', 'colour', 'vector'])
+    expect(background.options.map((option) => option.value)).toEqual(['image', 'colour', 'vector', 'dotGrid'])
     expect(background.defaultValue).toBe('image')
   })
 

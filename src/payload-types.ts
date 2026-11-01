@@ -193,7 +193,15 @@ export interface Page {
       [k: string]: unknown;
     } | null;
     heading?: string | null;
-    backgroundType?: ('image' | 'colour' | 'vector') | null;
+    backgroundType?: ('image' | 'colour' | 'vector' | 'dotGrid') | null;
+    /**
+     * Each number gives a different, repeatable pattern. Try a few.
+     */
+    dotGridSeed?: number | null;
+    /**
+     * Lower it so the heading stays readable. Leave empty for the default: 60 for the dot grid, 100 for a vector.
+     */
+    backgroundOpacity?: number | null;
     colour?: ('primary' | 'secondary' | 'accent' | 'muted' | 'card' | 'inverse') | null;
     vectorMedia?: (string | null) | Asset;
     name?: string | null;
@@ -1594,6 +1602,8 @@ export interface PagesSelect<T extends boolean = true> {
         type?: T;
         richText?: T;
         heading?: T;
+        dotGridSeed?: T;
+        backgroundOpacity?: T;
         backgroundType?: T;
         colour?: T;
         vectorMedia?: T;
