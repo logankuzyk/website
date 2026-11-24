@@ -5,7 +5,7 @@ import type { Photo } from '@/payload-types'
 import { Media as MediaComponent } from '@/components/Media'
 import { PhotoInfoDrawer } from '@/components/PhotoCarousel/PhotoInfoDrawer'
 import { IconButton } from '@/components/ui/icon-button'
-import { ChevronLeft, ChevronRight, ChevronUp, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 type PhotoCarouselProps = {
@@ -32,6 +32,9 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   const currentPhoto = photos[index]
   const isInitialMount = useRef(true)
@@ -54,31 +57,33 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
     setIndex((current) => (current >= photos.length - 1 ? 0 : current + 1))
   }, [photos.length])
 
-  const resetHideTimer = useCallback(() => {
+  const resetHideTimer = useCallback((): void => {
     setUiVisible(true)
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current)
       hideTimerRef.current = null
     }
     hideTimerRef.current = setTimeout(() => {
-      setUiVisible(false)
       hideTimerRef.current = null
+      // Never hide controls out from under keyboard focus; re-arm instead.
+      if (hasKeyboardFocus(dialogRef.current)) {
+        resetHideTimer()
+        return
+      }
+      setUiVisible(false)
     }, UI_HIDE_DELAY_MS)
   }, [])
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       resetHideTimer()
-      if (event.key === 'Escape') {
-        if (drawerOpen) setDrawerOpen(false)
-        else onClose()
-      }
+      // Escape is handled by the dialog's native `cancel` event (see handleCancel).
       if (carouselEnabled) {
         if (event.key === 'ArrowLeft') prev()
         if (event.key === 'ArrowRight') next()
       }
     },
-    [onClose, drawerOpen, resetHideTimer, prev, next, carouselEnabled],
+    [resetHideTimer, prev, next, carouselEnabled],
   )
 
   useEffect(() => {
@@ -116,6 +121,36 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
     }
   }, [])
 
+  // Open as a native modal dialog: the browser makes everything outside it inert (no
+  // reliance on aria-modal support), traps Tab inside, and moves focus to the first control.
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    const previouslyFocused = document.activeElement as HTMLElement | null
+
+    // The browser can close the dialog itself (e.g. a second Escape press); keep React in sync.
+    const handleNativeClose = () => onCloseRef.current()
+    dialog.addEventListener('close', handleNativeClose)
+    if (typeof dialog.showModal === 'function') dialog.showModal()
+    else dialog.setAttribute('open', '') // jsdom
+
+    return () => {
+      dialog.removeEventListener('close', handleNativeClose)
+      if (typeof dialog.close === 'function') dialog.close()
+      if (previouslyFocused?.isConnected) previouslyFocused.focus()
+    }
+  }, [])
+
+  const handleCancel = useCallback(
+    (event: React.SyntheticEvent) => {
+      // Escape: close the info drawer first, then the carousel.
+      event.preventDefault()
+      if (drawerOpen) setDrawerOpen(false)
+      else onClose()
+    },
+    [drawerOpen, onClose],
+  )
+
   useEffect(() => {
     resetHideTimer()
   }, [resetHideTimer])
@@ -128,37 +163,33 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   if (!photos?.length) return null
 
   const uiOverlayClass = uiVisible
-    ? 'pointer-events-none opacity-100 transition-opacity duration-200'
-    : 'pointer-events-none opacity-0 transition-opacity duration-200'
+    ? 'pointer-events-none opacity-100 transition-opacity duration-200 motion-reduce:transition-none'
+    : 'pointer-events-none opacity-0 transition-opacity duration-200 motion-reduce:transition-none'
+
+  const announcement = `Photo ${index + 1} of ${photos.length}${currentPhoto?.alt ? `: ${currentPhoto.alt}` : ''}`
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col bg-black overscroll-contain touch-none"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-0 z-50 m-0 flex size-full max-h-none max-w-none flex-col overflow-hidden border-0 bg-black p-0 overscroll-contain touch-none"
       aria-label="Photo carousel"
+      onCancel={handleCancel}
       onMouseMove={handleMouseMove}
+      onFocus={resetHideTimer}
     >
-      {/* Backdrop click to close - only when UI visible and drawer closed */}
-      <button
-        type="button"
-        className="absolute inset-0 z-0"
+      {/* Announce slide changes to screen readers (focus stays on the prev/next buttons) */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {carouselEnabled ? announcement : ''}
+      </div>
+
+      {/* Image strip - absolute inset-0 to guarantee viewport fill, object-cover, touch swipe.
+          Pointer-only click target (clicking the photo or backdrop closes); keyboard users have
+          the Close button and Escape. */}
+      <div
+        className="absolute inset-0 z-1 overflow-hidden"
         onClick={() => {
           if (drawerOpen) setDrawerOpen(false)
           else onClose()
-        }}
-        aria-label="Close carousel"
-      />
-
-      {/* Image strip - absolute inset-0 to guarantee viewport fill, object-cover, touch swipe */}
-      <div
-        className="absolute inset-0 z-1 overflow-hidden"
-        onClick={(event) => {
-          if (drawerOpen) {
-            setDrawerOpen(false)
-          } else if ((event.target as HTMLElement).closest('img')) {
-            onClose()
-          }
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -166,14 +197,23 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
         style={{ touchAction: carouselEnabled ? 'pan-x' : 'auto' }}
       >
         <div
-          className="flex h-full w-full transition-transform duration-300 ease-out"
+          className="flex h-full w-full transition-transform duration-300 ease-out motion-reduce:transition-none"
           style={{ transform: `translateX(-${index * 100}%)` }}
+          aria-roledescription={carouselEnabled ? 'carousel' : undefined}
         >
           {photos.map((photo, photoIndex) => {
             if (!photo || typeof photo !== 'object') return null
 
             return (
-              <div key={photo.id} className="relative h-full min-w-full shrink-0">
+              <div
+                key={photo.id}
+                className="relative h-full min-w-full shrink-0"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${photoIndex + 1} of ${photos.length}`}
+                // Off-screen slides are removed from the accessibility tree
+                inert={photoIndex !== index}
+              >
                 <MediaComponent
                   resource={photo}
                   fill
@@ -191,7 +231,6 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
       {/* UI overlay - hides after timeout, shows on mouse move. pointer-events-none on overlay so touches reach image strip for swipe; buttons have pointer-events-auto */}
       <div
         className={`absolute inset-0 z-10 flex items-center justify-center ${uiOverlayClass}`}
-        aria-hidden={!uiVisible}
       >
         {/* Close button */}
         <IconButton
@@ -242,6 +281,16 @@ export const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
         total={photos.length}
         carouselEnabled={carouselEnabled}
       />
-    </div>
+    </dialog>
   )
+}
+
+/** True when a control inside `root` has keyboard-visible focus (not a mouse click). */
+function hasKeyboardFocus(root: HTMLElement | null): boolean {
+  if (!root) return false
+  try {
+    return root.querySelector(':focus-visible') !== null
+  } catch {
+    return false
+  }
 }
