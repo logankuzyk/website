@@ -1,0 +1,63 @@
+name: Deploy
+
+# Deploys main to the VPS once CI has passed on it. Setup: docs/deploy.md
+# Manual runs (workflow_dispatch) skip the CI gate, and are limited to main (see `if:` below).
+on:
+  workflow_run:
+    workflows: [CI] # must match `name:` in ci.yml; renaming CI there silently stops deploys
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once, and don't cancel one mid-flight; the next just queues.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    # Don't let a stuck build or a dead SSH connection hold the deploy queue for the 6h default
+    # (covers up to 10 min waiting on the VPS lock plus the build and health check).
+    timeout-minutes: 25
+    # CI also runs on PRs targeting main; only deploy pushes to main that passed CI.
+    # Manual runs must be dispatched from main: this job streams scripts/deploy.sh from the
+    # selected ref to the VPS, so another branch could otherwise run arbitrary code there.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ vars.VPS_PATH }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        # The script is streamed from this checkout so the VPS always runs the version being deployed.
+        run: |
+          # ssh joins the remote command into one string for the remote shell, so quote the arguments.
+          remote_args="$(printf '%q %q' "$VPS_PATH" "$SHA")"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+            "$VPS_USER@$VPS_HOST" "bash -s -- $remote_args" < scripts/deploy.sh
