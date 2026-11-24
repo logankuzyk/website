@@ -15,7 +15,7 @@ import {
 } from '@/utilities/formatExif'
 import { formatLocation } from '@/utilities/formatLocation'
 import { ChevronDown, ChevronUp, Copy, Download } from 'lucide-react'
-import React from 'react'
+import React, { useId } from 'react'
 
 type PhotoInfoDrawerProps = {
   photo: Photo
@@ -55,15 +55,19 @@ export const PhotoInfoDrawer: React.FC<PhotoInfoDrawerProps> = ({
   )
 
   const drawerVisible = open || uiVisible
+  const contentId = useId()
 
   return (
     <div
-      className={`fixed bottom-0 left-1/2 z-40 flex w-full -translate-x-1/2 flex-col border text-white transition-[opacity,background-color,border-color] duration-200 md:max-w-[33vw] ${open ? 'border-border-dim bg-black/95' : 'border-transparent bg-transparent'} ${drawerVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+      className={`fixed bottom-0 left-1/2 z-40 flex w-full -translate-x-1/2 flex-col border text-white transition-[opacity,background-color,border-color] duration-200 motion-reduce:transition-none md:max-w-[33vw] ${open ? 'border-border-dim bg-black/95' : 'border-transparent bg-transparent'} ${drawerVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
     >
       {/* Drawer content - expands above the toggle bar when open */}
+      {/* inert while collapsed so the Download/Copy controls leave the tab order and a11y tree */}
       <div
-        className="grid max-h-[70vh] transition-[grid-template-rows] duration-300 ease-out"
+        id={contentId}
+        className="grid max-h-[70vh] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
         style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+        inert={!open}
       >
         <div className="min-h-0 overflow-hidden">
           <div className="overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -86,7 +90,7 @@ export const PhotoInfoDrawer: React.FC<PhotoInfoDrawerProps> = ({
           className={`flex shrink-0 flex-col items-center gap-1 border-t py-3 transition-[border-color] duration-200 ${open ? 'border-border-dim' : 'border-transparent'}`}
         >
         {carouselEnabled && (
-          <span className="text-sm text-white/70">
+          <span className="text-sm text-white/70" aria-hidden="true">
             {index + 1} / {total}
           </span>
         )}
@@ -95,6 +99,7 @@ export const PhotoInfoDrawer: React.FC<PhotoInfoDrawerProps> = ({
           className="text-white/70 hover:bg-white/10 hover:text-white"
           aria-label={open ? 'Close info' : 'Open info'}
           aria-expanded={open}
+          aria-controls={contentId}
         >
           {open ? <ChevronDown /> : <ChevronUp />}
         </IconButton>
